@@ -32,8 +32,85 @@ Terr_class2gama = {
     5:0.35,
 }
 
-def t_gw_calc(C0,C_stat,LWR,t_max,n_max,CO2_Grenzwert):
-    n_i = np.array([np.arange(1, n_max+1)]*1000).T
+standort2Terr = {
+    "Innsbruck":[1,1,2.5,4.5],
+    "Wien":[1,1,2.5,5.5],
+}
+standort2Shield = {
+    "Innsbruck":[1,1,1.5,4.5],
+    "Wien":[1,1,2.5,5.5],
+}
+standort2TNorm ={
+    "Innsbruck":-10.8,
+    "Wien":-11.3,
+}
+standort_list = ["Innsbruck", "Wien"]
+
+gebaeudeart2H_Bldg = {
+    "Einfamilienhaus/Reihenhaus":[2,4,3,12],
+    "Mehrfamilienhaus":[2,4,3,18],
+    "Apartmentblock":[2,4,3,60],
+}
+gebaeudeart2H_WindRel = {
+    "Einfamilienhaus/Reihenhaus":[1,1,1,1],
+    "Mehrfamilienhaus":[1,1,0,1],
+    "Apartmentblock":[1,1,0,1],
+}
+gebaeudeart2Ti_avg = {
+    "Altbau mit durchbetonierten Bauteilen (Balkone, etc)":[3,3,18,22],
+    "Altbau (mit normalen Wärmebrücken)":[3,3,18,22],
+    "Standard Neubau":[3,3,19,23],
+}
+gebaeudeart_list = ["Einfamilienhaus/Reihenhaus", "Mehrfamilienhaus", "Apartmentblock"]
+
+raumart2A_Rm = {
+    "Schlafzimmer":[2.5,4,6,30],
+    "Wohnzimmer":[2,3.6,12,60],
+}
+raumart2H_Rm = {
+    "Schlafzimmer":[3,3,2.4,2.6],
+    "Wohnzimmer":[3,3,2.4,2.6],
+}
+raumart2Nr_Adu = {
+    "Schlafzimmer":[2,2,1,2],
+    "Wohnzimmer":[2,3,1,2],
+}
+raumart2ActAdu = {
+    "Schlafzimmer":[3,3,0.6,1],
+    "Wohnzimmer":[3,3,1,1.4],
+}
+raumart2Nr_Kid = {
+    "Schlafzimmer":[1,10,0,3],
+    "Wohnzimmer":[1,5,1,4],
+}
+raumart2ActKid = {
+    "Schlafzimmer":[3,3,0.6,1],
+    "Wohnzimmer":[3,3,1,1.4],
+}
+raumart2AgeKid = {
+    "Schlafzimmer": [1,3,0,4],
+    "Wohnzimmer": [1,1,1,18],
+}
+raumart_list = ["Schlafzimmer", "Wohnzimmer"]
+
+luefungsart2WinACH = {
+    "Querlüftung":[3,3,10,30],
+    "einseitig":[3,3,5,15],
+}
+luefungsart2WinDur = {
+    "Querlüftung":[3,3,3,7],
+    "einseitig":[3,3,3,15],
+}
+luefungsart_list = ["Querlüftung", "einseitig"]
+
+n50_map = {
+    "Altbau":[3,3,3,4],
+    "Undichter Altbau": [3,3,3,7],
+    "Standard Neubau": [3,3,1,2],
+}
+
+def t_gw_calc(C0,C_stat,LWR,t_max,n_max,CO2_Grenzwert,size):
+    n_i = np.array([np.arange(1, n_max+1)]*size).T
     c_t=(C0-C_stat)/LWR/(t_max*n_i/n_max)*(1-np.exp(-LWR*(t_max*n_i/n_max)))+C_stat
     return np.argmax(c_t>CO2_Grenzwert,axis=0)*t_max/n_max
 
@@ -59,29 +136,43 @@ if __name__ == "__main__":
     #quantiles = [0, 0.05, 0.25, 0.5, 0.75, 0.95, 1]
     quantiles = [0.05, 0.25, 0.5, 0.75, 0.95]
 
+    size=1000
+    standort = "Wien" #standort_list
+    gebaeude_n50 = "Standard Neubau" #n50_map.keys()
+    gebaeudeart = "Mehrfamilienhaus" #gebaeudeart_list
+    H_Rm = None
+    A_Rm = None
+    raumart = "Schlafzimmer" #raumart_list
+    luefungsart = "Querlüftung" #luefungsart_list
 
-    T_a = 1.6
+    T_a = standort2TNorm[standort]
     v_10m = 3.2
 
-    Shield = np.round(beta_scaled(1,1,2.5,5.5,size=1000)) #Wien 1,1,2.5,5.5
-    Terr = np.round(beta_scaled(1,1,2.5,5.5,size=1000)) #Wien 1,1,2.5,5.5
+    Shield = np.round(beta_scaled(*standort2Shield[standort],size=size))
+    Terr = np.round(beta_scaled(*standort2Terr[standort],size=size))
 
     C = map_values(Shield,Shield_class2C)
     alfa = map_values(Shield,Terr_class2alfa)
     gama = map_values(Terr,Terr_class2gama)
 
-    n50 = beta_scaled(3,3,1,2,size=1000) #Standard Neubau 3,3,1,2
+    n50 = beta_scaled(*n50_map[gebaeude_n50],size=size)
 
-    H_Bldg = beta_scaled(2,4,3,18,size=1000) #Altersklasse 0 - MFH 2,4,3,18
-    Windeff = np.max([[3]*1000, H_Bldg*beta_scaled(1,1,0,1,size=1000)],axis=0) #MFH 1,1,0,1
+    H_Bldg = beta_scaled(*gebaeudeart2H_Bldg[gebaeudeart],size=size)
+    Windeff = np.max([[3]*size, H_Bldg*beta_scaled(*gebaeudeart2H_WindRel[gebaeudeart],size=size)],axis=0)
 
-    A_Rm = beta_scaled(2.5,4,6,30,size=1000) #Schlafzimmer 2.5,4,6,30
-    H_Rm = beta_scaled(3,3,2.4,2.6,size=1000) #Schlafzimmer 3,3,2.4,2.6
+    if not A_Rm:
+        A_Rm = beta_scaled(*raumart2A_Rm[raumart],size=size)
+    else:
+        A_Rm = np.array([A_Rm]*size)
+    if not H_Rm:
+        H_Rm = beta_scaled(*raumart2H_Rm[raumart],size=size)
+    else:
+        H_Rm = np.array([H_Rm]*size)
 
-    Ti_avg = beta_scaled(3,3,19,23,size=1000) #Standard Neubau 3,3,19,23
+    Ti_avg = beta_scaled(*gebaeudeart2Ti_avg["Altbau (mit normalen Wärmebrücken)"],size=size)
 
-    LeakDistr_1 = beta_scaled(5,7,0,1,size=1000) #Anteil Decke+Boden 5,7,0,1
-    LeakDistr_2 = beta_scaled(4,4,0,1,size=1000) #Anteil Decke von Anteil Decke+Boden 4,4,0,1
+    LeakDistr_1 = beta_scaled(5,7,0,1,size=size) #Anteil Decke+Boden 5,7,0,1
+    LeakDistr_2 = beta_scaled(4,4,0,1,size=size) #Anteil Decke von Anteil Decke+Boden 4,4,0,1
 
     Anteil_Decke = LeakDistr_1*LeakDistr_2
     Anteil_Boden = LeakDistr_1*(1-LeakDistr_2)
@@ -125,21 +216,21 @@ if __name__ == "__main__":
     print()
 
 
-    AgeKid = beta_scaled(1,3,0,4,size=1000) #Alter Kinder Schlafzimmer 1,3,0,4
+    AgeKid = beta_scaled(*raumart2AgeKid[raumart],size=size)
 
-    ActKid = beta_scaled(3,3,0.6,1,size=1000) #Kinder Schlafzimmer 3,3,0.6,1
-    NrKids = np.round(beta_scaled(1,10,0,3,size=1000)) #Kinder Schlafzimmer 1,10,0,3
-    ActAdu = beta_scaled(3,3,0.6,1,size=1000) #Erwachsene Schlafzimmer 3,3,0.6,1
-    NrAdu = np.round(beta_scaled(2,2,1,2,size=1000)) #Erwachsene Schlafzimmer 2,2,1,2
+    ActKid = beta_scaled(*raumart2ActKid[raumart],size=size)
+    NrKids = np.round(beta_scaled(*raumart2Nr_Kid[raumart],size=size))
+    ActAdu = beta_scaled(*raumart2ActAdu[raumart],size=size)
+    NrAdu = np.round(beta_scaled(*raumart2Nr_Adu[raumart],size=size))
 
-    LWR_lueften = beta_scaled(3,3,10,30,size=1000) #WinACH Querlüftung 3,3,10,30
-    t_lueften = beta_scaled(3,3,3,7,size=1000) #WinDur Querlüftung 3,3,3,7
+    LWR_lueften = beta_scaled(*luefungsart2WinACH[luefungsart],size=size)
+    t_lueften = beta_scaled(*luefungsart2WinDur[luefungsart],size=size)
 
     print("AgeKid",np.quantile(AgeKid,quantiles))
-    print("NrKids",np.quantile(AgeKid,quantiles))
-    print("ActAdu",np.quantile(AgeKid,quantiles))
-    print("NrAdu",np.quantile(AgeKid,quantiles))
-    print("LWR_lueften",np.quantile(AgeKid,quantiles))
+    print("NrKids",np.quantile(NrKids,quantiles))
+    print("ActAdu",np.quantile(ActAdu,quantiles))
+    print("NrAdu",np.quantile(NrAdu,quantiles))
+    print("LWR_lueften",np.quantile(LWR_lueften,quantiles))
     print("t_lueften",np.quantile(t_lueften,quantiles))
     print()
 
@@ -170,12 +261,12 @@ if __name__ == "__main__":
     t_max = 8 #Schlafzimmer
     C0_avg2 = C0__GWfix #? CC #genähert
 
-    t_gw_erreicht = t_gw_calc(C0_avg2,C_stat,LWR,t_max,n_max,CO2_Grenzwert)
+    t_gw_erreicht = t_gw_calc(C0_avg2,C_stat,LWR,t_max,n_max,CO2_Grenzwert,size=size)
 
     log_arg = (CO2_Grenzwert-C_stat)/(C0-C_stat)
     t_gw_periodisch = np.where(log_arg > 0, -np.log(log_arg)/LWR, t_max)
 
-    t_gw_ueberschritten = t_gw_calc(CO2_aussen,C_stat,LWR,t_max,n_max,CO2_Grenzwert)
+    t_gw_ueberschritten = t_gw_calc(CO2_aussen,C_stat,LWR,t_max,n_max,CO2_Grenzwert,size=size)
 
     log_arg = (CO2_Grenzwert-C_stat)/(CO2_aussen-C_stat)
     t_gw_ideal = np.where(log_arg > 0, -np.log(log_arg)/LWR, t_max)
