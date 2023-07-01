@@ -1,6 +1,8 @@
 
 import numpy as np
 
+from infiltration.lib.params import *
+
 def beta_scaled(alpha,beta,min,max,size):
     return np.random.default_rng().beta(a=alpha, b=beta, size=size)*(max-min)+min
 
@@ -10,10 +12,17 @@ def map_values(a, d):
         b[a==k] = v
     return b
 
-def t_gw_calc(C0,C_stat,LWR,t_max,n_max,CO2_Grenzwert,size):
+#https://stackoverflow.com/questions/18915378/rounding-to-significant-figures-in-numpy
+def signif(x, p):
+    x = np.asarray(x)
+    x_positive = np.where(np.isfinite(x) & (x != 0), np.abs(x), 10**(p-1))
+    mags = 10 ** (p - 1 - np.floor(np.log10(x_positive)))
+    return np.round(x * mags) / mags
+
+def t_gw_calc(C0,C_stat,LWR,t_max,n_max,CO2_Grenzwert,quantiles,size):
     n_i = np.array([np.arange(1, n_max+1)]*size).T
     c_t=(C0-C_stat)/LWR/(t_max*n_i/n_max)*(1-np.exp(-LWR*(t_max*n_i/n_max)))+C_stat
-    return np.argmax(c_t>CO2_Grenzwert,axis=0)*t_max/n_max
+    return np.argmax(c_t>CO2_Grenzwert,axis=0)*t_max/n_max, np.quantile(c_t,quantiles,axis=1).T
 
 def C0_calc(C0,C_stat,LWR,t):
     return (C0-C_stat)*np.exp(-LWR*t/60)+C_stat
@@ -21,31 +30,7 @@ def C0_calc(C0,C_stat,LWR,t):
 def C0_calc_clip(C0,C_stat,LWR,t):
     return np.max([C0_calc(C0,C_stat,LWR,t),C_stat],axis=0)
 
-
-if __name__ == "__main__":
-    #https://stackoverflow.com/questions/18915378/rounding-to-significant-figures-in-numpy
-    def signif(x, p):
-        x = np.asarray(x)
-        x_positive = np.where(np.isfinite(x) & (x != 0), np.abs(x), 10**(p-1))
-        mags = 10 ** (p - 1 - np.floor(np.log10(x_positive)))
-        return np.round(x * mags) / mags
-
-    np.set_printoptions(threshold=np.inf)
-    np.set_printoptions(linewidth=np.inf)
-    np.set_printoptions(formatter={"float":lambda x: str(signif(x,2))})
-
-    #quantiles = [0, 0.05, 0.25, 0.5, 0.75, 0.95, 1]
-    quantiles = [0.05, 0.25, 0.5, 0.75, 0.95]
-
-    size=1000
-    standort = "Wien" #standort_list
-    gebaeude_n50 = "Standard Neubau" #n50_map.keys()
-    gebaeudeart = "Mehrfamilienhaus" #gebaeudeart_list
-    H_Rm = None
-    A_Rm = None
-    raumart = "Schlafzimmer" #raumart_list
-    luefungsart = "Querlüftung" #luefungsart_list
-
+def calc(standort, gebaeude_n50, gebaeudeart, H_Rm, A_Rm, raumart, luefungsart, quantiles = [0.05, 0.25, 0.5, 0.75, 0.95], size=1000):
     T_a = standort2TNorm[standort]
     v_10m = 3.2
 
@@ -162,15 +147,81 @@ if __name__ == "__main__":
     t_max = 8 #Schlafzimmer
     C0_avg2 = C0__GWfix #? CC #genähert
 
-    t_gw_erreicht = t_gw_calc(C0_avg2,C_stat,LWR,t_max,n_max,CO2_Grenzwert,size=size)
+    t_gw_erreicht, c_quantiles_gw_erreicht = t_gw_calc(C0_avg2,C_stat,LWR,t_max,n_max,CO2_Grenzwert,quantiles,size=size)
+    c_quantiles_t_gw_erreicht = np.arange(1, n_max+1)*t_max/n_max
+
+    n_bins = 50
+    bins=np.arange(0,n_bins)*t_max/n_bins
+    hist,bin_edges = np.histogram(t_gw_erreicht, bins)
+
+    stats_data_gw_erreicht = {
+        "Quantile": signif(np.quantile(t_gw_erreicht,quantiles),2),
+        "Häufigkeit": {
+            "x":bins[:-1]*60,
+            "y":[hist]
+        },
+        "Mittelwert":{
+            "x":c_quantiles_t_gw_erreicht,
+            "y":c_quantiles_gw_erreicht.T
+        }
+    }
 
     log_arg = (CO2_Grenzwert-C_stat)/(C0-C_stat)
     t_gw_periodisch = np.where(log_arg > 0, -np.log(log_arg)/LWR, t_max)
 
-    t_gw_ueberschritten = t_gw_calc(CO2_aussen,C_stat,LWR,t_max,n_max,CO2_Grenzwert,size=size)
+    n_bins = 50
+    bins=np.arange(0,n_bins)*t_max/n_bins
+    hist,bin_edges = np.histogram(t_gw_periodisch, bins)
+
+    stats_data_gw_periodisch = {
+        "Quantile": signif(np.quantile(t_gw_periodisch,quantiles),2),
+        "Häufigkeit": {
+            "x":bins[:-1]*60,
+            "y":[hist]
+        },
+        "Mittelwert":{
+            "x":c_quantiles_t_gw_erreicht, #todo
+            "y":c_quantiles_gw_erreicht.T #todo
+        }
+    }
+
+    t_gw_ueberschritten, c_quantiles_gw_ueberschritten = t_gw_calc(CO2_aussen,C_stat,LWR,t_max,n_max,CO2_Grenzwert,quantiles,size=size)
+    c_quantiles_t_gw_ueberschritten = np.arange(1, n_max+1)*t_max/n_max
+
+    n_bins = 50
+    bins=np.arange(0,n_bins)*t_max/n_bins
+    hist,bin_edges = np.histogram(t_gw_ueberschritten, bins)
+
+    stats_data_gw_ueberschritten = {
+        "Quantile": signif(np.quantile(t_gw_ueberschritten,quantiles),2),
+        "Häufigkeit": {
+            "x":bins[:-1]*60,
+            "y":[hist]
+        },
+        "Mittelwert":{
+            "x":c_quantiles_t_gw_ueberschritten,
+            "y":c_quantiles_gw_ueberschritten.T
+        }
+    }
 
     log_arg = (CO2_Grenzwert-C_stat)/(CO2_aussen-C_stat)
     t_gw_ideal = np.where(log_arg > 0, -np.log(log_arg)/LWR, t_max)
+
+    n_bins = 50
+    bins=np.arange(0,n_bins)*t_max/n_bins
+    hist,bin_edges = np.histogram(t_gw_ideal, bins)
+
+    stats_data_gw_ideal = {
+        "Quantile": signif(np.quantile(t_gw_ideal,quantiles),2),
+        "Häufigkeit": {
+            "x":bins[:-1]*60,
+            "y":[hist]
+        },
+        "Mittelwert":{
+            "x":c_quantiles_t_gw_erreicht, #todo
+            "y":c_quantiles_gw_erreicht.T #todo
+        }
+    }
 
     print("t_gw_erreicht",np.quantile(t_gw_erreicht,quantiles))
     print("t_gw_periodisch",np.quantile(t_gw_periodisch,quantiles))
@@ -194,3 +245,13 @@ Weil errechnete Zeit zwischen erforderlichen Fensterlüften [min]:    {t_gw_erre
 Dies ist kürzer als die zumutbare Zeit zwischen Fensterlüften [min]: {t_zumutbar:.0f} Minuten
 """
     )
+
+    return {
+        "Fensterlueftung": Fensterlueftung,
+        "t_zumutbar": t_zumutbar,
+        "t_gw_erreicht": stats_data_gw_erreicht,
+        "t_gw_periodisch": stats_data_gw_periodisch,
+        "t_gw_ueberschritten": stats_data_gw_ueberschritten,
+        "t_gw_ideal": stats_data_gw_ideal,
+        "C_stat": signif(np.quantile(C_stat,quantiles),2),
+    }
