@@ -1,0 +1,4 @@
+numpy
+Flask
+flask_restx
+Werkzeug
