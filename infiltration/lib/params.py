@@ -96,3 +96,4 @@ n50_map = {
     "Undichter Altbau": [3,3,3,7],
     "Standard Neubau": [3,3,1,2],
 }
+n50_map_list = list(n50_map.keys())
