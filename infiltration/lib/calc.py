@@ -1,7 +1,7 @@
 
 import numpy as np
 
-from infiltration.lib.params import *
+import infiltration.lib.params as params
 
 def beta_scaled(alpha,beta,min,max,size):
     return np.random.default_rng().beta(a=alpha, b=beta, size=size)*(max-min)+min
@@ -31,31 +31,31 @@ def C0_calc_clip(C0,C_stat,LWR,t):
     return np.max([C0_calc(C0,C_stat,LWR,t),C_stat],axis=0)
 
 def calc(standort, gebaeude_n50, gebaeudeart, H_Rm, A_Rm, raumart, luefungsart, quantiles = [0.05, 0.25, 0.5, 0.75, 0.95], size=1000):
-    T_a = standort2TNorm[standort]
+    T_a = params.standort2TNorm[standort]
     v_10m = 3.2
 
-    Shield = np.round(beta_scaled(*standort2Shield[standort],size=size))
-    Terr = np.round(beta_scaled(*standort2Terr[standort],size=size))
+    Shield = np.round(beta_scaled(*params.standort2Shield[standort],size=size))
+    Terr = np.round(beta_scaled(*params.standort2Terr[standort],size=size))
 
-    C = map_values(Shield,Shield_class2C)
-    alfa = map_values(Shield,Terr_class2alfa)
-    gama = map_values(Terr,Terr_class2gama)
+    C = map_values(Shield,params.Shield_class2C)
+    alfa = map_values(Shield,params.Terr_class2alfa)
+    gama = map_values(Terr,params.Terr_class2gama)
 
-    n50 = beta_scaled(*n50_map[gebaeude_n50],size=size)
+    n50 = beta_scaled(*params.n50_map[gebaeude_n50],size=size)
 
-    H_Bldg = beta_scaled(*gebaeudeart2H_Bldg[gebaeudeart],size=size)
-    Windeff = np.max([[3]*size, H_Bldg*beta_scaled(*gebaeudeart2H_WindRel[gebaeudeart],size=size)],axis=0)
+    H_Bldg = beta_scaled(*params.gebaeudeart2H_Bldg[gebaeudeart],size=size)
+    Windeff = np.max([[3]*size, H_Bldg*beta_scaled(*params.gebaeudeart2H_WindRel[gebaeudeart],size=size)],axis=0)
 
     if not A_Rm:
-        A_Rm = beta_scaled(*raumart2A_Rm[raumart],size=size)
+        A_Rm = beta_scaled(*params.raumart2A_Rm[raumart],size=size)
     else:
         A_Rm = np.array([A_Rm]*size)
     if not H_Rm:
-        H_Rm = beta_scaled(*raumart2H_Rm[raumart],size=size)
+        H_Rm = beta_scaled(*params.raumart2H_Rm[raumart],size=size)
     else:
         H_Rm = np.array([H_Rm]*size)
 
-    Ti_avg = beta_scaled(*gebaeudeart2Ti_avg["Altbau (mit normalen Wärmebrücken)"],size=size)
+    Ti_avg = beta_scaled(*params.gebaeudeart2Ti_avg["Altbau (mit normalen Wärmebrücken)"],size=size)
 
     LeakDistr_1 = beta_scaled(5,7,0,1,size=size) #Anteil Decke+Boden 5,7,0,1
     LeakDistr_2 = beta_scaled(4,4,0,1,size=size) #Anteil Decke von Anteil Decke+Boden 4,4,0,1
@@ -102,15 +102,15 @@ def calc(standort, gebaeude_n50, gebaeudeart, H_Rm, A_Rm, raumart, luefungsart, 
     print()
 
 
-    AgeKid = beta_scaled(*raumart2AgeKid[raumart],size=size)
+    AgeKid = beta_scaled(*params.raumart2AgeKid[raumart],size=size)
 
-    ActKid = beta_scaled(*raumart2ActKid[raumart],size=size)
-    NrKids = np.round(beta_scaled(*raumart2Nr_Kid[raumart],size=size))
-    ActAdu = beta_scaled(*raumart2ActAdu[raumart],size=size)
-    NrAdu = np.round(beta_scaled(*raumart2Nr_Adu[raumart],size=size))
+    ActKid = beta_scaled(*params.raumart2ActKid[raumart],size=size)
+    NrKids = np.round(beta_scaled(*params.raumart2Nr_Kid[raumart],size=size))
+    ActAdu = beta_scaled(*params.raumart2ActAdu[raumart],size=size)
+    NrAdu = np.round(beta_scaled(*params.raumart2Nr_Adu[raumart],size=size))
 
-    LWR_lueften = beta_scaled(*luefungsart2WinACH[luefungsart],size=size)
-    t_lueften = beta_scaled(*luefungsart2WinDur[luefungsart],size=size)
+    LWR_lueften = beta_scaled(*params.luefungsart2WinACH[luefungsart],size=size)
+    t_lueften = beta_scaled(*params.luefungsart2WinDur[luefungsart],size=size)
 
     print("AgeKid",np.quantile(AgeKid,quantiles))
     print("NrKids",np.quantile(NrKids,quantiles))
