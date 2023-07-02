@@ -109,6 +109,7 @@ class Calculate(Resource):
             A_Rm = request.json['A_Rm'],
             raumart = request.json['raumart'],
             luefungsart = request.json['luefungsart'],
+            quantiles = [0.05, 0.25, 0.5, 0.75, 0.95],
         )
 
 parameter_result_model =  namespace.model('ParameterResult', {

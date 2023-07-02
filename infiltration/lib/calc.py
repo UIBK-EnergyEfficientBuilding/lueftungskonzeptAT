@@ -3,8 +3,8 @@ import numpy as np
 
 import infiltration.lib.params as params
 
-def beta_scaled(alpha,beta,min,max,size):
-    return np.random.default_rng().beta(a=alpha, b=beta, size=size)*(max-min)+min
+def beta_scaled(alpha,beta,min_value,max_value,size):
+    return np.random.default_rng().beta(a=alpha, b=beta, size=size)*(max_value-min_value)+min_value
 
 def map_values(a, d):
     b = np.copy(a)
@@ -30,7 +30,9 @@ def C0_calc(C0,C_stat,LWR,t):
 def C0_calc_clip(C0,C_stat,LWR,t):
     return np.max([C0_calc(C0,C_stat,LWR,t),C_stat],axis=0)
 
-def calc(standort, gebaeude_n50, gebaeudeart, H_Rm, A_Rm, raumart, luefungsart, quantiles = [0.05, 0.25, 0.5, 0.75, 0.95], size=1000):
+def calc(
+        standort, gebaeude_n50, gebaeudeart, H_Rm, A_Rm, raumart, luefungsart, quantiles, size=1000
+    ):
     T_a = params.standort2TNorm[standort]
     v_10m = 3.2
 
@@ -44,7 +46,10 @@ def calc(standort, gebaeude_n50, gebaeudeart, H_Rm, A_Rm, raumart, luefungsart, 
     n50 = beta_scaled(*params.n50_map[gebaeude_n50],size=size)
 
     H_Bldg = beta_scaled(*params.gebaeudeart2H_Bldg[gebaeudeart],size=size)
-    Windeff = np.max([[3]*size, H_Bldg*beta_scaled(*params.gebaeudeart2H_WindRel[gebaeudeart],size=size)],axis=0)
+    Windeff = np.max(
+        [[3]*size, H_Bldg*beta_scaled(*params.gebaeudeart2H_WindRel[gebaeudeart],size=size)],
+        axis=0
+    )
 
     if not A_Rm:
         A_Rm = beta_scaled(*params.raumart2A_Rm[raumart],size=size)
@@ -147,12 +152,14 @@ def calc(standort, gebaeude_n50, gebaeudeart, H_Rm, A_Rm, raumart, luefungsart, 
     t_max = 8 #Schlafzimmer
     C0_avg2 = C0__GWfix #? CC #genähert
 
-    t_gw_erreicht, c_quantiles_gw_erreicht = t_gw_calc(C0_avg2,C_stat,LWR,t_max,n_max,CO2_Grenzwert,quantiles,size=size)
+    t_gw_erreicht, c_quantiles_gw_erreicht = t_gw_calc(
+        C0_avg2,C_stat,LWR,t_max,n_max,CO2_Grenzwert,quantiles,size=size
+    )
     c_quantiles_t_gw_erreicht = np.arange(1, n_max+1)*t_max/n_max
 
     n_bins = 50
     bins=np.arange(0,n_bins)*t_max/n_bins
-    hist,bin_edges = np.histogram(t_gw_erreicht, bins)
+    hist,_ = np.histogram(t_gw_erreicht, bins)
 
     stats_data_gw_erreicht = {
         "Quantile": signif(np.quantile(t_gw_erreicht,quantiles),2),
@@ -171,7 +178,7 @@ def calc(standort, gebaeude_n50, gebaeudeart, H_Rm, A_Rm, raumart, luefungsart, 
 
     n_bins = 50
     bins=np.arange(0,n_bins)*t_max/n_bins
-    hist,bin_edges = np.histogram(t_gw_periodisch, bins)
+    hist,_ = np.histogram(t_gw_periodisch, bins)
 
     stats_data_gw_periodisch = {
         "Quantile": signif(np.quantile(t_gw_periodisch,quantiles),2),
@@ -185,12 +192,14 @@ def calc(standort, gebaeude_n50, gebaeudeart, H_Rm, A_Rm, raumart, luefungsart, 
         }
     }
 
-    t_gw_ueberschritten, c_quantiles_gw_ueberschritten = t_gw_calc(CO2_aussen,C_stat,LWR,t_max,n_max,CO2_Grenzwert,quantiles,size=size)
+    t_gw_ueberschritten, c_quantiles_gw_ueberschritten = t_gw_calc(
+        CO2_aussen,C_stat,LWR,t_max,n_max,CO2_Grenzwert,quantiles,size=size
+    )
     c_quantiles_t_gw_ueberschritten = np.arange(1, n_max+1)*t_max/n_max
 
     n_bins = 50
     bins=np.arange(0,n_bins)*t_max/n_bins
-    hist,bin_edges = np.histogram(t_gw_ueberschritten, bins)
+    hist,_ = np.histogram(t_gw_ueberschritten, bins)
 
     stats_data_gw_ueberschritten = {
         "Quantile": signif(np.quantile(t_gw_ueberschritten,quantiles),2),
@@ -209,7 +218,7 @@ def calc(standort, gebaeude_n50, gebaeudeart, H_Rm, A_Rm, raumart, luefungsart, 
 
     n_bins = 50
     bins=np.arange(0,n_bins)*t_max/n_bins
-    hist,bin_edges = np.histogram(t_gw_ideal, bins)
+    hist,_ = np.histogram(t_gw_ideal, bins)
 
     stats_data_gw_ideal = {
         "Quantile": signif(np.quantile(t_gw_ideal,quantiles),2),
@@ -229,11 +238,26 @@ def calc(standort, gebaeude_n50, gebaeudeart, H_Rm, A_Rm, raumart, luefungsart, 
     print("t_gw_ideal",np.quantile(t_gw_ideal,quantiles))
     print()
 
-    print(f"Zeit bis CO2-Stundenmittelwert={CO2_Grenzwert} ppm - realistisches Lüften [min]:", np.quantile(t_gw_erreicht,quantiles)*60)
-    print(f"Zeit bis CO2-Momentanwert={CO2_Grenzwert} ppm - realistisches Lüften [min]:", np.quantile(t_gw_periodisch,quantiles)*60)
-    print(f"Zeit bis CO2-Stundenmittelwert={CO2_Grenzwert} ppm - ideales Lüften [min]:", np.quantile(t_gw_ueberschritten,quantiles)*60)
-    print(f"Zeit bis CO2-Momentanwert={CO2_Grenzwert} ppm - ideales Lüften [min]:", np.quantile(t_gw_ideal,quantiles)*60)
-    print(f"CO2 Konzentration im stationären Fall (t→∞) [ppm]:", np.quantile(C_stat,quantiles))
+    print(
+        f"Zeit bis CO2-Stundenmittelwert={CO2_Grenzwert} ppm - realistisches Lüften [min]:",
+        np.quantile(t_gw_erreicht,quantiles)*60
+    )
+    print(
+        f"Zeit bis CO2-Momentanwert={CO2_Grenzwert} ppm - realistisches Lüften [min]:",
+        np.quantile(t_gw_periodisch,quantiles)*60
+    )
+    print(
+        f"Zeit bis CO2-Stundenmittelwert={CO2_Grenzwert} ppm - ideales Lüften [min]:",
+        np.quantile(t_gw_ueberschritten,quantiles)*60
+    )
+    print(
+        f"Zeit bis CO2-Momentanwert={CO2_Grenzwert} ppm - ideales Lüften [min]:",
+        np.quantile(t_gw_ideal,quantiles)*60
+    )
+    print(
+        "CO2 Konzentration im stationären Fall (t→∞) [ppm]:",
+        np.quantile(C_stat,quantiles)
+    )
 
     t_gw_erreicht_m = np.quantile(t_gw_erreicht,0.5)*60
     t_zumutbar = t_max*60
