@@ -134,7 +134,8 @@ def calc(
     CO2_Emi_rate_Erw = 18
     CO2_Emi_rate_Kid = 10
 
-    CO2_Emi = (CO2_Emi_rate_Kid+(AgeKid-6)*(CO2_Emi_rate_Erw-CO2_Emi_rate_Kid)/12)*ActKid*NrKids+CO2_Emi_rate_Erw*ActAdu*NrAdu
+    CO2_Emi = (CO2_Emi_rate_Kid+(AgeKid-6)*(CO2_Emi_rate_Erw-CO2_Emi_rate_Kid)/12)*ActKid*NrKids \
+        + CO2_Emi_rate_Erw*ActAdu*NrAdu
     C_stat = (Vdot*CO2_aussen/1e6+CO2_Emi/1000)/Vdot*1e6
     c_stat_lueft = (LWR_lueften*A_Rm*H_Rm*CO2_aussen/1e6+CO2_Emi/1000)/(LWR_lueften*A_Rm*H_Rm)*1e6
 

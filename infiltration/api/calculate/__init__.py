@@ -27,7 +27,7 @@ calculation_parameter_model = namespace.model('CalculationParameter', {
     ),
     'H_Rm': NullableFloat(
         required=False,
-        description='Raumhöhe'  
+        description='Raumhöhe'
     ),
     'A_Rm': NullableFloat    (
         required=False,
