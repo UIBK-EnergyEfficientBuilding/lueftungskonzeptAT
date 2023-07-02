@@ -30,12 +30,14 @@ def C0_calc(C0,C_stat,LWR,t):
 def C0_calc_clip(C0,C_stat,LWR,t):
     return np.max([C0_calc(C0,C_stat,LWR,t),C_stat],axis=0)
 
-def calc(
-        standort, gebaeude_n50, gebaeudeart, H_Rm, A_Rm, raumart, luefungsart, quantiles, size=1000
-    ):
+
+def calc_standort(standort):
     T_a = params.standort2TNorm[standort]
     v_10m = 3.2
+    return T_a, v_10m
 
+def calc_lage(standort, size):
+    #Lage/Exposition
     Shield = np.round(beta_scaled(*params.standort2Shield[standort],size=size))
     Terr = np.round(beta_scaled(*params.standort2Terr[standort],size=size))
 
@@ -43,6 +45,10 @@ def calc(
     alfa = map_values(Shield,params.Terr_class2alfa)
     gama = map_values(Terr,params.Terr_class2gama)
 
+    return C, alfa, gama
+
+def calc_dichtheit(gebaeude_n50, gebaeudeart, size):
+    #Gebäudichtheit
     n50 = beta_scaled(*params.n50_map[gebaeude_n50],size=size)
 
     H_Bldg = beta_scaled(*params.gebaeudeart2H_Bldg[gebaeudeart],size=size)
@@ -50,18 +56,10 @@ def calc(
         [[3]*size, H_Bldg*beta_scaled(*params.gebaeudeart2H_WindRel[gebaeudeart],size=size)],
         axis=0
     )
+    return n50, H_Bldg, Windeff
 
-    if not A_Rm:
-        A_Rm = beta_scaled(*params.raumart2A_Rm[raumart],size=size)
-    else:
-        A_Rm = np.array([A_Rm]*size)
-    if not H_Rm:
-        H_Rm = beta_scaled(*params.raumart2H_Rm[raumart],size=size)
-    else:
-        H_Rm = np.array([H_Rm]*size)
-
-    Ti_avg = beta_scaled(*params.gebaeudeart2Ti_avg["Altbau (mit normalen Wärmebrücken)"],size=size)
-
+def Undichtheiten(size):
+    #Verteilung Undichtheiten
     LeakDistr_1 = beta_scaled(5,7,0,1,size=size) #Anteil Decke+Boden 5,7,0,1
     LeakDistr_2 = beta_scaled(4,4,0,1,size=size) #Anteil Decke von Anteil Decke+Boden 4,4,0,1
 
@@ -71,23 +69,21 @@ def calc(
     R = Anteil_Decke+Anteil_Boden
     X = Anteil_Decke-Anteil_Boden
 
-    print("H_Bldg",np.quantile(H_Bldg,quantiles))
-    print("C",np.quantile(C,quantiles))
-    print("alfa",np.quantile(alfa,quantiles))
-    print("gama",np.quantile(gama,quantiles))
-    print("Windeff",np.quantile(Windeff,quantiles))
-    print("Ti_avg",np.quantile(Ti_avg,quantiles))
-    print("R",np.quantile(R,quantiles))
-    print("X",np.quantile(X,quantiles))
-    print("n50",np.quantile(n50,quantiles))
-    print("A_Rm",np.quantile(A_Rm,quantiles))
-    print("H_Rm",np.quantile(H_Rm,quantiles))
-    print()
+    return R,X
 
-    n50_Raum = n50
-    Kamineff = 3
-    Vdot_const = 0
+def Raum(raumart, H_Rm, A_Rm, size):
+    if not A_Rm:
+        A_Rm = beta_scaled(*params.raumart2A_Rm[raumart],size=size)
+    else:
+        A_Rm = np.array([A_Rm]*size)
+    if not H_Rm:
+        H_Rm = beta_scaled(*params.raumart2H_Rm[raumart],size=size)
+    else:
+        H_Rm = np.array([H_Rm]*size)
 
+    return H_Rm, A_Rm
+
+def Luftwechsel(Ti_avg,T_a,C,alfa,gama,Windeff,R,X,Kamineff,n50_Raum,H_Rm,A_Rm,Vdot_const,v_10m):
     fw = C*(1-R)**(1/3)*alfa*(Windeff/10)**gama
     fs =((1+R/2)/3)*(1-X**2/(2-R)**2)**(3/2)*(9.81*Kamineff/(Ti_avg+273))
 
@@ -98,15 +94,9 @@ def calc(
     Vdot = ELA_tot*3600*np.sqrt(fs**2*(Ti_avg-T_a)+fw**2*v_10m**2) + Vdot_const
     LWR = Vdot/(A_Rm*H_Rm)
 
-    print("fw",np.quantile(fw,quantiles))
-    print("fs",np.quantile(fs,quantiles))
+    return Vdot,LWR
 
-    print("ELA_tot",np.quantile(ELA_tot,quantiles))
-    print("Vdot",np.quantile(Vdot,quantiles))
-    print("LWR",np.quantile(LWR,quantiles))
-    print()
-
-
+def co2_emission(raumart,size):
     AgeKid = beta_scaled(*params.raumart2AgeKid[raumart],size=size)
 
     ActKid = beta_scaled(*params.raumart2ActKid[raumart],size=size)
@@ -114,130 +104,125 @@ def calc(
     ActAdu = beta_scaled(*params.raumart2ActAdu[raumart],size=size)
     NrAdu = np.round(beta_scaled(*params.raumart2Nr_Adu[raumart],size=size))
 
-    LWR_lueften = beta_scaled(*params.luefungsart2WinACH[luefungsart],size=size)
-    t_lueften = beta_scaled(*params.luefungsart2WinDur[luefungsart],size=size)
-
-    print("AgeKid",np.quantile(AgeKid,quantiles))
-    print("NrKids",np.quantile(NrKids,quantiles))
-    print("ActAdu",np.quantile(ActAdu,quantiles))
-    print("NrAdu",np.quantile(NrAdu,quantiles))
-    print("LWR_lueften",np.quantile(LWR_lueften,quantiles))
-    print("t_lueften",np.quantile(t_lueften,quantiles))
-    print()
-
-
-    CO2_aussen = 450
-    CO2_Grenzwert = 1000
-    CO2_Grenzwert2 = 1250 #? CA
-
-
     CO2_Emi_rate_Erw = 18
     CO2_Emi_rate_Kid = 10
 
     CO2_Emi = (CO2_Emi_rate_Kid+(AgeKid-6)*(CO2_Emi_rate_Erw-CO2_Emi_rate_Kid)/12)*ActKid*NrKids \
         + CO2_Emi_rate_Erw*ActAdu*NrAdu
-    C_stat = (Vdot*CO2_aussen/1e6+CO2_Emi/1000)/Vdot*1e6
+
+    return CO2_Emi
+
+def Lueften(luefungsart,CO2_Emi,A_Rm,H_Rm,CO2_aussen,CO2_Grenzwert,CO2_Grenzwert2,size):
+    LWR_lueften = beta_scaled(*params.luefungsart2WinACH[luefungsart],size=size)
+    t_lueften = beta_scaled(*params.luefungsart2WinDur[luefungsart],size=size)
+
     c_stat_lueft = (LWR_lueften*A_Rm*H_Rm*CO2_aussen/1e6+CO2_Emi/1000)/(LWR_lueften*A_Rm*H_Rm)*1e6
 
     C0__GWfix = C0_calc_clip(CO2_Grenzwert2,c_stat_lueft,LWR_lueften,t_lueften)
     C0 = C0_calc_clip(CO2_Grenzwert,c_stat_lueft,LWR_lueften,t_lueften)
 
-    print("CO2_Emi",np.quantile(CO2_Emi,quantiles))
-    print("C_stat",np.quantile(C_stat,quantiles))
-    print("c_stat_lueft",np.quantile(c_stat_lueft,quantiles))
-    print("C0__GWfix", np.quantile(C0__GWfix,quantiles))
-    print("C0", np.quantile(C0,quantiles))
-    print()
+    return C0, C0__GWfix
+
+def calc_result(t_gw,t,c_gw,t_max,quantiles):
+    n_bins = 50
+    bins=np.arange(0,n_bins)*t_max/n_bins
+    hist,_ = np.histogram(t_gw, bins)
+
+    return {
+        "Quantile": signif(np.quantile(t_gw,quantiles),2),
+        "Häufigkeit": {
+            "x":bins[:-1]*60,
+            "y":[hist]
+        },
+        "Mittelwert":{
+            "x":t,
+            "y":c_gw.T
+        }
+    }
+
+def calc(
+        standort, gebaeude_n50, gebaeudeart, H_Rm, A_Rm, raumart, luefungsart, quantiles, size=1000
+    ):
+    T_a, v_10m = calc_standort(standort)
+    C, alfa, gama = calc_lage(standort, size)
+    n50, H_Bldg, Windeff = calc_dichtheit(gebaeude_n50, gebaeudeart, size)
+    H_Rm, A_Rm = Raum(raumart, H_Rm, A_Rm, size)
+    Ti_avg = beta_scaled(*params.gebaeudeart2Ti_avg["Altbau (mit normalen Wärmebrücken)"],size=size)
+    R, X = Undichtheiten(size)
+
+    n50_Raum = n50
+    Kamineff = 3
+    Vdot_const = 0
+    Vdot, LWR = Luftwechsel(
+        Ti_avg,T_a,C,alfa,gama,Windeff,R,X,Kamineff,n50_Raum,H_Rm,A_Rm,Vdot_const,v_10m
+    )
+
+    CO2_Emi = co2_emission(raumart,size)
+
+    CO2_aussen = 450
+    CO2_Grenzwert = 1000
+    CO2_Grenzwert2 = 1250 #? CA
+
+    C_stat = (Vdot*CO2_aussen/1e6+CO2_Emi/1000)/Vdot*1e6
+    C0, C0__GWfix = Lueften(
+        luefungsart,CO2_Emi,A_Rm,H_Rm,CO2_aussen,CO2_Grenzwert,CO2_Grenzwert2,size
+    )
 
     n_max = 192
     t_max = 8 #Schlafzimmer
     C0_avg2 = C0__GWfix #? CC #genähert
 
+    #Stundenmittelwert - realistisches Lüften
     t_gw_erreicht, c_quantiles_gw_erreicht = t_gw_calc(
         C0_avg2,C_stat,LWR,t_max,n_max,CO2_Grenzwert,quantiles,size=size
     )
     c_quantiles_t_gw_erreicht = np.arange(1, n_max+1)*t_max/n_max
 
-    n_bins = 50
-    bins=np.arange(0,n_bins)*t_max/n_bins
-    hist,_ = np.histogram(t_gw_erreicht, bins)
+    stats_data_gw_erreicht = calc_result(
+        t_gw_erreicht,
+        c_quantiles_t_gw_erreicht,
+        c_quantiles_gw_erreicht,
+        t_max,
+        quantiles
+    )
 
-    stats_data_gw_erreicht = {
-        "Quantile": signif(np.quantile(t_gw_erreicht,quantiles),2),
-        "Häufigkeit": {
-            "x":bins[:-1]*60,
-            "y":[hist]
-        },
-        "Mittelwert":{
-            "x":c_quantiles_t_gw_erreicht,
-            "y":c_quantiles_gw_erreicht.T
-        }
-    }
-
+    #Momentanwert - realistisches Lüften
     log_arg = (CO2_Grenzwert-C_stat)/(C0-C_stat)
     t_gw_periodisch = np.where(log_arg > 0, -np.log(log_arg)/LWR, t_max)
 
-    n_bins = 50
-    bins=np.arange(0,n_bins)*t_max/n_bins
-    hist,_ = np.histogram(t_gw_periodisch, bins)
+    stats_data_gw_periodisch = calc_result(
+        t_gw_periodisch,
+        c_quantiles_t_gw_erreicht, #todo
+        c_quantiles_gw_erreicht, #todo
+        t_max,
+        quantiles
+    )
 
-    stats_data_gw_periodisch = {
-        "Quantile": signif(np.quantile(t_gw_periodisch,quantiles),2),
-        "Häufigkeit": {
-            "x":bins[:-1]*60,
-            "y":[hist]
-        },
-        "Mittelwert":{
-            "x":c_quantiles_t_gw_erreicht, #todo
-            "y":c_quantiles_gw_erreicht.T #todo
-        }
-    }
-
+    #Stundenmittelwert - ideales Lüften
     t_gw_ueberschritten, c_quantiles_gw_ueberschritten = t_gw_calc(
         CO2_aussen,C_stat,LWR,t_max,n_max,CO2_Grenzwert,quantiles,size=size
     )
     c_quantiles_t_gw_ueberschritten = np.arange(1, n_max+1)*t_max/n_max
 
-    n_bins = 50
-    bins=np.arange(0,n_bins)*t_max/n_bins
-    hist,_ = np.histogram(t_gw_ueberschritten, bins)
+    stats_data_gw_ueberschritten = calc_result(
+        t_gw_ueberschritten,
+        c_quantiles_t_gw_ueberschritten,
+        c_quantiles_gw_ueberschritten,
+        t_max,
+        quantiles
+    )
 
-    stats_data_gw_ueberschritten = {
-        "Quantile": signif(np.quantile(t_gw_ueberschritten,quantiles),2),
-        "Häufigkeit": {
-            "x":bins[:-1]*60,
-            "y":[hist]
-        },
-        "Mittelwert":{
-            "x":c_quantiles_t_gw_ueberschritten,
-            "y":c_quantiles_gw_ueberschritten.T
-        }
-    }
-
+    #Momentanwert - ideales Lüften
     log_arg = (CO2_Grenzwert-C_stat)/(CO2_aussen-C_stat)
     t_gw_ideal = np.where(log_arg > 0, -np.log(log_arg)/LWR, t_max)
 
-    n_bins = 50
-    bins=np.arange(0,n_bins)*t_max/n_bins
-    hist,_ = np.histogram(t_gw_ideal, bins)
-
-    stats_data_gw_ideal = {
-        "Quantile": signif(np.quantile(t_gw_ideal,quantiles),2),
-        "Häufigkeit": {
-            "x":bins[:-1]*60,
-            "y":[hist]
-        },
-        "Mittelwert":{
-            "x":c_quantiles_t_gw_erreicht, #todo
-            "y":c_quantiles_gw_erreicht.T #todo
-        }
-    }
-
-    print("t_gw_erreicht",np.quantile(t_gw_erreicht,quantiles))
-    print("t_gw_periodisch",np.quantile(t_gw_periodisch,quantiles))
-    print("t_gw_ueberschritten",np.quantile(t_gw_ueberschritten,quantiles))
-    print("t_gw_ideal",np.quantile(t_gw_ideal,quantiles))
-    print()
+    stats_data_gw_ideal = calc_result(
+        t_gw_ideal,
+        c_quantiles_t_gw_erreicht, #todo
+        c_quantiles_gw_erreicht, #todo
+        t_max,
+        quantiles
+    )
 
     print(
         f"Zeit bis CO2-Stundenmittelwert={CO2_Grenzwert} ppm - realistisches Lüften [min]:",
