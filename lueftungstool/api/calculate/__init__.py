@@ -1,7 +1,7 @@
 from flask import request
 from flask_restx import Namespace, Resource, fields
-from infiltration.lib.calc import calc
-import infiltration.lib.params as params
+from lueftungstool.lib.calc import calc
+import lueftungstool.lib.params as params
 
 namespace = Namespace('calculate', '#todo')
 

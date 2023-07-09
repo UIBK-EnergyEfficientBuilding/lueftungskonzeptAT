@@ -1,6 +1,6 @@
 from flask import Blueprint
 from flask_restx import Api
-from infiltration.api.calculate import namespace as calculate_ns
+from lueftungstool.api.calculate import namespace as calculate_ns
 
 blueprint = Blueprint('api', __name__, url_prefix='/api')
 

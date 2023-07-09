@@ -1,7 +1,7 @@
 
 import numpy as np
 
-import infiltration.lib.params as params
+import lueftungstool.lib.params as params
 
 def beta_scaled(alpha,beta,min_value,max_value,size):
     return np.random.default_rng().beta(a=alpha, b=beta, size=size)*(max_value-min_value)+min_value

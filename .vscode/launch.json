@@ -7,7 +7,7 @@
             "request": "launch",
             "module": "flask",
             "env": {
-                "FLASK_APP": "infiltration/app.py",
+                "FLASK_APP": "lueftungstool/app.py",
                 "FLASK_DEBUG": "1"
             },
             "args": [
