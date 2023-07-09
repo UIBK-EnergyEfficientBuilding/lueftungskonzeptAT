@@ -1,47 +1,49 @@
 from flask import request
-from flask_restx import Namespace, Resource, fields
+from flask_restx import Namespace, Resource, fields, reqparse
 from lueftungstool.lib.calc import calc
 import lueftungstool.lib.params as params
 
-namespace = Namespace('calculate', '#todo')
+def add_model_to_parser(parser,model):
+    for k,v in model.items():
+        a = v.schema()
+        parser.add_argument(
+            name=k,
+            type={"string":str,"number":float}[a["type"]],
+            help=a["description"],
+            required=v.required,
+            default=a["default"],
+            choices=a.get("enum",None)
+        )
 
-class NullableFloat(fields.Float):
-    __schema_type__ = ['number', "null"]
-    __schema_example__ = 'null'
+
+namespace = Namespace('calculate', '#todo')
 
 calculation_parameter_model = namespace.model('CalculationParameter', {
     'standort': fields.String(default="Wien",
         required=True,
         enum=params.standort_list,
-        description='#todo'
     ),
     'gebaeude_n50': fields.String(default="Standard Neubau",
         required=True,
         enum=params.n50_map_list,
-        description='#todo'
     ),
     'gebaeudeart': fields.String(default="Mehrfamilienhaus",
         required=True,
         enum=params.gebaeudeart_list,
-        description='#todo'
     ),
-    'H_Rm': NullableFloat(
+    'H_Rm': fields.Float(
         required=False,
-        description='Raumhöhe'
     ),
-    'A_Rm': NullableFloat    (
+    'A_Rm': fields.Float(
         required=False,
-        description='Raumfläche'
     ),
     'raumart': fields.String(default="Schlafzimmer",
         required=True,
         enum=params.raumart_list,
-        description='#todo'
     ),
     'luefungsart': fields.String(default="Querlüftung",
         required=True,
         enum=params.luefungsart_list,
-        description='#todo'
     ),
 })
 
@@ -94,21 +96,38 @@ calculation_result_model = namespace.model('CalculationResult', {
     ),
 })
 
+valitation_error_model = namespace.model('ValitationError', {
+    'message': fields.String(),
+    'errors': fields.Raw(example="""{
+    "errors": {
+        "H_Rm": "could not convert string to float: 'a'",
+        "A_Rm": "could not convert string to float: 'b'"
+    },
+    "message": "Input payload validation failed"
+}
+""")
+})
+
+
+parser = reqparse.RequestParser(bundle_errors=True)
+add_model_to_parser(parser,calculation_parameter_model)
+
 @namespace.route('')
 class Calculate(Resource):
-
-    @namespace.expect(calculation_parameter_model, validate=True)
+    @namespace.expect(parser, validate=True)
     @namespace.marshal_with(calculation_result_model)
     @namespace.response(500, 'Internal Server error')
+    @namespace.response(400, 'BAD REQUEST', model=valitation_error_model)
     def get(self):
+        args = parser.parse_args()
         return calc(
-            standort = request.json['standort'],
-            gebaeude_n50 = request.json['gebaeude_n50'],
-            gebaeudeart = request.json['gebaeudeart'],
-            H_Rm = request.json['H_Rm'],
-            A_Rm = request.json['A_Rm'],
-            raumart = request.json['raumart'],
-            luefungsart = request.json['luefungsart'],
+            standort = args['standort'],
+            gebaeude_n50 = args['gebaeude_n50'],
+            gebaeudeart = args['gebaeudeart'],
+            H_Rm = args['H_Rm'],
+            A_Rm = args['A_Rm'],
+            raumart = args['raumart'],
+            luefungsart = args['luefungsart'],
             quantiles = [0.05, 0.25, 0.5, 0.75, 0.95],
         )
 
