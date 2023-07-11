@@ -186,6 +186,19 @@ def calc(
         quantiles
     )
 
+    import matplotlib.pyplot as plt
+
+    plt.figure()
+    plt.bar(stats_data_gw_erreicht["Häufigkeit"]["x"], stats_data_gw_erreicht["Häufigkeit"]["y"][0], width=60)
+    plt.savefig("Häufigkeit.png")
+
+    plt.figure()
+    for i in range(0,5):
+        print(i)
+        plt.plot(stats_data_gw_erreicht["Mittelwert"]["x"], stats_data_gw_erreicht["Mittelwert"]["y"][i])
+    plt.savefig("Mittelwert.png")
+    
+
     #Momentanwert - realistisches Lüften
     log_arg = (CO2_Grenzwert-C_stat)/(C0-C_stat)
     t_gw_periodisch = np.where(log_arg > 0, -np.log(log_arg)/LWR, t_max)
