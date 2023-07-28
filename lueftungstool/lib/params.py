@@ -28,9 +28,13 @@ standort2Shield = {
     "Innsbruck":[1,1,1.5,4.5],
     "Wien":[1,1,2.5,5.5],
 }
-standort2TNorm ={
-    "Innsbruck":-10.8,
-    "Wien":-11.3,
+standort2T_a = {
+    "Innsbruck":-0.5,
+    "Wien":1.7,
+}
+standort2v_10m = {
+    "Innsbruck":1.2,
+    "Wien":3.4,
 }
 standort_list = ["Innsbruck", "Wien"]
 
