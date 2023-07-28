@@ -32,8 +32,8 @@ def C0_calc_clip(C0,C_stat,LWR,t):
 
 
 def calc_standort(standort):
-    T_a = params.standort2TNorm[standort]
-    v_10m = 3.2
+    T_a = params.standort2T_a[standort]
+    v_10m = params.standort2v_10m[standort]
     return T_a, v_10m
 
 def calc_lage(standort, size):
