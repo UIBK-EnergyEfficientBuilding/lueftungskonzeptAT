@@ -7,6 +7,14 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
+# setup dev env with conda
+
+```
+conda install -c conda-forge flask
+conda install -c conda-forge numpy
+conda install -c conda-forge flask-restx
+```
+
 # Run dev system
 ```
 FLASK_DEBUG=1 python -m flask --app lueftungstool/__init__.py run
