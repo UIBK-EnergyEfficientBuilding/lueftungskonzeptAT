@@ -22,28 +22,35 @@ calculation_parameter_model = namespace.model('CalculationParameter', {
     'standort': fields.String(default="Wien",
         required=True,
         enum=params.standort_list,
+        description="Standort",
     ),
     'gebaeude_n50': fields.String(default="Standard Neubau",
         required=True,
         enum=params.n50_map_list,
+        description="Luftdichtigkeit n50-Wert (Gebäude) [1/h]",
     ),
     'gebaeudeart': fields.String(default="Mehrfamilienhaus",
         required=True,
         enum=params.gebaeudeart_list,
+        description="Gebäudeart",
     ),
     'H_Rm': fields.Float(
         required=False,
+        description="Höhe (betrachteter Raum) [m]:",
     ),
     'A_Rm': fields.Float(
         required=False,
+        description="Fläche (betrachteter Raum) [m²]:",
     ),
     'raumart': fields.String(default="Schlafzimmer",
         required=True,
         enum=params.raumart_list,
+        description="Raumart (betrachteter Raum):",
     ),
     'luefungsart': fields.String(default="Querlüftung",
         required=True,
         enum=params.luefungsart_list,
+        description="Lüftungsmöglichkeit (betrachteter Raum):",
     ),
 })
 
@@ -69,13 +76,12 @@ lueften_statistik = namespace.model('LüftenStatistik', {
 
 calculation_result_model = namespace.model('CalculationResult', {
     'Fensterlueftung': fields.Boolean(
-        description="Fensterlüftung praktikabel/zumutbar - Ja/Nein"
+        description="Fensterlüftung praktikabel/zumutbar"
     ),
     't_zumutbar': fields.Float(
-        description="Fensterlüftung praktikabel/zumutbar - Zeit [min]"
+        description="Dies ist kürzer als die zumutbare Zeit zwischen Fensterlüften [min]"
     ),
-    'C_stat': fields.List(fields.Float(), default=[0,1,2,3,5],
-        readonly=True,
+    'C_stat': fields.List(fields.Float(), default=[ 7900, 13000, 19000, 28000, 46000],
         description='CO2 Konzentration im stationären Fall'
     ),
     't_gw_erreicht': fields.Nested(
