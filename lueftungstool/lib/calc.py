@@ -224,39 +224,11 @@ def calc(
         quantiles
     )
 
-    print(
-        f"Zeit bis CO2-Stundenmittelwert={CO2_Grenzwert} ppm - realistisches Lüften [min]:",
-        np.quantile(t_gw_erreicht,quantiles)*60
-    )
-    print(
-        f"Zeit bis CO2-Momentanwert={CO2_Grenzwert} ppm - realistisches Lüften [min]:",
-        np.quantile(t_gw_periodisch,quantiles)*60
-    )
-    print(
-        f"Zeit bis CO2-Stundenmittelwert={CO2_Grenzwert} ppm - ideales Lüften [min]:",
-        np.quantile(t_gw_ueberschritten,quantiles)*60
-    )
-    print(
-        f"Zeit bis CO2-Momentanwert={CO2_Grenzwert} ppm - ideales Lüften [min]:",
-        np.quantile(t_gw_ideal,quantiles)*60
-    )
-    print(
-        "CO2 Konzentration im stationären Fall (t→∞) [ppm]:",
-        np.quantile(C_stat,quantiles)
-    )
-
     t_gw_erreicht_m = np.quantile(t_gw_erreicht,0.5)*60
     t_zumutbar = t_max*60
     Fensterlueftung = t_gw_erreicht_m>t_zumutbar
 
-    print(f"""
-Fensterlüftung praktikabel/zumutbar:                                 {Fensterlueftung}
-Weil errechnete Zeit zwischen erforderlichen Fensterlüften [min]:    {t_gw_erreicht_m:.0f} Minuten
-Dies ist kürzer als die zumutbare Zeit zwischen Fensterlüften [min]: {t_zumutbar:.0f} Minuten
-"""
-    )
-
-    return {
+    result = {
         "Fensterlueftung": Fensterlueftung,
         "t_zumutbar": t_zumutbar,
         "t_gw_erreicht": stats_data_gw_erreicht,
@@ -265,3 +237,5 @@ Dies ist kürzer als die zumutbare Zeit zwischen Fensterlüften [min]: {t_zumutb
         "t_gw_ideal": stats_data_gw_ideal,
         "C_stat": signif(np.quantile(C_stat,quantiles),2),
     }
+
+    return result
