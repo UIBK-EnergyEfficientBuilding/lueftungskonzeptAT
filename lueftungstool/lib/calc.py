@@ -140,12 +140,12 @@ def calc_result(t_gw,t,c_gw,t_max,quantiles):
     }
 
 def calc(
-        standort, gebaeude_n50, gebaeudeart, H_Rm, A_Rm, Shield, Terr, luefungsart, CO2_Emi, quantiles, size=1000
+        standort, gebaeude_n50, gebaeudeart, waermebruecken, H_Rm, A_Rm, Shield, Terr, luefungsart, CO2_Emi, quantiles, size=1000
     ):
     T_a, v_10m = calc_standort(standort)
     C, alfa, gama = calc_lage(standort, Shield, Terr, size)
     n50, H_Bldg, Windeff = calc_dichtheit(gebaeude_n50, gebaeudeart, size)
-    Ti_avg = beta_scaled(*params.gebaeudeart2Ti_avg["Altbau (mit normalen Wärmebrücken)"],size=size)
+    Ti_avg = beta_scaled(*params.waermebruecken2Ti_avg[waermebruecken],size=size)
     R, X = Undichtheiten(size)
 
     n50_Raum = n50

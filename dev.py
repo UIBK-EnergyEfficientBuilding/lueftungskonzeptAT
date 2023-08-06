@@ -26,6 +26,7 @@ if __name__ == "__main__":
         standort = "Wien",
         gebaeude_n50 = "Standard Neubau",
         gebaeudeart = "Mehrfamilienhaus",
+        waermebruecken = "Standard Neubau",
         H_Rm = H_Rm,
         A_Rm = A_Rm,
         luefungsart = "Querlüftung",
