@@ -103,14 +103,11 @@ calculation_result_model = namespace.model('CalculationResult', {
 })
 
 valitation_error_model = namespace.model('ValitationError', {
-    'message': fields.String(),
+    'message': fields.String(example="Input payload validation failed"),
     'errors': fields.Raw(example="""{
-    "errors": {
         "H_Rm": "could not convert string to float: 'a'",
         "A_Rm": "could not convert string to float: 'b'"
-    },
-    "message": "Input payload validation failed"
-}
+    }
 """)
 })
 
