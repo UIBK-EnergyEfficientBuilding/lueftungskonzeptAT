@@ -128,7 +128,7 @@ def calc_result(t_gw,t,c_gw,t_max,quantiles):
     hist,_ = np.histogram(t_gw, bins)
 
     return {
-        "Quantile": signif(np.quantile(t_gw,quantiles),2),
+        "Quantile": signif(np.quantile(t_gw*60,quantiles),2),
         "Häufigkeit": {
             "x":bins[:-1]*60,
             "y":[hist]
