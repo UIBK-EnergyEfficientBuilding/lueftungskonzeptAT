@@ -31,6 +31,8 @@ if __name__ == "__main__":
     print_row("Informativ: Zeit zwischen erf. Fensterlüften bei idealem Lüften [min]:", result["t_gw_ueberschritten"]["Quantile"])
     print()
     print("#Detailergebnisse CO2 Bewertung")
+    print_row("errechnete Luftmenge aufgrund natürlicher Lüftung [m³/h]:", result["Vdot"])
+    print_row("errechneter natürlicher Luftwechsel [1/h]:", result["LWR"])
     print_row("Zeit bis CO2-Stundenmittelwert=1000 ppm - realistisches Lüften [min]:", result["t_gw_erreicht"]["Quantile"])
     print_row("Zeit bis CO2-Momentanwert=1000 ppm - realistisches Lüften [min]:", result["t_gw_periodisch"]["Quantile"])
     print_row("Zeit bis CO2-Stundenmittelwert=1000 ppm - ideales Lüften [min]:", result["t_gw_ueberschritten"]["Quantile"])

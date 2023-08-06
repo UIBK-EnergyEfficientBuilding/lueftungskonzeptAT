@@ -84,6 +84,12 @@ calculation_result_model = namespace.model('CalculationResult', {
     'C_stat': fields.List(fields.Float(), default=[ 7900, 13000, 19000, 28000, 46000],
         description='CO2 Konzentration im stationären Fall'
     ),
+    'Vdot': fields.List(fields.Float(), default=[0.73, 1.1,  1.4,  1.9,  3.1],
+        description='errechnete Luftmenge aufgrund natürlicher Lüftung [m³/h]'
+    ),
+    'LWR': fields.List(fields.Float(), default=[0.024, 0.03, 0.039, 0.05, 0.066],
+        description='errechneter natürlicher Luftwechsel [1/h]'
+    ),
     't_gw_erreicht': fields.Nested(
         lueften_statistik,
         description='Gleitender Mittelwert - Realistisches Lüftungsverhalten'

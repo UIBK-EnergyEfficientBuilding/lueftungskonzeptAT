@@ -235,6 +235,8 @@ def calc(
         "t_gw_periodisch": stats_data_gw_periodisch,
         "t_gw_ueberschritten": stats_data_gw_ueberschritten,
         "t_gw_ideal": stats_data_gw_ideal,
+        "Vdot": signif(np.quantile(Vdot,quantiles),2),
+        "LWR": signif(np.quantile(LWR,quantiles),2),
         "C_stat": signif(np.quantile(C_stat,quantiles),2),
     }
 
