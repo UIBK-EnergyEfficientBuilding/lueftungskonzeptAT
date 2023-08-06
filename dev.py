@@ -12,12 +12,17 @@ if __name__ == "__main__":
     size = 1000
     raumart = "Schlafzimmer"
 
+    H_Rm, A_Rm = ltool.Raum(
+        raumart = raumart,
+        size = size
+    )
+
     result = ltool.calc(
         standort = "Wien",
         gebaeude_n50 = "Standard Neubau",
         gebaeudeart = "Mehrfamilienhaus",
-        H_Rm = None,
-        A_Rm = None,
+        H_Rm = H_Rm,
+        A_Rm = A_Rm,
         raumart = raumart,
         luefungsart = "Querlüftung",
         quantiles = quantiles,

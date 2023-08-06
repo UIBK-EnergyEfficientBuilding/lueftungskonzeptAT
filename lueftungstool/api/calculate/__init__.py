@@ -1,6 +1,6 @@
 from flask import request
 from flask_restx import Namespace, Resource, fields, reqparse
-from lueftungstool.lib.calc import calc
+import lueftungstool.lib.calc as ltool
 import lueftungstool.lib.params as params
 
 def add_model_to_parser(parser,model):
@@ -129,15 +129,26 @@ class Calculate(Resource):
     @namespace.response(400, 'BAD REQUEST', model=valitation_error_model)
     def get(self):
         args = parser.parse_args()
-        return calc(
+
+        size = 1000
+
+        H_Rm, A_Rm = ltool.Raum(
+            raumart = args['raumart'],
+            H_Rm = args['H_Rm'],
+            A_Rm = args['A_Rm'],
+            size = size
+        )
+
+        return ltool.calc(
             standort = args['standort'],
             gebaeude_n50 = args['gebaeude_n50'],
             gebaeudeart = args['gebaeudeart'],
-            H_Rm = args['H_Rm'],
-            A_Rm = args['A_Rm'],
+            H_Rm = H_Rm,
+            A_Rm = A_Rm,
             raumart = args['raumart'],
             luefungsart = args['luefungsart'],
             quantiles = [0.05, 0.25, 0.5, 0.75, 0.95],
+            size = size
         )
 
 parameter_result_model =  namespace.model('ParameterResult', {

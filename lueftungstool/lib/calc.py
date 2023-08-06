@@ -77,7 +77,7 @@ def Undichtheiten(size):
 
     return R,X
 
-def Raum(raumart, H_Rm, A_Rm, size):
+def Raum(raumart, H_Rm = None, A_Rm = None, size = 1000):
     A_Rm = fixed_or_beta_scaled(raumart, params.raumart2A_Rm, A_Rm, size)
     H_Rm = fixed_or_beta_scaled(raumart, params.raumart2H_Rm, H_Rm, size)
 
@@ -146,7 +146,6 @@ def calc(
     T_a, v_10m = calc_standort(standort)
     C, alfa, gama = calc_lage(standort, size)
     n50, H_Bldg, Windeff = calc_dichtheit(gebaeude_n50, gebaeudeart, size)
-    H_Rm, A_Rm = Raum(raumart, H_Rm, A_Rm, size)
     Ti_avg = beta_scaled(*params.gebaeudeart2Ti_avg["Altbau (mit normalen Wärmebrücken)"],size=size)
     R, X = Undichtheiten(size)
 
