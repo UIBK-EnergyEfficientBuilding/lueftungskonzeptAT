@@ -64,6 +64,28 @@ calculation_parameter_model = namespace.model('CalculationParameter', {
         max=5,
         description="Abschirmung-/Shieldingklasse (Windeinfluss)",
     ),
+
+    'NrAdu': fields.Float(
+        required=False,
+        description="Anzahl Erwachsene",
+    ),
+    'ActAdu': fields.Float(
+        required=False,
+        description="Aktivität Erwachsene [met]",
+    ),
+    'NrKids': fields.Float(
+        required=False,
+        description="Anzahl Kinder",
+    ),
+    'ActKid': fields.Float(
+        required=False,
+        description="Aktivität Kinder [met]",
+    ),
+    'AgeKid': fields.Float(
+        required=False,
+        description="Mittleres Alter der Kinder [a]",
+    ),
+
 })
 
 plot_data = namespace.model('plot_data', {
@@ -157,6 +179,16 @@ class Calculate(Resource):
 
         size = 1000
 
+        CO2_Emi = ltool.co2_emission(
+            raumart = args['raumart'],
+            NrAdu = args['NrAdu'],
+            ActAdu = args['ActAdu'],
+            NrKids = args['NrKids'],
+            ActKid = args['ActKid'],
+            AgeKid = args['AgeKid'],
+            size = size
+        )
+
         H_Rm, A_Rm = ltool.Raum(
             raumart = args['raumart'],
             H_Rm = args['H_Rm'],
@@ -170,10 +202,10 @@ class Calculate(Resource):
             gebaeudeart = args['gebaeudeart'],
             H_Rm = H_Rm,
             A_Rm = A_Rm,
-            raumart = args['raumart'],
             luefungsart = args['luefungsart'],
             Shield = args['shieldingklasse'],
             Terr = args['terrainklasse'],
+            CO2_Emi = CO2_Emi,
             quantiles = [0.05, 0.25, 0.5, 0.75, 0.95],
             size = size
         )

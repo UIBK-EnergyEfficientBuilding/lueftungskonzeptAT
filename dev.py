@@ -12,6 +12,11 @@ if __name__ == "__main__":
     size = 1000
     raumart = "Schlafzimmer"
 
+    CO2_Emi = ltool.co2_emission(
+        raumart = raumart,
+        size = size
+    )
+
     H_Rm, A_Rm = ltool.Raum(
         raumart = raumart,
         size = size
@@ -23,10 +28,10 @@ if __name__ == "__main__":
         gebaeudeart = "Mehrfamilienhaus",
         H_Rm = H_Rm,
         A_Rm = A_Rm,
-        raumart = raumart,
         luefungsart = "Querlüftung",
         Shield = None,
         Terr = None,
+        CO2_Emi = CO2_Emi,
         quantiles = quantiles,
         size = size
     )

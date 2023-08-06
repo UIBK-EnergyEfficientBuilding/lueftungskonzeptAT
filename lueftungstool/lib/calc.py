@@ -95,13 +95,13 @@ def Luftwechsel(Ti_avg,T_a,C,alfa,gama,Windeff,R,X,Kamineff,n50_Raum,H_Rm,A_Rm,V
 
     return Vdot,LWR
 
-def co2_emission(raumart,size):
-    AgeKid = beta_scaled(*params.raumart2AgeKid[raumart],size=size)
+def co2_emission(raumart, NrAdu = None, ActAdu = None, NrKids = None, ActKid = None, AgeKid = None, size = 1000):
+    AgeKid = fixed_or_beta_scaled(raumart, params.raumart2AgeKid, AgeKid, size)
 
-    ActKid = beta_scaled(*params.raumart2ActKid[raumart],size=size)
-    NrKids = np.round(beta_scaled(*params.raumart2Nr_Kid[raumart],size=size))
-    ActAdu = beta_scaled(*params.raumart2ActAdu[raumart],size=size)
-    NrAdu = np.round(beta_scaled(*params.raumart2Nr_Adu[raumart],size=size))
+    ActKid = fixed_or_beta_scaled(raumart, params.raumart2ActKid, ActKid, size=size)
+    NrKids = np.round(fixed_or_beta_scaled(raumart, params.raumart2Nr_Kid, NrKids, size=size))
+    ActAdu = fixed_or_beta_scaled(raumart, params.raumart2ActAdu, ActAdu,size=size)
+    NrAdu = np.round(fixed_or_beta_scaled(raumart, params.raumart2Nr_Adu, NrAdu,size=size))
 
     CO2_Emi_rate_Erw = 18
     CO2_Emi_rate_Kid = 10
@@ -140,7 +140,7 @@ def calc_result(t_gw,t,c_gw,t_max,quantiles):
     }
 
 def calc(
-        standort, gebaeude_n50, gebaeudeart, H_Rm, A_Rm, Shield, Terr, raumart, luefungsart, quantiles, size=1000
+        standort, gebaeude_n50, gebaeudeart, H_Rm, A_Rm, Shield, Terr, luefungsart, CO2_Emi, quantiles, size=1000
     ):
     T_a, v_10m = calc_standort(standort)
     C, alfa, gama = calc_lage(standort, Shield, Terr, size)
@@ -154,8 +154,6 @@ def calc(
     Vdot, LWR = Luftwechsel(
         Ti_avg,T_a,C,alfa,gama,Windeff,R,X,Kamineff,n50_Raum,H_Rm,A_Rm,Vdot_const,v_10m
     )
-
-    CO2_Emi = co2_emission(raumart,size)
 
     CO2_aussen = 450
     CO2_Grenzwert = 1000
