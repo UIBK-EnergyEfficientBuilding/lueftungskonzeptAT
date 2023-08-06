@@ -47,6 +47,16 @@ calculation_parameter_model = namespace.model('CalculationParameter', {
         enum=params.raumart_list,
         description="Raumart (betrachteter Raum):",
     ),
+    'fensterflaeche': fields.Float(
+        required=False,
+        description="Fläche öffenbare Fenster (betrachteter Raum) [m²]:",
+    ),
+    'fensterklasse': fields.Integer(
+        required=False,
+        min=1,
+        max=4,
+        description="Fensterklasse nach EN12207 (betrachteter Raum)",
+    ),
     'luefungsart': fields.String(default="Querlüftung",
         required=True,
         enum=params.luefungsart_list,
@@ -171,6 +181,9 @@ class Calculate(Resource):
         if 'terrainklasse' in args and args['terrainklasse'] is not None:
             if not args['terrainklasse'] in params.Shield_class2C:
                 errors["terrainklasse"] = f"{args['terrainklasse']} is not in {list(params.Shield_class2C.keys())}"
+        if 'fensterklasse' in args and args['fensterklasse'] is not None:
+            if not args['fensterklasse'] in [1,2,3,4]:
+                errors["fensterklasse"] = f"{args['fensterklasse']} is not in [1,2,3,4]"
 
         if len(errors.keys()) != 0:
             namespace.abort(
@@ -205,6 +218,10 @@ class Calculate(Resource):
             luefungsart = args['luefungsart'],
             Shield = args['shieldingklasse'],
             Terr = args['terrainklasse'],
+            # todo
+            #fensterflaeche
+            #fensterklasse
+            #luefungsdauer
             CO2_Emi = CO2_Emi,
             quantiles = [0.05, 0.25, 0.5, 0.75, 0.95],
             size = size
