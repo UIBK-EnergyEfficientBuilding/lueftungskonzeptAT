@@ -42,11 +42,10 @@ def calc_standort(standort):
     v_10m = params.standort2v_10m[standort]
     return T_a, v_10m
 
-def calc_lage(standort, size):
+def calc_lage(standort, Shield, Terr, size):
     #Lage/Exposition
-    Shield = np.round(beta_scaled(*params.standort2Shield[standort],size=size))
-    Terr = np.round(beta_scaled(*params.standort2Terr[standort],size=size))
-
+    Shield = np.round(fixed_or_beta_scaled(standort, params.standort2Shield, Shield, size))
+    Terr = np.round(fixed_or_beta_scaled(standort, params.standort2Terr, Terr, size))
     C = map_values(Shield,params.Shield_class2C)
     alfa = map_values(Shield,params.Terr_class2alfa)
     gama = map_values(Terr,params.Terr_class2gama)
@@ -141,10 +140,10 @@ def calc_result(t_gw,t,c_gw,t_max,quantiles):
     }
 
 def calc(
-        standort, gebaeude_n50, gebaeudeart, H_Rm, A_Rm, raumart, luefungsart, quantiles, size=1000
+        standort, gebaeude_n50, gebaeudeart, H_Rm, A_Rm, Shield, Terr, raumart, luefungsart, quantiles, size=1000
     ):
     T_a, v_10m = calc_standort(standort)
-    C, alfa, gama = calc_lage(standort, size)
+    C, alfa, gama = calc_lage(standort, Shield, Terr, size)
     n50, H_Bldg, Windeff = calc_dichtheit(gebaeude_n50, gebaeudeart, size)
     Ti_avg = beta_scaled(*params.gebaeudeart2Ti_avg["Altbau (mit normalen Wärmebrücken)"],size=size)
     R, X = Undichtheiten(size)

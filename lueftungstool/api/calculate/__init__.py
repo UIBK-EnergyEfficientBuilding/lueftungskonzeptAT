@@ -8,7 +8,7 @@ def add_model_to_parser(parser,model):
         a = v.schema()
         parser.add_argument(
             name=k,
-            type={"string":str,"number":float}[a["type"]],
+            type={"string":str,"number":float,"integer":float}[a["type"]],
             help=a["description"],
             required=v.required,
             default=a["default"],
@@ -51,6 +51,18 @@ calculation_parameter_model = namespace.model('CalculationParameter', {
         required=True,
         enum=params.luefungsart_list,
         description="Lüftungsmöglichkeit (betrachteter Raum):",
+    ),
+    'terrainklasse': fields.Integer(
+        required=False,
+        min=1,
+        max=5,
+        description="Gelände-/Terrainklasse (Windeinfluss)",
+    ),
+    'shieldingklasse': fields.Integer(
+        required=False,
+        min=1,
+        max=5,
+        description="Abschirmung-/Shieldingklasse (Windeinfluss)",
     ),
 })
 
@@ -130,6 +142,19 @@ class Calculate(Resource):
     def get(self):
         args = parser.parse_args()
 
+        errors = {}
+        if 'shieldingklasse' in args and args['shieldingklasse'] is not None:
+            if not args['shieldingklasse'] in params.Shield_class2C:
+                errors["shieldingklasse"] = f"{args['shieldingklasse']} is not in {list(params.Shield_class2C.keys())}"
+        if 'terrainklasse' in args and args['terrainklasse'] is not None:
+            if not args['terrainklasse'] in params.Shield_class2C:
+                errors["terrainklasse"] = f"{args['terrainklasse']} is not in {list(params.Shield_class2C.keys())}"
+
+        if len(errors.keys()) != 0:
+            namespace.abort(
+                400, "Input payload validation failed", errors=errors
+            )
+
         size = 1000
 
         H_Rm, A_Rm = ltool.Raum(
@@ -147,6 +172,8 @@ class Calculate(Resource):
             A_Rm = A_Rm,
             raumart = args['raumart'],
             luefungsart = args['luefungsart'],
+            Shield = args['shieldingklasse'],
+            Terr = args['terrainklasse'],
             quantiles = [0.05, 0.25, 0.5, 0.75, 0.95],
             size = size
         )

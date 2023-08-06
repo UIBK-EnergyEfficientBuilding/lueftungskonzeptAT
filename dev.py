@@ -25,6 +25,8 @@ if __name__ == "__main__":
         A_Rm = A_Rm,
         raumart = raumart,
         luefungsart = "Querlüftung",
+        Shield = None,
+        Terr = None,
         quantiles = quantiles,
         size = size
     )
