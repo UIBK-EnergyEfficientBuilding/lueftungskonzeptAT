@@ -6,6 +6,12 @@ import lueftungstool.lib.params as params
 def beta_scaled(alpha,beta,min_value,max_value,size):
     return np.random.default_rng().beta(a=alpha, b=beta, size=size)*(max_value-min_value)+min_value
 
+def fixed_or_beta_scaled(key, param, field, size):
+    if not field:
+        return np.round(beta_scaled(*param[key],size=size))
+    else:
+        return np.array([field]*size)
+
 def map_values(a, d):
     b = np.copy(a)
     for k, v in d.items():
@@ -72,14 +78,8 @@ def Undichtheiten(size):
     return R,X
 
 def Raum(raumart, H_Rm, A_Rm, size):
-    if not A_Rm:
-        A_Rm = beta_scaled(*params.raumart2A_Rm[raumart],size=size)
-    else:
-        A_Rm = np.array([A_Rm]*size)
-    if not H_Rm:
-        H_Rm = beta_scaled(*params.raumart2H_Rm[raumart],size=size)
-    else:
-        H_Rm = np.array([H_Rm]*size)
+    A_Rm = fixed_or_beta_scaled(raumart, params.raumart2A_Rm, A_Rm, size)
+    H_Rm = fixed_or_beta_scaled(raumart, params.raumart2H_Rm, H_Rm, size)
 
     return H_Rm, A_Rm
 
