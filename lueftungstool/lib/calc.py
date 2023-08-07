@@ -159,26 +159,26 @@ def calc_result(t_gw,t,c_gw,t_max,quantiles):
 
 def SatPress(T):   # saturation pressure according to Magnus Formula
     E = 611.2*np.exp(17.62*T/(243.12+T))
-    return {E}
+    return E
 
 def VapDens(rH,T_of_rH,T):  # not needed?: calculates vapor density of ambient air at temperature T with rH determined at T_of_rH
     roh = rH*SatPress(T_of_rH)/(461.5*T)
-    return {roh}
+    return roh
 
 def VapDens_i(H2Oemi,AirFlow,T_a,rH_a,Ti_avg,Ti_min,size):
     Esat=np.array([SatPress(T_a)]*size)
     roh_a = rH_a*Esat/(461.5*Ti_avg) # calculates vapor density of ambient air at indoor temperature
     roh_i = (H2Oemi/AirFlow + roh_a) + Ti_avg/Ti_min
-    return {roh_i}
+    return roh_i
 
 def SurfTemp(fRSI,Ti_min,Ta_damped):
 
     T_si = fRSI*(Ti_min-Ta_damped)+Ta_damped
-    return {Tsi}
+    return T_si
 
 def WatAct(VapDens,Ti_min,Tsi):
     aw = VapDens*461.5*Ti_min/SatPress(Tsi)
-    return{aw}
+    return aw
 
 def calc(
         location, gebaeude_n50, gebaeudeart, H_Rm, A_Rm, raumart, luefungsart, quantiles, size=1000
