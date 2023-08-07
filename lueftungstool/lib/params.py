@@ -48,12 +48,14 @@ gebaeudeart2H_WindRel = {
     "Mehrfamilienhaus":[1,1,0,1],
     "Apartmentblock":[1,1,0,1],
 }
-gebaeudeart2Ti_avg = {
+gebaeudeart_list = ["Einfamilienhaus/Reihenhaus", "Mehrfamilienhaus", "Apartmentblock"]
+
+waermebruecken2Ti_avg = {
     "Altbau mit durchbetonierten Bauteilen (Balkone, etc)":[3,3,18,22],
     "Altbau (mit normalen Wärmebrücken)":[3,3,18,22],
     "Standard Neubau":[3,3,19,23],
 }
-gebaeudeart_list = ["Einfamilienhaus/Reihenhaus", "Mehrfamilienhaus", "Apartmentblock"]
+waermebruecken_list = list(waermebruecken2Ti_avg.keys())
 
 raumart2A_Rm = {
     "Schlafzimmer":[2.5,4,6,30],
