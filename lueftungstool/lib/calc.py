@@ -107,9 +107,8 @@ def Infiltration(Ti_avg,T_a,C,alfa,gama,H_wind,R,X,H_stack,n50,Vol,v_10m):
 
     ELA_tot = (n50/3600*Vol*(4/50)**n)/np.sqrt(2*4/roh)
     Vdot = ELA_tot*3600*np.sqrt(fs**2*(Ti_avg-T_a)+fw**2*v_10m**2)
-    LWR = Vdot/(Vol)
 
-    return Vdot,LWR
+    return Vdot
 
 def co2_emission(raumart,size):
     AgeKid = beta_scaled(*params.raumart2AgeKid[raumart],size=size)
@@ -156,29 +155,34 @@ def calc_result(t_gw,t,c_gw,t_max,quantiles):
     }
 
 # Functions needed for humidity calculation
+def C2K(C): #converts from Celcius to Kelvin
+    K = C + 273.15
+    return K
 
-def SatPress(T):   # saturation pressure according to Magnus Formula
+def SatPress(T):   # saturation pressure according to Magnus Formula with T in Celcius
     E = 611.2*np.exp(17.62*T/(243.12+T))
     return E
 
 def VapDens(rH,T_of_rH,T):  # not needed?: calculates vapor density of ambient air at temperature T with rH determined at T_of_rH
-    roh = rH*SatPress(T_of_rH)/(461.5*T)
+    roh = rH*SatPress(T_of_rH)/(461.5*C2K(T))
     return roh
 
-def VapDens_i(H2Oemi,AirFlow,T_a,rH_a,Ti_avg,Ti_min,size):
-    Esat=np.array([SatPress(T_a)]*size)
-    roh_a = rH_a*Esat/(461.5*Ti_avg) # calculates vapor density of ambient air at indoor temperature
-    roh_i = (H2Oemi/AirFlow + roh_a) + Ti_avg/Ti_min
+def VapDens_i(H2Oemi,AirFlow,T_a,rH_a,Ti_avg,Ti_min):
+    roh_a = rH_a*SatPress(T_a)/(461.5*C2K(Ti_avg)) # calculates vapor density of ambient air at indoor temperature
+    roh_i = (H2Oemi/24/AirFlow + roh_a) * C2K(Ti_avg)/C2K(Ti_min)
     return roh_i
 
 def SurfTemp(fRSI,Ti_min,Ta_damped):
-
-    T_si = fRSI*(Ti_min-Ta_damped)+Ta_damped
-    return T_si
+    Tsi = fRSI*(Ti_min-Ta_damped)+Ta_damped
+    return Tsi
 
 def WatAct(VapDens,Ti_min,Tsi):
-    aw = VapDens*461.5*Ti_min/SatPress(Tsi)
+    aw = VapDens*461.5*C2K(Ti_min)/SatPress(Tsi)
     return aw
+
+def MouldRisk(aw, limit):
+    MR=np.count_nonzero(aw > limit)/aw.size
+    return MR
 
 def calc(
         location, gebaeude_n50, gebaeudeart, H_Rm, A_Rm, raumart, luefungsart, quantiles, size=1000
@@ -302,8 +306,14 @@ Dies ist kürzer als die zumutbare Zeit zwischen Fensterlüften [min]: {t_zumutb
     if humcalc:
         
         #tbd: through interface
-        Vol_Unit = 86
-        Ti_min=18
+        Vol_Unit = 210.6
+        Ti_min=18.9
+        Ti_abs=17.0
+        fRSI=0.7
+        H2Oemi_abs=0.6
+        H2Oemi_pre=4
+        ACH_Win=20 #depends on window ventilation type
+        Dur_Win=15 #in min like above
         
         #tbd: through functions
         R, X = Undichtheiten(size)
@@ -311,13 +321,25 @@ Dies ist kürzer als die zumutbare Zeit zwischen Fensterlüften [min]: {t_zumutb
         H_stack = 3
         H_wind = Windeff
         Ta_damped= 1.7
-        H2Oemi=0.6
+
         
+        Vdot_Inf= Infiltration(Ti_avg,T_a,C,alfa,gama,H_wind, R, X,H_stack,n50_Unit,Vol_Unit,v_10m)
+
         #case 1: absence
-        Vdot_unit,LWR_unit = Infiltration(Ti_avg,T_a,C,alfa,gama,H_wind, R, X,H_stack,n50_Unit,Vol_Unit,v_10m)
-        roh_i=VapDens_i(H2Oemi, Vdot_unit, T_a, rH_a, Ti_avg, Ti_min,size)
-        T_si=SurfTemp(roh_i,Ti_min,Ta_damped)
-        aw=WatAct(roh_i,Ti_min,T_si)
+        roh_i_abs=VapDens_i(H2Oemi_abs, Vdot_Inf, T_a, rH_a, Ti_avg, Ti_abs)
+        Tsi_abs=SurfTemp(fRSI,Ti_abs,Ta_damped)
+        aw_abs=WatAct(roh_i_abs,Ti_min,Tsi_abs)
+        MouldRisk_abs=MouldRisk(aw_abs, 0.8)
+        MouldRisk2_abs=MouldRisk(aw_abs, 1)
+
+        #case 2: presence
+        Vdot_Win = ACH_Win*Dur_Win/60/24*Vol_Unit
+        Vdot_Tot = Vdot_Inf + Vdot_Win
+        roh_i_pre=VapDens_i(H2Oemi_pre, Vdot_Tot, T_a, rH_a, Ti_avg, Ti_min)
+        Tsi_pre=SurfTemp(fRSI,Ti_min,Ta_damped)
+        aw_pre=WatAct(roh_i_pre,Ti_min,Tsi_pre)
+        MouldRisk_pre=MouldRisk(aw_pre, 0.8)
+        MouldRisk2_pre=MouldRisk(aw_pre, 1)
 
     return {
         "Fensterlueftung": Fensterlueftung,
