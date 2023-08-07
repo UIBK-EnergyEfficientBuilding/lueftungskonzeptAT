@@ -105,7 +105,7 @@ def Infiltration(Ti_avg,T_a,C,alfa,gama,H_wind,R,X,H_stack,n50,Vol,v_10m):
     n = 0.66
     roh = 1.247
 
-    ELA_tot = (n50_Raum/3600*Vol*(4/50)**n)/np.sqrt(2*4/roh)
+    ELA_tot = (n50/3600*Vol*(4/50)**n)/np.sqrt(2*4/roh)
     Vdot = ELA_tot*3600*np.sqrt(fs**2*(Ti_avg-T_a)+fw**2*v_10m**2)
     LWR = Vdot/(Vol)
 
@@ -161,27 +161,29 @@ def SatPress(T):   # saturation pressure according to Magnus Formula
     E = 611.2*np.exp(17.62*T/(243.12+T))
     return {E}
 
-def VapDens(rH,T_of_rH,T):  # calculates vapor density ambient air at temperature T with rH determined at T_of_rH
+def VapDens(rH,T_of_rH,T):  # not needed?: calculates vapor density of ambient air at temperature T with rH determined at T_of_rH
     roh = rH*SatPress(T_of_rH)/(461.5*T)
     return {roh}
 
-def VapDens_i(H2Oemi,AirFlow,T_a,rH_a,T_i_avg,T_i_min):
-    roh_a = rH_a*SatPress(T_a)/(461.5*T_i) # calculates vapor density ambient air at indoor temperature
-    roh_i = (H2Oemi/AirFlow + roh_a) + T_i_avg/T_i_min
+def VapDens_i(H2Oemi,AirFlow,T_a,rH_a,Ti_avg,Ti_min,size):
+    Esat=np.array([SatPress(T_a)]*size)
+    roh_a = rH_a*Esat/(461.5*Ti_avg) # calculates vapor density of ambient air at indoor temperature
+    roh_i = (H2Oemi/AirFlow + roh_a) + Ti_avg/Ti_min
     return {roh_i}
 
-def SurfTemp(fRSI,T_i_min,T_a_damped):
-    T_si = fRSI*(T_i_min-T_a_damped)+T_a_damped
-    return {T_si}
+def SurfTemp(fRSI,Ti_min,Ta_damped):
 
-def WatAct(VapDens,T_i_min,T_si):
-    aw = VapDens*461.5*T_i_min/SatPress(T_si)
+    T_si = fRSI*(Ti_min-Ta_damped)+Ta_damped
+    return {Tsi}
+
+def WatAct(VapDens,Ti_min,Tsi):
+    aw = VapDens*461.5*Ti_min/SatPress(Tsi)
     return{aw}
 
 def calc(
         location, gebaeude_n50, gebaeudeart, H_Rm, A_Rm, raumart, luefungsart, quantiles, size=1000
     ):
-    T_a, v_10m, rH = weather(location)
+    T_a, v_10m, rH_a = weather(location)
     C, alfa, gama = calc_lage(location, size)
     n50, H_Bldg, Windeff = calc_dichtheit(gebaeude_n50, gebaeudeart, size)
     H_Rm, A_Rm = Raum(raumart, H_Rm, A_Rm, size)
@@ -189,7 +191,7 @@ def calc(
     R, X = Undichtheiten(size)
 
     n50_Raum = n50  #
-    Kamineff = 3    #
+    Kamineff = 3    # auf H_stack umbenennen
     Vdot_const = 0  # allow for user entry
     Vdot, LWR = Luftwechsel(
         Ti_avg,T_a,C,alfa,gama,Windeff,R,X,Kamineff,n50_Raum,H_Rm,A_Rm,Vdot_const,v_10m
@@ -299,18 +301,23 @@ Dies ist kürzer als die zumutbare Zeit zwischen Fensterlüften [min]: {t_zumutb
     humcalc=True
     if humcalc:
         
+        #tbd: through interface
+        Vol_Unit = 86
+        Ti_min=18
+        
+        #tbd: through functions
         R, X = Undichtheiten(size)
         n50_Unit = n50
-        Kamineff = 3
-        Vdot_const = 0
+        H_stack = 3
+        H_wind = Windeff
+        Ta_damped= 1.7
+        H2Oemi=0.6
+        
         #case 1: absence
-
-        V.dot,LWR = Infiltration(Ti_avg,T_a,C,alfa,gama,Windeff, R, X,H_Stack, )
-        roh_i=VapDens_i(H2Oemi, )
-
-
-
-        aw=WatAct(VapDens,T_i_min,T_si)
+        Vdot_unit,LWR_unit = Infiltration(Ti_avg,T_a,C,alfa,gama,H_wind, R, X,H_stack,n50_Unit,Vol_Unit,v_10m)
+        roh_i=VapDens_i(H2Oemi, Vdot_unit, T_a, rH_a, Ti_avg, Ti_min,size)
+        T_si=SurfTemp(roh_i,Ti_min,Ta_damped)
+        aw=WatAct(roh_i,Ti_min,T_si)
 
     return {
         "Fensterlueftung": Fensterlueftung,
