@@ -31,15 +31,16 @@ def C0_calc_clip(C0,C_stat,LWR,t):
     return np.max([C0_calc(C0,C_stat,LWR,t),C_stat],axis=0)
 
 
-def calc_standort(standort):
-    T_a = params.standort2T_a[standort]
-    v_10m = params.standort2v_10m[standort]
-    return T_a, v_10m
+def weather(location):
+    T_a = params.location2T_a[location]
+    v_10m = params.location2v_10m[location]
+    rH = params.location2rH[location]
+    return T_a, v_10m, rH
 
-def calc_lage(standort, size):
+def calc_lage(location, size):
     #Lage/Exposition
-    Shield = np.round(beta_scaled(*params.standort2Shield[standort],size=size))
-    Terr = np.round(beta_scaled(*params.standort2Terr[standort],size=size))
+    Shield = np.round(beta_scaled(*params.location2Shield[location],size=size))
+    Terr = np.round(beta_scaled(*params.location2Terr[location],size=size))
 
     C = map_values(Shield,params.Shield_class2C)
     alfa = map_values(Shield,params.Terr_class2alfa)
@@ -84,6 +85,7 @@ def Raum(raumart, H_Rm, A_Rm, size):
     return H_Rm, A_Rm
 
 def Luftwechsel(Ti_avg,T_a,C,alfa,gama,Windeff,R,X,Kamineff,n50_Raum,H_Rm,A_Rm,Vdot_const,v_10m):
+    # tbd: ersetzen mit allgemeinerer Funktion Infiltration
     fw = C*(1-R)**(1/3)*alfa*(Windeff/10)**gama
     fs =((1+R/2)/3)*(1-X**2/(2-R)**2)**(3/2)*(9.81*Kamineff/(Ti_avg+273))
 
@@ -93,6 +95,19 @@ def Luftwechsel(Ti_avg,T_a,C,alfa,gama,Windeff,R,X,Kamineff,n50_Raum,H_Rm,A_Rm,V
     ELA_tot = (n50_Raum/3600*A_Rm*H_Rm*(4/50)**n)/np.sqrt(2*4/roh)
     Vdot = ELA_tot*3600*np.sqrt(fs**2*(Ti_avg-T_a)+fw**2*v_10m**2) + Vdot_const
     LWR = Vdot/(A_Rm*H_Rm)
+
+    return Vdot,LWR
+
+def Infiltration(Ti_avg,T_a,C,alfa,gama,H_wind,R,X,H_stack,n50,Vol,v_10m):
+    fw = C*(1-R)**(1/3)*alfa*(H_wind/10)**gama
+    fs =((1+R/2)/3)*(1-X**2/(2-R)**2)**(3/2)*(9.81*H_stack/(Ti_avg+273))
+
+    n = 0.66
+    roh = 1.247
+
+    ELA_tot = (n50_Raum/3600*Vol*(4/50)**n)/np.sqrt(2*4/roh)
+    Vdot = ELA_tot*3600*np.sqrt(fs**2*(Ti_avg-T_a)+fw**2*v_10m**2)
+    LWR = Vdot/(Vol)
 
     return Vdot,LWR
 
@@ -140,19 +155,42 @@ def calc_result(t_gw,t,c_gw,t_max,quantiles):
         }
     }
 
+# Functions needed for humidity calculation
+
+def SatPress(T):   # saturation pressure according to Magnus Formula
+    E = 611.2*np.exp(17.62*T/(243.12+T))
+    return {E}
+
+def VapDens(rH,T_of_rH,T):  # calculates vapor density ambient air at temperature T with rH determined at T_of_rH
+    roh = rH*SatPress(T_of_rH)/(461.5*T)
+    return {roh}
+
+def VapDens_i(H2Oemi,AirFlow,T_a,rH_a,T_i_avg,T_i_min):
+    roh_a = rH_a*SatPress(T_a)/(461.5*T_i) # calculates vapor density ambient air at indoor temperature
+    roh_i = (H2Oemi/AirFlow + roh_a) + T_i_avg/T_i_min
+    return {roh_i}
+
+def SurfTemp(fRSI,T_i_min,T_a_damped):
+    T_si = fRSI*(T_i_min-T_a_damped)+T_a_damped
+    return {T_si}
+
+def WatAct(VapDens,T_i_min,T_si):
+    aw = VapDens*461.5*T_i_min/SatPress(T_si)
+    return{aw}
+
 def calc(
-        standort, gebaeude_n50, gebaeudeart, H_Rm, A_Rm, raumart, luefungsart, quantiles, size=1000
+        location, gebaeude_n50, gebaeudeart, H_Rm, A_Rm, raumart, luefungsart, quantiles, size=1000
     ):
-    T_a, v_10m = calc_standort(standort)
-    C, alfa, gama = calc_lage(standort, size)
+    T_a, v_10m, rH = weather(location)
+    C, alfa, gama = calc_lage(location, size)
     n50, H_Bldg, Windeff = calc_dichtheit(gebaeude_n50, gebaeudeart, size)
     H_Rm, A_Rm = Raum(raumart, H_Rm, A_Rm, size)
     Ti_avg = beta_scaled(*params.gebaeudeart2Ti_avg["Altbau (mit normalen Wärmebrücken)"],size=size)
     R, X = Undichtheiten(size)
 
-    n50_Raum = n50
-    Kamineff = 3
-    Vdot_const = 0
+    n50_Raum = n50  #
+    Kamineff = 3    #
+    Vdot_const = 0  # allow for user entry
     Vdot, LWR = Luftwechsel(
         Ti_avg,T_a,C,alfa,gama,Windeff,R,X,Kamineff,n50_Raum,H_Rm,A_Rm,Vdot_const,v_10m
     )
@@ -256,6 +294,23 @@ Weil errechnete Zeit zwischen erforderlichen Fensterlüften [min]:    {t_gw_erre
 Dies ist kürzer als die zumutbare Zeit zwischen Fensterlüften [min]: {t_zumutbar:.0f} Minuten
 """
     )
+
+  # humidity calculation
+    humcalc=True
+    if humcalc:
+        
+        R, X = Undichtheiten(size)
+        n50_Unit = n50
+        Kamineff = 3
+        Vdot_const = 0
+        #case 1: absence
+
+        V.dot,LWR = Infiltration(Ti_avg,T_a,C,alfa,gama,Windeff, R, X,H_Stack, )
+        roh_i=VapDens_i(H2Oemi, )
+
+
+
+        aw=WatAct(VapDens,T_i_min,T_si)
 
     return {
         "Fensterlueftung": Fensterlueftung,

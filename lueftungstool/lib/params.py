@@ -20,23 +20,28 @@ Terr_class2gama = {
     5:0.35,
 }
 
-standort2Terr = {
+location2Terr = {
     "Innsbruck":[1,1,2.5,4.5],
     "Wien":[1,1,2.5,5.5],
 }
-standort2Shield = {
+location2Shield = {
     "Innsbruck":[1,1,1.5,4.5],
     "Wien":[1,1,2.5,5.5],
 }
-standort2T_a = {
+location2T_a = {
     "Innsbruck":-0.5,
     "Wien":1.7,
 }
-standort2v_10m = {
+location2v_10m = {
     "Innsbruck":1.2,
     "Wien":3.4,
 }
-standort_list = ["Innsbruck", "Wien"]
+location2rH = {
+    "Innsbruck":0.84,
+    "Wien":0.78,
+}
+
+location_list = ["Innsbruck", "Wien"]
 
 gebaeudeart2H_Bldg = {
     "Einfamilienhaus/Reihenhaus":[2,4,3,12],

@@ -21,7 +21,7 @@ namespace = Namespace('calculate', '#todo')
 calculation_parameter_model = namespace.model('CalculationParameter', {
     'standort': fields.String(default="Wien",
         required=True,
-        enum=params.standort_list,
+        enum=params.location_list,
     ),
     'gebaeude_n50': fields.String(default="Standard Neubau",
         required=True,
@@ -138,7 +138,7 @@ parameter_result_model =  namespace.model('ParameterResult', {
 })
 
 params_mapping = {
-    "standort":params.standort_list,
+    "standort":params.location_list,
     "gebaeudeart":params.gebaeudeart_list,
     "raumart":params.raumart_list,
     "luefungsart":params.luefungsart_list,
