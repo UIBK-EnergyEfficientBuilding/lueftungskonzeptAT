@@ -121,7 +121,7 @@ class Calculate(Resource):
     def get(self):
         args = parser.parse_args()
         return calc(
-            standort = args['standort'],
+            location = args['standort'],
             gebaeude_n50 = args['gebaeude_n50'],
             gebaeudeart = args['gebaeudeart'],
             H_Rm = args['H_Rm'],
