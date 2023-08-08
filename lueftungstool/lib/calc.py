@@ -268,9 +268,12 @@ def calc(
     t_zumutbar = t_max*60
     Fensterlueftung = t_gw_erreicht_m>t_zumutbar
 
+    result = {}
+
   # humidity calculation
     humcalc=True
     if humcalc:
+        result["MouldRisk"] = {}
         
         #tbd: through interface
         Vol_Unit = 210.6
@@ -292,12 +295,16 @@ def calc(
         
         Vdot_Inf= Infiltration(Ti_avg,T_a,C,alfa,gama,H_wind, R, X,H_stack,n50_Unit,Vol_Unit,v_10m)
 
+        result["MouldRisk"]["Vdot_Inf"] = signif(np.quantile(Vdot_Inf,quantiles),2)
+
         #case 1: absence
         roh_i_abs=VapDens_i(H2Oemi_abs, Vdot_Inf, T_a, rH_a, Ti_avg, Ti_abs)
         Tsi_abs=SurfTemp(fRSI,Ti_abs,Ta_damped)
         aw_abs=WatAct(roh_i_abs,Ti_min,Tsi_abs)
         MouldRisk_abs=MouldRisk(aw_abs, 0.8)
         MouldRisk2_abs=MouldRisk(aw_abs, 1)
+
+        result["MouldRisk"]["MouldRisk_abs"] = MouldRisk_abs
 
         #case 2: presence
         Vdot_Win = ACH_Win*Dur_Win/60/24*Vol_Unit
@@ -308,7 +315,12 @@ def calc(
         MouldRisk_pre=MouldRisk(aw_pre, 0.8)
         MouldRisk2_pre=MouldRisk(aw_pre, 1)
 
-    result = {
+        result["MouldRisk"]["MouldRisk_pre"] = MouldRisk_pre
+        result["MouldRisk"]["Vdot_Tot"] = signif(np.quantile(Vdot_Tot,quantiles),2)
+
+        result["MouldRisk"]["MouldRisk"] = np.max([MouldRisk_abs,MouldRisk_pre])
+
+    result.update({
         "Fensterlueftung": Fensterlueftung,
         "t_zumutbar": t_zumutbar,
         "t_gw_erreicht": stats_data_gw_erreicht,
@@ -318,6 +330,6 @@ def calc(
         "Vdot": signif(np.quantile(Vdot,quantiles),2),
         "LWR": signif(np.quantile(LWR,quantiles),2),
         "C_stat": signif(np.quantile(C_stat,quantiles),2),
-    }
+    })
 
     return result
