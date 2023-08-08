@@ -33,6 +33,7 @@ if __name__ == "__main__":
         Shield = None,
         Terr = None,
         CO2_Emi = CO2_Emi,
+        WNF = None,
         quantiles = quantiles,
         size = size
     )

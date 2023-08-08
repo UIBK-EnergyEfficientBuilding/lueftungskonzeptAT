@@ -184,7 +184,7 @@ def MouldRisk(aw, limit):
     return MR
 
 def calc(
-        location, gebaeude_n50, gebaeudeart, waermebruecken, H_Rm, A_Rm, Shield, Terr, luefungsart, CO2_Emi, quantiles, size=1000
+        location, gebaeude_n50, gebaeudeart, waermebruecken, H_Rm, A_Rm, Shield, Terr, luefungsart, CO2_Emi, WNF, quantiles, size=1000
     ):
     T_a, v_10m, rH_a = weather(location)
     C, alfa, gama = calc_lage(location, Shield, Terr, size)
@@ -274,8 +274,8 @@ def calc(
     humcalc=True
     if humcalc:
         result["MouldRisk"] = {}
-        
-        WNF = beta_scaled(*params.WNF[gebaeudeart],size=size)
+
+        WNF = fixed_or_beta_scaled(gebaeudeart, params.WNF, WNF, size)
 
         #tbd: through interface
         Vol_Unit = H_Rm * WNF

@@ -101,6 +101,12 @@ calculation_parameter_model = namespace.model('CalculationParameter', {
         description="Mittleres Alter der Kinder [a]",
     ),
 
+    'WNF': fields.Float(
+        required=False,
+        description="Fläche gesamte Wohneinheit [m²]:",
+    ),
+
+
 })
 
 plot_data = namespace.model('plot_data', {
@@ -229,6 +235,7 @@ class Calculate(Resource):
             #fensterklasse
             #luefungsdauer
             CO2_Emi = CO2_Emi,
+            WNF = args['WNF'],
             quantiles = [0.05, 0.25, 0.5, 0.75, 0.95],
             size = size
         )
