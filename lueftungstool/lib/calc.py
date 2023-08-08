@@ -37,15 +37,16 @@ def C0_calc_clip(C0,C_stat,LWR,t):
     return np.max([C0_calc(C0,C_stat,LWR,t),C_stat],axis=0)
 
 
-def calc_standort(standort):
-    T_a = params.standort2T_a[standort]
-    v_10m = params.standort2v_10m[standort]
-    return T_a, v_10m
+def weather(location):
+    T_a = params.location2T_a[location]
+    v_10m = params.location2v_10m[location]
+    rH = params.location2rH[location]
+    return T_a, v_10m, rH
 
-def calc_lage(standort, Shield, Terr, size):
+def calc_lage(location, Shield, Terr, size):
     #Lage/Exposition
-    Shield = np.round(fixed_or_beta_scaled(standort, params.standort2Shield, Shield, size))
-    Terr = np.round(fixed_or_beta_scaled(standort, params.standort2Terr, Terr, size))
+    Shield = np.round(fixed_or_beta_scaled(location, params.location2Shield, Shield, size))
+    Terr = np.round(fixed_or_beta_scaled(location, params.location2Terr, Terr, size))
     C = map_values(Shield,params.Shield_class2C)
     alfa = map_values(Shield,params.Terr_class2alfa)
     gama = map_values(Terr,params.Terr_class2gama)
@@ -83,6 +84,7 @@ def Raum(raumart, H_Rm = None, A_Rm = None, size = 1000):
     return H_Rm, A_Rm
 
 def Luftwechsel(Ti_avg,T_a,C,alfa,gama,Windeff,R,X,Kamineff,n50_Raum,H_Rm,A_Rm,Vdot_const,v_10m):
+    # tbd: ersetzen mit allgemeinerer Funktion Infiltration
     fw = C*(1-R)**(1/3)*alfa*(Windeff/10)**gama
     fs =((1+R/2)/3)*(1-X**2/(2-R)**2)**(3/2)*(9.81*Kamineff/(Ti_avg+273))
 
@@ -94,6 +96,18 @@ def Luftwechsel(Ti_avg,T_a,C,alfa,gama,Windeff,R,X,Kamineff,n50_Raum,H_Rm,A_Rm,V
     LWR = Vdot/(A_Rm*H_Rm)
 
     return Vdot,LWR
+
+def Infiltration(Ti_avg,T_a,C,alfa,gama,H_wind,R,X,H_stack,n50,Vol,v_10m):
+    fw = C*(1-R)**(1/3)*alfa*(H_wind/10)**gama
+    fs =((1+R/2)/3)*(1-X**2/(2-R)**2)**(3/2)*(9.81*H_stack/(Ti_avg+273))
+
+    n = 0.66
+    roh = 1.247
+
+    ELA_tot = (n50/3600*Vol*(4/50)**n)/np.sqrt(2*4/roh)
+    Vdot = ELA_tot*3600*np.sqrt(fs**2*(Ti_avg-T_a)+fw**2*v_10m**2)
+
+    return Vdot
 
 def co2_emission(raumart, NrAdu = None, ActAdu = None, NrKids = None, ActKid = None, AgeKid = None, size = 1000):
     AgeKid = fixed_or_beta_scaled(raumart, params.raumart2AgeKid, AgeKid, size)
@@ -139,18 +153,48 @@ def calc_result(t_gw,t,c_gw,t_max,quantiles):
         }
     }
 
+# Functions needed for humidity calculation
+def C2K(C): #converts from Celcius to Kelvin
+    K = C + 273.15
+    return K
+
+def SatPress(T):   # saturation pressure according to Magnus Formula with T in Celcius
+    E = 611.2*np.exp(17.62*T/(243.12+T))
+    return E
+
+def VapDens(rH,T_of_rH,T):  # not needed?: calculates vapor density of ambient air at temperature T with rH determined at T_of_rH
+    roh = rH*SatPress(T_of_rH)/(461.5*C2K(T))
+    return roh
+
+def VapDens_i(H2Oemi,AirFlow,T_a,rH_a,Ti_avg,Ti_min):
+    roh_a = rH_a*SatPress(T_a)/(461.5*C2K(Ti_avg)) # calculates vapor density of ambient air at indoor temperature
+    roh_i = (H2Oemi/24/AirFlow + roh_a) * C2K(Ti_avg)/C2K(Ti_min)
+    return roh_i
+
+def SurfTemp(fRSI,Ti_min,Ta_damped):
+    Tsi = fRSI*(Ti_min-Ta_damped)+Ta_damped
+    return Tsi
+
+def WatAct(VapDens,Ti_min,Tsi):
+    aw = VapDens*461.5*C2K(Ti_min)/SatPress(Tsi)
+    return aw
+
+def MouldRisk(aw, limit):
+    MR=np.count_nonzero(aw > limit)/aw.size
+    return MR
+
 def calc(
-        standort, gebaeude_n50, gebaeudeart, waermebruecken, H_Rm, A_Rm, Shield, Terr, luefungsart, CO2_Emi, quantiles, size=1000
+        location, gebaeude_n50, gebaeudeart, waermebruecken, H_Rm, A_Rm, Shield, Terr, luefungsart, CO2_Emi, quantiles, size=1000
     ):
-    T_a, v_10m = calc_standort(standort)
-    C, alfa, gama = calc_lage(standort, Shield, Terr, size)
+    T_a, v_10m, rH_a = weather(location)
+    C, alfa, gama = calc_lage(location, Shield, Terr, size)
     n50, H_Bldg, Windeff = calc_dichtheit(gebaeude_n50, gebaeudeart, size)
     Ti_avg = beta_scaled(*params.waermebruecken2Ti_avg[waermebruecken],size=size)
     R, X = Undichtheiten(size)
 
-    n50_Raum = n50
-    Kamineff = 3
-    Vdot_const = 0
+    n50_Raum = n50  #
+    Kamineff = 3    # auf H_stack umbenennen
+    Vdot_const = 0  # allow for user entry
     Vdot, LWR = Luftwechsel(
         Ti_avg,T_a,C,alfa,gama,Windeff,R,X,Kamineff,n50_Raum,H_Rm,A_Rm,Vdot_const,v_10m
     )
@@ -223,6 +267,46 @@ def calc(
     t_gw_erreicht_m = np.quantile(t_gw_erreicht,0.5)*60
     t_zumutbar = t_max*60
     Fensterlueftung = t_gw_erreicht_m>t_zumutbar
+
+  # humidity calculation
+    humcalc=True
+    if humcalc:
+        
+        #tbd: through interface
+        Vol_Unit = 210.6
+        Ti_min=18.9
+        Ti_abs=17.0
+        fRSI=0.7
+        H2Oemi_abs=0.6
+        H2Oemi_pre=4
+        ACH_Win=20 #depends on window ventilation type
+        Dur_Win=15 #in min like above
+        
+        #tbd: through functions
+        R, X = Undichtheiten(size)
+        n50_Unit = n50
+        H_stack = 3
+        H_wind = Windeff
+        Ta_damped= 1.7
+
+        
+        Vdot_Inf= Infiltration(Ti_avg,T_a,C,alfa,gama,H_wind, R, X,H_stack,n50_Unit,Vol_Unit,v_10m)
+
+        #case 1: absence
+        roh_i_abs=VapDens_i(H2Oemi_abs, Vdot_Inf, T_a, rH_a, Ti_avg, Ti_abs)
+        Tsi_abs=SurfTemp(fRSI,Ti_abs,Ta_damped)
+        aw_abs=WatAct(roh_i_abs,Ti_min,Tsi_abs)
+        MouldRisk_abs=MouldRisk(aw_abs, 0.8)
+        MouldRisk2_abs=MouldRisk(aw_abs, 1)
+
+        #case 2: presence
+        Vdot_Win = ACH_Win*Dur_Win/60/24*Vol_Unit
+        Vdot_Tot = Vdot_Inf + Vdot_Win
+        roh_i_pre=VapDens_i(H2Oemi_pre, Vdot_Tot, T_a, rH_a, Ti_avg, Ti_min)
+        Tsi_pre=SurfTemp(fRSI,Ti_min,Ta_damped)
+        aw_pre=WatAct(roh_i_pre,Ti_min,Tsi_pre)
+        MouldRisk_pre=MouldRisk(aw_pre, 0.8)
+        MouldRisk2_pre=MouldRisk(aw_pre, 1)
 
     result = {
         "Fensterlueftung": Fensterlueftung,

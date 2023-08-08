@@ -23,7 +23,7 @@ if __name__ == "__main__":
     )
 
     result = ltool.calc(
-        standort = "Wien",
+        location = "Wien",
         gebaeude_n50 = "Standard Neubau",
         gebaeudeart = "Mehrfamilienhaus",
         waermebruecken = "Standard Neubau",
