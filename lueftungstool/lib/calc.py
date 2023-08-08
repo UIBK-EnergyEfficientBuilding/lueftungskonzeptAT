@@ -271,7 +271,10 @@ def calc(
     result = {}
 
   # humidity calculation
-    humcalc=True
+    if gebaeudeart in params.WNF_list:
+        humcalc = True
+    else:
+        humcalc = False
     if humcalc:
         result["MouldRisk"] = {}
 

@@ -47,13 +47,15 @@ gebaeudeart2H_Bldg = {
     "Einfamilienhaus/Reihenhaus":[2,4,3,12],
     "Mehrfamilienhaus":[2,4,3,18],
     "Apartmentblock":[2,4,3,60],
+    "Schule/Kindergarten": [2,4,3,15],
 }
 gebaeudeart2H_WindRel = {
     "Einfamilienhaus/Reihenhaus":[1,1,1,1],
     "Mehrfamilienhaus":[1,1,0,1],
     "Apartmentblock":[1,1,0,1],
+    "Schule/Kindergarten": [1,1,0,1],
 }
-gebaeudeart_list = ["Einfamilienhaus/Reihenhaus", "Mehrfamilienhaus", "Apartmentblock"]
+gebaeudeart_list = ["Einfamilienhaus/Reihenhaus", "Mehrfamilienhaus", "Apartmentblock", "Schule/Kindergarten"]
 
 waermebruecken2Ti_avg = {
     "Altbau mit durchbetonierten Bauteilen (Balkone, etc)":[3,3,18,22],
