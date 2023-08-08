@@ -275,8 +275,10 @@ def calc(
     if humcalc:
         result["MouldRisk"] = {}
         
+        WNF = beta_scaled(*params.WNF[gebaeudeart],size=size)
+
         #tbd: through interface
-        Vol_Unit = 210.6
+        Vol_Unit = H_Rm * WNF
         Ti_min=18.9
         Ti_abs=17.0
         fRSI=0.7

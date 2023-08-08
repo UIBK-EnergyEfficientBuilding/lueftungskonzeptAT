@@ -108,3 +108,10 @@ n50_map = {
     "Standard Neubau": [3,3,1,2],
 }
 n50_map_list = list(n50_map.keys())
+
+WNF = {
+    "Einfamilienhaus/Reihenhaus":[1,1,100,250],
+    "Mehrfamilienhaus":[2,6,50,200],
+    "Apartmentblock":[2,4,40,120],
+}
+WNF_list = list(WNF.keys())
