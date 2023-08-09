@@ -154,6 +154,8 @@ def calc_result(t_gw,t,c_gw,t_max,quantiles):
     }
 
 # Functions needed for humidity calculation
+#note for formulas: reference temperature for all roh's (vapor density) and all Vdot's (air flows) is Ti, no matter of actual air temperature
+
 def C2K(C): #converts from Celcius to Kelvin
     K = C + 273.15
     return K
@@ -162,13 +164,13 @@ def SatPress(T):   # saturation pressure according to Magnus Formula with T in C
     E = 611.2*np.exp(17.62*T/(243.12+T))
     return E
 
-def VapDens(rH,T_of_rH,T):  # not needed?: calculates vapor density of ambient air at temperature T with rH determined at T_of_rH
-    roh = rH*SatPress(T_of_rH)/(461.5*C2K(T))
-    return roh
+def VapDens_AA(rH_a,Ti,Ta):  #calculates vapor density of ambient air (AA)@Ta at indoor temperature Ti
+    roh_a = rH_a*SatPress(Ta)/(461.5*C2K(Ti))
+    return roh_a
 
-def VapDens_i(H2Oemi,AirFlow,T_a,rH_a,Ti_avg,Ti_min):
-    roh_a = rH_a*SatPress(T_a)/(461.5*C2K(Ti_avg)) # calculates vapor density of ambient air at indoor temperature
-    roh_i = (H2Oemi/24/AirFlow + roh_a) * C2K(Ti_avg)/C2K(Ti_min)
+def VapDens_IA(H2Oemi,AirFlow,Ti,Ti_min,Ta,rH_a):  #calculates vapor density with H2O source (H2Oemi) and ventilation (AirFlow@Ti) for air at temperature Ti_min
+    roh_a = VapDens_AA(rH_a,Ti,Ta)
+    roh_i = (H2Oemi/24/AirFlow + roh_a) * C2K(Ti)/C2K(Ti_min) #calculate vapor density for condition Ti, then convert density to Ti_min
     return roh_i
 
 def SurfTemp(fRSI,Ti_min,Ta_damped):
@@ -179,9 +181,23 @@ def WatAct(VapDens,Ti_min,Tsi):
     aw = VapDens*461.5*C2K(Ti_min)/SatPress(Tsi)
     return aw
 
-def MouldRisk(aw, limit):
+def MouldRisk_old(aw,limit):
     MR=np.count_nonzero(aw > limit)/aw.size
     return MR
+
+def ReqdAirFlow(H2OEmi,aw,Ti,Tsi,Ta,rH_a):
+    roh_a = VapDens_AA(rH_a,Ti,Ta)
+    Vdot_req = H2OEmi/24/(aw*SatPress(Tsi)/461.5/C2K(Ti)-roh_a)
+    return Vdot_req
+
+def MouldRisk(fRSI,H2Oemi,Vdot,Ti,Ti_min,Ta,Ta_damped,rH_a,aw_limit):
+    roh_i=VapDens_IA(H2Oemi,Vdot,Ti,Ti_min,Ta,rH_a)
+    Tsi=SurfTemp(fRSI,Ti_min,Ta_damped)
+    aw=WatAct(roh_i,Ti_min,Tsi)
+    Vdot_req=ReqdAirFlow(H2Oemi,aw,Ti,Tsi,Ta,rH_a)
+    MR=np.count_nonzero(aw > aw_limit)/aw.size
+    return MR,Vdot_req,aw
+
 
 def calc(
         location, gebaeude_n50, gebaeudeart, waermebruecken, H_Rm, A_Rm, Shield, Terr, luefungsart, CO2_Emi, WNF, quantiles, size=1000
@@ -289,6 +305,7 @@ def calc(
         H2Oemi_pre=4
         ACH_Win=20 #depends on window ventilation type
         Dur_Win=15 #in min like above
+        Vdot_add = 0 #additional ventilation air flow (for expert use/interface)
         
         #tbd: through functions
         R, X = Undichtheiten(size)
@@ -297,31 +314,26 @@ def calc(
         H_wind = Windeff
         Ta_damped= 1.7
 
-        
-        Vdot_Inf= Infiltration(Ti_avg,T_a,C,alfa,gama,H_wind, R, X,H_stack,n50_Unit,Vol_Unit,v_10m)
+        #tbd:in code
+        aw_limit=0.8
 
+        Vdot_Inf= Infiltration(Ti_avg,T_a,C,alfa,gama,H_wind, R, X,H_stack,n50_Unit,Vol_Unit,v_10m)
         result["MouldRisk"]["Vdot_Inf"] = signif(np.quantile(Vdot_Inf,quantiles),2)
 
         #case 1: absence
-        roh_i_abs=VapDens_i(H2Oemi_abs, Vdot_Inf, T_a, rH_a, Ti_avg, Ti_abs)
-        Tsi_abs=SurfTemp(fRSI,Ti_abs,Ta_damped)
-        aw_abs=WatAct(roh_i_abs,Ti_min,Tsi_abs)
-        MouldRisk_abs=MouldRisk(aw_abs, 0.8)
-        MouldRisk2_abs=MouldRisk(aw_abs, 1)
-
+        MouldRisk_abs,Vdot_req_abs,aw_abs=MouldRisk(fRSI,H2Oemi_abs,Vdot_Inf,Ti_avg,Ti_abs,T_a,Ta_damped,rH_a,aw_limit)
         result["MouldRisk"]["MouldRisk_abs"] = MouldRisk_abs
+        #result["MouldRisk"]["Vdot_req_abs"] = Vdot_req_abs
 
         #case 2: presence
         Vdot_Win = ACH_Win*Dur_Win/60/24*Vol_Unit
         Vdot_Tot = Vdot_Inf + Vdot_Win
-        roh_i_pre=VapDens_i(H2Oemi_pre, Vdot_Tot, T_a, rH_a, Ti_avg, Ti_min)
-        Tsi_pre=SurfTemp(fRSI,Ti_min,Ta_damped)
-        aw_pre=WatAct(roh_i_pre,Ti_min,Tsi_pre)
-        MouldRisk_pre=MouldRisk(aw_pre, 0.8)
-        MouldRisk2_pre=MouldRisk(aw_pre, 1)
-
-        result["MouldRisk"]["MouldRisk_pre"] = MouldRisk_pre
         result["MouldRisk"]["Vdot_Tot"] = signif(np.quantile(Vdot_Tot,quantiles),2)
+    
+        MouldRisk_pre,Vdot_req_pre,aw_pre=MouldRisk(fRSI,H2Oemi_pre,Vdot_Tot,Ti_avg,Ti_min,T_a,Ta_damped,rH_a,aw_limit)
+        result["MouldRisk"]["MouldRisk_pre"] = MouldRisk_pre
+        #result["MouldRisk"]["Vdot_req_pre"] = Vdot_req_pre
+        
 
         result["MouldRisk"]["MouldRisk"] = np.max([MouldRisk_abs,MouldRisk_pre])
 
