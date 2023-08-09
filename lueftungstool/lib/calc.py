@@ -8,7 +8,7 @@ def beta_scaled(alpha,beta,min_value,max_value,size):
 
 def fixed_or_beta_scaled(key, param, field, size):
     if not field:
-        return np.round(beta_scaled(*param[key],size=size))
+        return beta_scaled(*param[key],size=size)
     else:
         return np.array([field]*size)
 
