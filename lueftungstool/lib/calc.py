@@ -184,7 +184,7 @@ def MouldRisk(aw, limit):
     return MR
 
 def calc(
-        location, gebaeude_n50, gebaeudeart, waermebruecken, H_Rm, A_Rm, Shield, Terr, luefungsart, CO2_Emi, WNF, quantiles, size=1000
+        location, gebaeude_n50, gebaeudeart, waermebruecken, H_Rm, A_Rm, Shield, Terr, luefungsart, CO2_Emi, WNF, m_H2Od, m_H2Ok, m_H2Od0, quantiles, size=1000
     ):
     T_a, v_10m, rH_a = weather(location)
     C, alfa, gama = calc_lage(location, Shield, Terr, size)
@@ -279,14 +279,19 @@ def calc(
         result["MouldRisk"] = {}
 
         WNF = fixed_or_beta_scaled(gebaeudeart, params.WNF, WNF, size)
+        m_H2Od0 = fixed_or_beta_scaled("Quellstärke [g/h] Wohnen bei Abwesenheit", params.m_H2Od0, m_H2Od0, size)
+        m_H2Od = fixed_or_beta_scaled("Quellstärke [g/h] Wohnen Flächenabhängig", params.m_H2Od, m_H2Od, size)
+        m_H2Ok = fixed_or_beta_scaled("Quellstärke [g/h] Wohnen PersABH", params.m_H2Ok, m_H2Ok, size)
+        OccDens = beta_scaled(*params.OccDens[gebaeudeart], size)
+        AvgPers = WNF/OccDens
 
         #tbd: through interface
         Vol_Unit = H_Rm * WNF
         Ti_min=18.9
         Ti_abs=17.0
         fRSI=0.7
-        H2Oemi_abs=0.6
-        H2Oemi_pre=4
+        H2Oemi_abs = m_H2Od0 * WNF * 24 / 1000
+        H2Oemi_pre = (m_H2Od * WNF + m_H2Ok * AvgPers) * 24 / 1000
         ACH_Win=20 #depends on window ventilation type
         Dur_Win=15 #in min like above
         
