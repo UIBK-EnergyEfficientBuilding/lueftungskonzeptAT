@@ -124,6 +124,13 @@ WNF = {
     "Apartmentblock":[2,4,40,120],
 }
 
+Feuchtelastkategorie = {
+    "Niedrig":[0, 0.4],
+    "Mittel":[0.3, 0.7],
+    "Hoch":[0.6, 1,]
+}
+Feuchtelastkategorie_list = list(Feuchtelastkategorie.keys())
+
 m_H2Od0 = {
     "Quellstärke [g/h] Wohnen bei Abwesenheit": [1,1,0,0.56],
     "ungenutzt": [1,1,0.056,0.278],

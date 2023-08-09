@@ -34,6 +34,7 @@ if __name__ == "__main__":
         Terr = None,
         CO2_Emi = CO2_Emi,
         WNF = None,
+        Feuchtelastkategorie = "Mittel",
         m_H2Od = None,
         m_H2Ok = None,
         m_H2Od0 = None,

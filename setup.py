@@ -9,5 +9,6 @@ setup(
         'numpy',
         'Flask',
         'flask_restx',
+        'scipy',
     ],
 )
