@@ -10,6 +10,7 @@ def print_row(text,quantile):
 if __name__ == "__main__":
     quantiles = [0.05, 0.25, 0.5, 0.75, 0.95]
     size = 1000
+    signDig=2   #tbd add to a settings dict
     raumart = "Schlafzimmer"
 
     CO2_Emi = ltool.co2_emission(

@@ -181,30 +181,29 @@ def WatAct(VapDens,Ti_min,Tsi):
     aw = VapDens*461.5*C2K(Ti_min)/SatPress(Tsi)
     return aw
 
-def MouldRisk_old(aw,limit):
+def MouldRisk_old(aw,limit):    #nicht mehr benoetigt
     MR=np.count_nonzero(aw > limit)/aw.size
     return MR
 
-def ReqAirFlow(H2OEmi,aw,Ti,Tsi,Ta,rH_a):
+def ReqAirFlow(H2OEmi,aw_limit,Ti,Tsi,Ta,rH_a):
     roh_a = VapDens_AA(rH_a,Ti,Ta)
-    Vdot_req = H2OEmi/24/(aw*SatPress(Tsi)/461.5/C2K(Ti)-roh_a)
+    Vdot_req = H2OEmi/24/(aw_limit*SatPress(Tsi)/461.5/C2K(Ti)-roh_a)
     return Vdot_req
 
 def ReqELA(Vdot_req,Ti,Ta,v_10m,fs,fw):
     ELA=Vdot_req/3600/np.sqrt(fs**2*(Ti-Ta)+fw**2*v_10m**2)*10000
     return ELA
 
-def MouldRisk(fRSI,H2Oemi,Vdot_inf,Vdot_win,Ti,Ti_min,Ta,Ta_damped,rH_a,v_10m,fs,fw,aw_limit,Perc_accept):
-    Vdot_tot=Vdot_inf + Vdot_win
+def MouldRisk(fRSI,H2Oemi,Vdot_tot,Vdot_inf,Ti,Ti_min,Ta,Ta_damped,rH_a,v_10m,fs,fw,aw_limit,Perc_accept):
     roh_i=VapDens_IA(H2Oemi,Vdot_tot,Ti,Ti_min,Ta,rH_a)
     Tsi=SurfTemp(fRSI,Ti_min,Ta_damped)
     aw=WatAct(roh_i,Ti_min,Tsi)
     
-    Vdot_req_tot=ReqAirFlow(H2Oemi,aw,Ti,Tsi,Ta,rH_a)
+    Vdot_req_tot=ReqAirFlow(H2Oemi,aw_limit,Ti,Tsi,Ta,rH_a)
     Vdot_req_wInf = np.maximum(np.zeros(Vdot_req_tot.size), Vdot_req_tot-Vdot_inf) #ACHTUNG: hier leichte Abweichung zu xls (da wird fuer Abwesenheit Vdot_inf auf Ti_abs umgerechnet? Fehler? check?)
     Frac_Inf_insuff=np.count_nonzero(Vdot_req_wInf > 0)/Vdot_req_wInf.size
     
-    Vdot_req_wInfandWin=np.maximum(np.zeros(Vdot_req_tot.size),Vdot_req_tot-Vdot_inf-Vdot_win) #ACHTUNG: hier leichte Abweichung zu xls (da wird fuer Abwesenheit Vdot_inf auf Ti_abs umgerechnet? Fehler? check?) 
+    Vdot_req_wInfandWin=np.maximum(np.zeros(Vdot_req_tot.size),Vdot_req_tot-Vdot_tot) #ACHTUNG: hier leichte Abweichung zu xls (da wird fuer Abwesenheit Vdot_inf auf Ti_abs umgerechnet? Fehler? check?) 
     Vdot_add=np.quantile(Vdot_req_wInfandWin,Perc_accept)
     ELA_req_wInfandWin=ReqELA(Vdot_req_wInfandWin,Ti,Ta,v_10m,fs,fw)
     ELA_add=np.quantile(ELA_req_wInfandWin,Perc_accept)
@@ -214,7 +213,7 @@ def MouldRisk(fRSI,H2Oemi,Vdot_inf,Vdot_win,Ti,Ti_min,Ta,Ta_damped,rH_a,v_10m,fs
 
 
 def calc(
-        location, gebaeude_n50, gebaeudeart, waermebruecken, H_Rm, A_Rm, Shield, Terr, luefungsart, CO2_Emi, WNF, quantiles, size=1000
+        location, gebaeude_n50, gebaeudeart, waermebruecken, H_Rm, A_Rm, Shield, Terr, luefungsart, CO2_Emi, WNF, quantiles, size = 1000
     ):
     T_a, v_10m, rH_a = weather(location)
     C, alfa, gama = calc_lage(location, Shield, Terr, size)
@@ -319,7 +318,7 @@ def calc(
         H2Oemi_pre=4
         ACH_Win=20 #depends on window ventilation type
         Dur_Win=15 #in min like above
-        Vdot_add = 0 #additional ventilation air flow (for expert use/interface)
+        Vdot_add = 0 #additional ventilation air flow (for expert use/interface) tbd:add text in output when active
         
         #tbd: through functions
         R, X = Undichtheiten(size)
@@ -335,25 +334,25 @@ def calc(
         #calculation of air flows
         Vdot_Inf,fs,fw= Infiltration(Ti_avg,T_a,C,alfa,gama,H_wind, R, X,H_stack,n50_Unit,Vol_Unit,v_10m)
         Vdot_Win = ACH_Win*Dur_Win/60/24*Vol_Unit
-        Vdot_Tot=Vdot_Inf+Vdot_Win
+        Vdot_Tot=Vdot_Inf+Vdot_Win+Vdot_add
         result["MouldRisk"]["Vdot_Inf"] = signif(np.quantile(Vdot_Inf,quantiles),2)
         result["MouldRisk"]["Vdot_Tot"] = signif(np.quantile(Vdot_Tot,quantiles),2)
 
         #mould risk calculation: absence
-        MouldRisk_abs,ELA_acc_abs,Vdot_acc_abs,Frac_Inf_insuff_abs,Vdot_req_abs,aw_abs=MouldRisk(fRSI,H2Oemi_abs,Vdot_Inf,0,Ti_avg,Ti_abs,T_a,Ta_damped,rH_a,v_10m,fs,fw,aw_limit,Perc_accept)
+        MouldRisk_abs,ELA_acc_abs,Vdot_acc_abs,Frac_Inf_insuff_abs,Vdot_req_abs,aw_abs=MouldRisk(fRSI,H2Oemi_abs,Vdot_Tot-Vdot_Win,Vdot_Inf,Ti_avg,Ti_abs,T_a,Ta_damped,rH_a,v_10m,fs,fw,aw_limit,Perc_accept)
         result["MouldRisk"]["MouldRisk_abs"] = MouldRisk_abs
         result["MouldRisk"]["Vdot_req_abs"] = signif(np.quantile(Vdot_req_abs,quantiles),2)
         result["MouldRisk"]["Frac_Inf_insuff_abs"] = Frac_Inf_insuff_abs
-        result["MouldRisk"]["Vdot_acc_abs"] = Vdot_acc_abs
-        result["MouldRisk"]["ELA_acc_abs"] = ELA_acc_abs
+        result["MouldRisk"]["Vdot_acc_abs"] = signif(Vdot_acc_abs,2)
+        result["MouldRisk"]["ELA_acc_abs"] = signif(ELA_acc_abs,2)
 
         #mould risk calculation: presence
-        MouldRisk_pre,ELA_acc_pre,Vdot_acc_pre,Frac_Inf_insuff_pre,Vdot_req_pre,aw_pre=MouldRisk(fRSI,H2Oemi_pre,Vdot_Inf,Vdot_Win,Ti_avg,Ti_min,T_a,Ta_damped,rH_a,v_10m,fs,fw,aw_limit,Perc_accept)
+        MouldRisk_pre,ELA_acc_pre,Vdot_acc_pre,Frac_Inf_insuff_pre,Vdot_req_pre,aw_pre=MouldRisk(fRSI,H2Oemi_pre,Vdot_Tot,Vdot_Inf,Ti_avg,Ti_min,T_a,Ta_damped,rH_a,v_10m,fs,fw,aw_limit,Perc_accept)
         result["MouldRisk"]["MouldRisk_pre"] = MouldRisk_pre
         result["MouldRisk"]["Vdot_req_pre"] = signif(np.quantile(Vdot_req_pre,quantiles),2)
         result["MouldRisk"]["Frac_Inf_insuff_pre"] = Frac_Inf_insuff_pre
-        result["MouldRisk"]["Vdot_acc_pre"] = Vdot_acc_pre
-        result["MouldRisk"]["ELA_acc_pre"] = ELA_acc_pre
+        result["MouldRisk"]["Vdot_acc_pre"] = signif(Vdot_acc_pre,2)
+        result["MouldRisk"]["ELA_acc_pre"] = signif(ELA_acc_pre,2)
         
 
         result["MouldRisk"]["MouldRisk"] = np.max([MouldRisk_abs,MouldRisk_pre])
