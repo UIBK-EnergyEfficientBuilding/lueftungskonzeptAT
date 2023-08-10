@@ -144,6 +144,64 @@ lueften_statistik = namespace.model('LüftenStatistik', {
     ),
 })
 
+mould_risk = namespace.model('MouldRisk', {
+    'MouldRisk': fields.Float(
+        default=0.219,
+        description='Schimmelrisiko als Wahrscheinlichkeit'
+    ),
+
+    "Vdot_Inf": fields.List(fields.Float(),
+        default=[3.7,5.3,7.6,11,16],
+        description='Luftmenge durch Fugenlüftung [m³/h]'
+    ),
+    "Vdot_Tot": fields.List(fields.Float(),
+        default=[35,43,51,62,79],
+        description='Luftmenge durch Fugenlüftung + Fensterlüftung [m³/h]'
+    ),
+
+    "Vdot_req_pre": fields.List(fields.Float(),
+        default=[19,25,32,42,63],
+        description='Erforderliche Luftmenge zur Feuchteabfuhr [m³/h]'
+    ),
+    'Frac_Inf_insuff_pre': fields.Float(
+        default=1,
+        description='Wahrscheinlichkeit dass Fugenlüftung alleine nicht ausreicht'
+    ),
+    'MouldRisk_pre': fields.Float(
+        default=0.072,
+        description='Wahrscheinlichkeit dass Fugenlüftung und Fensterlüftung nicht ausreicht'
+    ),
+    "Vdot_acc_pre": fields.Float(
+        default=12,
+        description='Erforderliche zusätzliche Luftmenge damit Wahrscheinlichkeit <1% [m³/h]'
+    ),
+    "ELA_acc_pre": fields.Float(
+        default=120,
+        description='dafür erforderlicher zusätzlicher freier Querschnitt [cm²]'
+    ),
+
+    "Vdot_req_abs": fields.List(fields.Float(),
+        default=[2.9,4,5.1,6.5,8.9],
+        description='Erforderliche Luftmenge zur Feuchteabfuhr [m³/h]'
+    ),
+    'Frac_Inf_insuff_abs': fields.Float(
+        default=0.219,
+        description='Wahrscheinlichkeit dass Fugenlüftung alleine nicht ausreicht'
+    ),
+    'MouldRisk_abs': fields.Float(
+        default=0.219,
+        description='Wahrscheinlichkeit dass Fugenlüftung nicht ausreicht'
+    ),
+    "Vdot_acc_abs": fields.Float(
+        defaule=3.1,
+        description='Erforderliche zusätzliche Luftmenge damit Wahrscheinlichkeit<1% [m³/h]'
+    ),
+    "ELA_acc_abs": fields.Float(
+        default=41,
+        description='dafür erforderlicher zusätzlicher freier Querschnitt [cm²]]'
+    ),
+})
+
 calculation_result_model = namespace.model('CalculationResult', {
     'Fensterlueftung': fields.Boolean(
         description="Fensterlüftung praktikabel/zumutbar"
@@ -175,6 +233,10 @@ calculation_result_model = namespace.model('CalculationResult', {
     't_gw_ideal': fields.Nested(
         lueften_statistik,
         description='Momentanwert - Ideale Lüftung'
+    ),
+    'MouldRisk': fields.Nested(
+        mould_risk,
+        description='Ergebnis Schimmelrisiko Bewertung (nur für Wohnbau)'
     ),
 })
 

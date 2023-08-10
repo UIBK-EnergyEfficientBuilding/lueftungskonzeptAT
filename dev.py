@@ -75,6 +75,7 @@ if __name__ == "__main__":
         print("#Abwesenheitsfall")
         print_row("Erforderliche Luftmenge zur Feuchteabfuhr [m³/h]:".ljust(75),result["MouldRisk"]["Vdot_req_abs"])
         print_row("Luftmenge durch Fugenlüftung [m³/h]:".ljust(75),result["MouldRisk"]["Vdot_Inf"])
+        print("Wahrscheinlichkeit dass Fugenlüftung alleine nicht ausreicht:".ljust(75),"%.1f"%(result["MouldRisk"]["Frac_Inf_insuff_abs"]*100),"%")
         print("Wahrscheinlichkeit dass Fugenlüftung nicht ausreicht:".ljust(75),"%.1f"%(result["MouldRisk"]["MouldRisk_abs"]*100),"%")
         print("Erforderliche zusätzliche Luftmenge damit Wahrscheinlichkeit<1% [m³/h]:".ljust(75),result["MouldRisk"]["Vdot_acc_abs"])
         print("dafür erforderlicher zusätzlicher freier Querschnitt [cm²]:".ljust(75),result["MouldRisk"]["ELA_acc_abs"])
