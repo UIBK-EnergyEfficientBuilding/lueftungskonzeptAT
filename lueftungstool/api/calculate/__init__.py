@@ -105,8 +105,23 @@ calculation_parameter_model = namespace.model('CalculationParameter', {
         required=False,
         description="Fläche gesamte Wohneinheit [m²]:",
     ),
-
-
+    'Feuchtelastkategorie': fields.String(default="Mittel",
+        required=True,
+        enum=params.Feuchtelastkategorie_list,
+        description="Feuchtelast [l/d]:",
+    ),
+    'm_H2Od': fields.Float(
+        required=False,
+        description="Feuchtequellstärke pro m² bei Anwesenheit [g/(hm²)]",
+    ),
+    'm_H2Ok': fields.Float(
+        required=False,
+        description="Feuchtequellstärke pro Pers bei Anwesenheit [g/(hPers)]",
+    ),
+    'm_H2Od0': fields.Float(
+        required=False,
+        description="Feuchtequellstärke pro m² bei Abwesenheit [g/(hm²)]",
+    ),
 })
 
 plot_data = namespace.model('plot_data', {
@@ -236,6 +251,10 @@ class Calculate(Resource):
             #luefungsdauer
             CO2_Emi = CO2_Emi,
             WNF = args['WNF'],
+            Feuchtelastkategorie = args["Feuchtelastkategorie"],
+            m_H2Od = args['m_H2Od'],
+            m_H2Ok = args['m_H2Ok'],
+            m_H2Od0 = args['m_H2Od0'],
             quantiles = [0.05, 0.25, 0.5, 0.75, 0.95],
             size = size
         )

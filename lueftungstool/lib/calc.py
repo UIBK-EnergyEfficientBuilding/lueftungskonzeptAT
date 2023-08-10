@@ -1,5 +1,6 @@
 
 import numpy as np
+from scipy.stats import beta as scipy_beta
 
 import lueftungstool.lib.params as params
 
@@ -8,7 +9,17 @@ def beta_scaled(alpha,beta,min_value,max_value,size):
 
 def fixed_or_beta_scaled(key, param, field, size):
     if not field:
-        return np.round(beta_scaled(*param[key],size=size))
+        return beta_scaled(*param[key],size=size)
+    else:
+        return np.array([field]*size)
+
+def beta_scaled_range(alpha,beta,min_value,max_value,start,stop,size):
+    x = np.linspace(start,stop,size)
+    return scipy_beta.ppf(np.random.choice(x,size),alpha,beta)*(max_value-min_value)+min_value
+
+def fixed_or_beta_scaled_range(key, param, start, stop, field, size):
+    if not field:
+        return beta_scaled_range(*param[key], start, stop, size=size)
     else:
         return np.array([field]*size)
 
@@ -213,7 +224,7 @@ def MouldRisk(fRSI,H2Oemi,Vdot_tot,Vdot_inf,Ti,Ti_min,Ta,Ta_damped,rH_a,v_10m,fs
 
 
 def calc(
-        location, gebaeude_n50, gebaeudeart, waermebruecken, H_Rm, A_Rm, Shield, Terr, luefungsart, CO2_Emi, WNF, quantiles, size = 1000
+        location, gebaeude_n50, gebaeudeart, waermebruecken, H_Rm, A_Rm, Shield, Terr, luefungsart, CO2_Emi, WNF, Feuchtelastkategorie, m_H2Od, m_H2Ok, m_H2Od0, quantiles, size = 1000
     ):
     T_a, v_10m, rH_a = weather(location)
     C, alfa, gama = calc_lage(location, Shield, Terr, size)
@@ -309,13 +320,37 @@ def calc(
 
         WNF = fixed_or_beta_scaled(gebaeudeart, params.WNF, WNF, size)
 
+        m_H2Od0 = fixed_or_beta_scaled_range(
+            "Quellstärke [g/h] Wohnen bei Abwesenheit",
+            params.m_H2Od0,
+            *params.Feuchtelastkategorie[Feuchtelastkategorie],
+            m_H2Od0,
+            size
+        )
+        m_H2Od = fixed_or_beta_scaled_range(
+            "Quellstärke [g/h] Wohnen Flächenabhängig",
+            params.m_H2Od,
+            *params.Feuchtelastkategorie[Feuchtelastkategorie],
+            m_H2Od,
+            size
+        )
+        m_H2Ok = fixed_or_beta_scaled_range(
+            "Quellstärke [g/h] Wohnen PersABH",
+            params.m_H2Ok,
+            *params.Feuchtelastkategorie[Feuchtelastkategorie],
+            m_H2Ok,
+            size
+        )
+        OccDens = beta_scaled(*params.OccDens[gebaeudeart], size)
+        AvgPers = WNF/OccDens
+
         #tbd: through interface
         Vol_Unit = H_Rm * WNF
         Ti_min=18.9
         Ti_abs=17.0
         fRSI=0.7
-        H2Oemi_abs=0.6
-        H2Oemi_pre=4
+        H2Oemi_abs = m_H2Od0 * WNF * 24 / 1000
+        H2Oemi_pre = (m_H2Od * WNF + m_H2Ok * AvgPers) * 24 / 1000
         ACH_Win=20 #depends on window ventilation type
         Dur_Win=15 #in min like above
         Vdot_add = 0 #additional ventilation air flow (for expert use/interface) tbd:add text in output when active

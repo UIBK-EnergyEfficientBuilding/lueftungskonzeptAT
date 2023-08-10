@@ -117,3 +117,36 @@ WNF = {
     "Apartmentblock":[2,4,40,120],
 }
 WNF_list = list(WNF.keys())
+
+WNF = {
+    "Einfamilienhaus/Reihenhaus":[1,1,100,250],
+    "Mehrfamilienhaus":[2,6,50,200],
+    "Apartmentblock":[2,4,40,120],
+}
+
+Feuchtelastkategorie = {
+    "Niedrig":[0, 0.4],
+    "Mittel":[0.3, 0.7],
+    "Hoch":[0.6, 1,]
+}
+Feuchtelastkategorie_list = list(Feuchtelastkategorie.keys())
+
+m_H2Od0 = {
+    "Quellstärke [g/h] Wohnen bei Abwesenheit": [1,1,0,0.56],
+    "ungenutzt": [1,1,0.056,0.278],
+}
+m_H2Od = {
+    "Quellstärke [g/h] Wohnen Flächenabhängig": [1,1,0.28,0.83],
+    "ungenutzt": [1,1,0.083,1.66],
+}
+m_H2Ok = {
+    "Quellstärke [g/h] Wohnen PersABH": [3,3,41.67,83.33],
+    "ungenutzt": [1,1,83.33,166.67],
+}
+
+OccDens = {
+    "Einfamilienhaus/Reihenhaus":[2,4,30,120],
+    "Mehrfamilienhaus":[2,4,15,100],
+    "Apartmentblock":[2,4,15,80],
+}
+OccDens_list = list(OccDens.keys())
