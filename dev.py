@@ -89,7 +89,7 @@ if __name__ == "__main__":
 
 
     print("#Ergebnis CO2 Bewertung")
-    print("Fensterlüftung praktikabel/zumutbar:".ljust(75), result["Fensterlueftung"])
+    print("Fensterlüftung praktikabel/zumutbar:".ljust(75), result["window_airing_acceptable"])
     print_row("Weil errechnete Zeit zwischen erforderlichen Fensterlüften [min]:", result["t_gw_erreicht"]["Quantile"])
     print("Dies ist kürzer als die zumutbare Zeit zwischen Fensterlüften [min]:".ljust(75), result["t_zumutbar"])
     print_row("Informativ: Zeit zwischen erf. Fensterlüften bei idealem Lüften [min]:", result["t_gw_ueberschritten"]["Quantile"])

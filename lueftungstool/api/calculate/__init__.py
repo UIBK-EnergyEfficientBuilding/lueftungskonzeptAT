@@ -224,7 +224,7 @@ mould_risk = namespace.model('MouldRisk', {
 })
 
 calculation_result_model = namespace.model('CalculationResult', {
-    'Fensterlueftung': fields.Boolean(
+    'window_airing_acceptable': fields.Boolean(
         description="Fensterlüftung praktikabel/zumutbar"
     ),
     't_zumutbar': fields.Float(

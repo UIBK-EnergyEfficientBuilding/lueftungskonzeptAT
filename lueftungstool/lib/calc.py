@@ -417,7 +417,7 @@ def calc(
         result["MouldRisk"]["MouldRisk"] = np.max([MouldRisk_abs,MouldRisk_pre])
 
     result.update({
-        "Fensterlueftung": Fensterlueftung,
+        "window_airing_acceptable": Fensterlueftung,
         "t_zumutbar": t_zumutbar,
         "t_gw_erreicht": stats_data_gw_erreicht,
         "t_gw_periodisch": stats_data_gw_periodisch,
