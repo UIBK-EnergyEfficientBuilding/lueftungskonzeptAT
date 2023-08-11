@@ -19,7 +19,7 @@ def add_model_to_parser(parser,model):
 namespace = Namespace('calculate', '#todo')
 
 calculation_parameter_model = namespace.model('CalculationParameter', {
-    'standort': fields.String(default="Wien",
+    'location': fields.String(default="Wien",
         required=True,
         enum=params.location_list,
         description="Standort",
@@ -326,7 +326,7 @@ class Calculate(Resource):
         )
 
         return ltool.calc(
-            location = args['standort'],
+            location = args['location'],
             gebaeude_n50 = args['gebaeude_n50'],
             gebaeudeart = args['gebaeudeart'],
             inputs = inputs,
@@ -362,7 +362,7 @@ parameter_result_model =  namespace.model('ParameterResult', {
 })
 
 params_mapping = {
-    "standort":params.location_list,
+    "location":params.location_list,
     "gebaeudeart":params.gebaeudeart_list,
     "raumart":params.raumart_list,
     "luefungsart":params.luefungsart_list,
