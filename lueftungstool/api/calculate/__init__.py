@@ -101,10 +101,6 @@ calculation_parameter_model = namespace.model('CalculationParameter', {
         description="Mittleres Alter der Kinder [a]",
     ),
 
-    'WNF': fields.Float(
-        required=False,
-        description="Fläche gesamte Wohneinheit [m²]:",
-    ),
     'Feuchtelastkategorie': fields.String(default="Mittel",
         required=True,
         enum=params.Feuchtelastkategorie_list,
@@ -122,6 +118,31 @@ calculation_parameter_model = namespace.model('CalculationParameter', {
         required=False,
         description="Feuchtequellstärke pro m² bei Abwesenheit [g/(hm²)]",
     ),
+    'WNF': fields.Float(
+        required=False,
+        description="Fläche gesamte Wohneinheit [m²]:",
+    ),
+    'AvgPers': fields.Float(
+        required=False,
+        description="Personenanzahl (gesamter Wohneinheit)",
+    ),
+    'luefungsart_ges': fields.Float(
+        required=False,
+        description="Lüftungsmöglichkeit (gesamte Wohneinheit)",
+    ),
+    'Dur_Win': fields.Float(
+        required=False,
+        description="Lüftungsdauer gesamt, z.B. morgens und abends [min/Tag]",
+    ),
+    'Ti_min': fields.Float(
+        required=False,
+        description="Raumtemperatur im kühlsten Raum [°C]",
+    ),
+    'Ti_abs': fields.Float(
+        required=False,
+        description="Minimale Raumtemperatur bei längerer Abwesenheit [°C]",
+    ),
+
 })
 
 plot_data = namespace.model('plot_data', {
@@ -319,6 +340,11 @@ class Calculate(Resource):
             #fensterflaeche
             #fensterklasse
             #luefungsdauer
+            #AvgPers
+            #luefungsart_ges
+            #Dur_Win
+            #Ti_abs
+            #Ti_min
             CO2_Emi = CO2_Emi,
             WNF = args['WNF'],
             Feuchtelastkategorie = args["Feuchtelastkategorie"],
