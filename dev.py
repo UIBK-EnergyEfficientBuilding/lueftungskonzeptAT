@@ -13,13 +13,19 @@ if __name__ == "__main__":
     signDig=2   #tbd add to a settings dict
     raumart = "Schlafzimmer"
 
+    inputs = {}
+
     CO2_Emi = ltool.co2_emission(
         raumart = raumart,
+        inputs = inputs,
+        quantiles = quantiles,
         size = size
     )
 
     H_Rm, A_Rm = ltool.Raum(
         raumart = raumart,
+        inputs = inputs,
+        quantiles = quantiles,
         size = size
     )
 
@@ -27,6 +33,7 @@ if __name__ == "__main__":
         location = "Wien",
         gebaeude_n50 = "Standard Neubau",
         gebaeudeart = "Mehrfamilienhaus",
+        inputs = inputs,
         waermebruecken = "Standard Neubau",
         H_Rm = H_Rm,
         A_Rm = A_Rm,
@@ -42,6 +49,44 @@ if __name__ == "__main__":
         quantiles = quantiles,
         size = size
     )
+
+    print("#Eingaben Gebäude/Raum")
+    print("Standort:".ljust(75), "?")
+    print("Gebäudeart:".ljust(75), "?")
+    print_row("Luftdichtigkeit n50-Wert (Gebäude) [1/h]:".ljust(75), result["inputs"]["gebaeude_n50"])
+    print("Raumart (betrachteter Raum):".ljust(75), "?")
+    print_row("Fläche (betrachteter Raum) [m²]:".ljust(75), result["inputs"]["A_Rm"])
+    print_row("Höhe (betrachteter Raum) [m]:".ljust(75), result["inputs"]["H_Rm"])
+    print("Fläche öffenbare Fenster (betrachteter Raum) [m²]:".ljust(75), "?")
+    print("Fensterklasse nach EN12207 (betrachteter Raum)".ljust(75), "?")
+    print("Lüftungsmöglichkeit (betrachteter Raum):".ljust(75), "?")
+    print("Lüftungsdauer pro Lüftungsvorgang [min]:".ljust(75), "?")
+    print_row("Gelände-/Terrainklasse (Windeinfluss)".ljust(75), result["inputs"]["terrainklasse"])
+    print_row("Abschirmung-/Shieldingklasse (Windeinfluss)".ljust(75), result["inputs"]["shieldingklasse"])
+    print("Eingaben Personen für betrachteten Raum".ljust(75), "?")
+    print_row("Anzahl Erwachsene:".ljust(75), result["inputs"]["NrAdu"])
+    print_row("Aktivität Erwachsene [met]:".ljust(75), result["inputs"]["ActAdu"])
+    print_row("Anzahl Kinder:".ljust(75), result["inputs"]["NrKids"])
+    print_row("Aktivität Kinder [met]:".ljust(75), result["inputs"]["ActKid"])
+    print_row("Mittleres Alter der Kinder [a]".ljust(75), result["inputs"]["AgeKid"])
+    if "MouldRisk" in result:
+        print()
+        print("#Eingaben für Schimmelrisiko Bewertung (nur für Wohnbau)")
+        print("Berechnung durchführen:".ljust(75), "Ja")
+        print("Wärmebrücken / fRSI-Wert".ljust(75), "?")
+        print("Feuchtelast [l/d]:".ljust(75), "?")
+        print_row("Feuchtequellstärke pro m² bei Anwesenheit [g/(hm²)]".ljust(75), result["inputs"]["m_H2Od"])
+        print_row("Feuchtequellstärke pro Pers bei Anwesenheit [g/(hPers)]".ljust(75), result["inputs"]["m_H2Ok"])
+        print_row("Feuchtequellstärke pro m² bei Abwesenheit [g/(hm²)]".ljust(75), result["inputs"]["m_H2Od0"])
+        print_row("Fläche gesamte Wohneinheit [m²]:".ljust(75), result["inputs"]["WNF"])
+        print_row("Personenanzahl (gesamter Wohneinheit):".ljust(75), result["inputs"]["AvgPers"])
+        print("Lüftungsmöglichkeit (gesamte Wohneinheit):".ljust(75), "?")
+        print("Lüftungsdauer gesamt, z.B. morgens und abends [min/Tag]:".ljust(75), "?")
+        print("Mittlere Raumtemperatur in gesamten Wohneinheit [°C]:".ljust(75), "?")
+        print("Raumtemperatur im kühlsten Raum [°C]:".ljust(75), "?")
+        print("Minimale Raumtemperatur bei längerer Abwesenheit [°C]:".ljust(75), "?")
+
+
 
     print("#Ergebnis CO2 Bewertung")
     print("Fensterlüftung praktikabel/zumutbar:".ljust(75), result["Fensterlueftung"])

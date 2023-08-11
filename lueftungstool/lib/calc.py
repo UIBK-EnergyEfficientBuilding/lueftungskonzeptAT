@@ -54,25 +54,32 @@ def weather(location):
     rH = params.location2rH[location]
     return T_a, v_10m, rH
 
-def calc_lage(location, Shield, Terr, size):
+def calc_lage(location, inputs, Shield, Terr, quantiles, size):
     #Lage/Exposition
     Shield = np.round(fixed_or_beta_scaled(location, params.location2Shield, Shield, size))
     Terr = np.round(fixed_or_beta_scaled(location, params.location2Terr, Terr, size))
+
+    inputs["terrainklasse"] = signif(np.quantile(Terr,quantiles),2)
+    inputs["shieldingklasse"] = signif(np.quantile(Shield,quantiles),2)
+
     C = map_values(Shield,params.Shield_class2C)
     alfa = map_values(Shield,params.Terr_class2alfa)
     gama = map_values(Terr,params.Terr_class2gama)
 
     return C, alfa, gama
 
-def calc_dichtheit(gebaeude_n50, gebaeudeart, size):
+def calc_dichtheit(gebaeude_n50, gebaeudeart, inputs, quantiles, size):
     #Gebäudichtheit
     n50 = beta_scaled(*params.n50_map[gebaeude_n50],size=size)
+
+    inputs["gebaeude_n50"] = signif(np.quantile(n50,quantiles),2)
 
     H_Bldg = beta_scaled(*params.gebaeudeart2H_Bldg[gebaeudeart],size=size)
     Windeff = np.max(
         [[3]*size, H_Bldg*beta_scaled(*params.gebaeudeart2H_WindRel[gebaeudeart],size=size)],
         axis=0
     )
+
     return n50, H_Bldg, Windeff
 
 def Undichtheiten(size):
@@ -88,9 +95,12 @@ def Undichtheiten(size):
 
     return R,X
 
-def Raum(raumart, H_Rm = None, A_Rm = None, size = 1000):
+def Raum(raumart, inputs, quantiles, H_Rm = None, A_Rm = None, size = 1000):
     A_Rm = fixed_or_beta_scaled(raumart, params.raumart2A_Rm, A_Rm, size)
     H_Rm = fixed_or_beta_scaled(raumart, params.raumart2H_Rm, H_Rm, size)
+
+    inputs["H_Rm"] = signif(np.quantile(H_Rm,quantiles),2)
+    inputs["A_Rm"] = signif(np.quantile(A_Rm,quantiles),2)
 
     return H_Rm, A_Rm
 
@@ -120,13 +130,19 @@ def Infiltration(Ti_avg,T_a,C,alfa,gama,H_wind,R,X,H_stack,n50,Vol,v_10m):
 
     return Vdot,fs,fw
 
-def co2_emission(raumart, NrAdu = None, ActAdu = None, NrKids = None, ActKid = None, AgeKid = None, size = 1000):
+def co2_emission(raumart, inputs, quantiles, NrAdu = None, ActAdu = None, NrKids = None, ActKid = None, AgeKid = None, size = 1000):
     AgeKid = fixed_or_beta_scaled(raumart, params.raumart2AgeKid, AgeKid, size)
 
     ActKid = fixed_or_beta_scaled(raumart, params.raumart2ActKid, ActKid, size=size)
     NrKids = np.round(fixed_or_beta_scaled(raumart, params.raumart2Nr_Kid, NrKids, size=size))
     ActAdu = fixed_or_beta_scaled(raumart, params.raumart2ActAdu, ActAdu,size=size)
     NrAdu = np.round(fixed_or_beta_scaled(raumart, params.raumart2Nr_Adu, NrAdu,size=size))
+
+    inputs["AgeKid"] = signif(np.quantile(AgeKid,quantiles),2)
+    inputs["ActKid"] = signif(np.quantile(ActKid,quantiles),2)
+    inputs["NrKids"] = signif(np.quantile(NrKids,quantiles),2)
+    inputs["ActAdu"] = signif(np.quantile(ActAdu,quantiles),2)
+    inputs["NrAdu"] = signif(np.quantile(NrAdu,quantiles),2)
 
     CO2_Emi_rate_Erw = 18
     CO2_Emi_rate_Kid = 10
@@ -224,11 +240,11 @@ def MouldRisk(fRSI,H2Oemi,Vdot_tot,Vdot_inf,Ti,Ti_min,Ta,Ta_damped,rH_a,v_10m,fs
 
 
 def calc(
-        location, gebaeude_n50, gebaeudeart, waermebruecken, H_Rm, A_Rm, Shield, Terr, luefungsart, CO2_Emi, WNF, Feuchtelastkategorie, m_H2Od, m_H2Ok, m_H2Od0, quantiles, size = 1000
+        location, gebaeude_n50, gebaeudeart, inputs, waermebruecken, H_Rm, A_Rm, Shield, Terr, luefungsart, CO2_Emi, WNF, Feuchtelastkategorie, m_H2Od, m_H2Ok, m_H2Od0, quantiles, size = 1000
     ):
     T_a, v_10m, rH_a = weather(location)
-    C, alfa, gama = calc_lage(location, Shield, Terr, size)
-    n50, H_Bldg, Windeff = calc_dichtheit(gebaeude_n50, gebaeudeart, size)
+    C, alfa, gama = calc_lage(location, inputs, Shield, Terr, quantiles, size)
+    n50, H_Bldg, Windeff = calc_dichtheit(gebaeude_n50, gebaeudeart, inputs, quantiles, size)
     Ti_avg = beta_scaled(*params.waermebruecken2Ti_avg[waermebruecken],size=size)
     R, X = Undichtheiten(size)
 
@@ -320,6 +336,8 @@ def calc(
 
         WNF = fixed_or_beta_scaled(gebaeudeart, params.WNF, WNF, size)
 
+        inputs["WNF"] = signif(np.quantile(WNF,quantiles),2)
+
         m_H2Od0 = fixed_or_beta_scaled_range(
             "Quellstärke [g/h] Wohnen bei Abwesenheit",
             params.m_H2Od0,
@@ -341,8 +359,14 @@ def calc(
             m_H2Ok,
             size
         )
+        inputs["m_H2Od0"] = signif(np.quantile(m_H2Od0,quantiles),2)
+        inputs["m_H2Od"] = signif(np.quantile(m_H2Od,quantiles),2)
+        inputs["m_H2Ok"] = signif(np.quantile(m_H2Ok,quantiles),2)
+
         OccDens = beta_scaled(*params.OccDens[gebaeudeart], size)
         AvgPers = WNF/OccDens
+
+        inputs["AvgPers"] = signif(np.quantile(AvgPers,quantiles),2)
 
         #tbd: through interface
         Vol_Unit = H_Rm * WNF
@@ -402,6 +426,7 @@ def calc(
         "Vdot": signif(np.quantile(Vdot,quantiles),2),
         "LWR": signif(np.quantile(LWR,quantiles),2),
         "C_stat": signif(np.quantile(C_stat,quantiles),2),
+        "inputs": inputs
     })
 
     return result

@@ -280,8 +280,13 @@ class Calculate(Resource):
 
         size = 1000
 
+        inputs = {}
+        quantiles = [0.05, 0.25, 0.5, 0.75, 0.95]
+
         CO2_Emi = ltool.co2_emission(
             raumart = args['raumart'],
+            inputs = inputs,
+            quantiles = quantiles,
             NrAdu = args['NrAdu'],
             ActAdu = args['ActAdu'],
             NrKids = args['NrKids'],
@@ -292,6 +297,8 @@ class Calculate(Resource):
 
         H_Rm, A_Rm = ltool.Raum(
             raumart = args['raumart'],
+            inputs = inputs,
+            quantiles = quantiles,
             H_Rm = args['H_Rm'],
             A_Rm = args['A_Rm'],
             size = size
@@ -301,6 +308,7 @@ class Calculate(Resource):
             location = args['standort'],
             gebaeude_n50 = args['gebaeude_n50'],
             gebaeudeart = args['gebaeudeart'],
+            inputs = inputs,
             waermebruecken = args['waermebruecken'],
             H_Rm = H_Rm,
             A_Rm = A_Rm,
@@ -317,7 +325,7 @@ class Calculate(Resource):
             m_H2Od = args['m_H2Od'],
             m_H2Ok = args['m_H2Ok'],
             m_H2Od0 = args['m_H2Od0'],
-            quantiles = [0.05, 0.25, 0.5, 0.75, 0.95],
+            quantiles = quantiles,
             size = size
         )
 
