@@ -412,7 +412,37 @@ def calc(
         result["MouldRisk"]["Frac_Inf_insuff_pre"] = Frac_Inf_insuff_pre
         result["MouldRisk"]["Vdot_acc_pre"] = signif(Vdot_acc_pre,2)
         result["MouldRisk"]["ELA_acc_pre"] = signif(ELA_acc_pre,2)
-        
+
+        Vdot_req = Vdot_req_abs+Vdot_req_pre
+        LWR_Tot = Vdot_Tot/Vol_Unit
+        LWR_Inf = Vdot_Inf/Vol_Unit
+        LWR_req = Vdot_req/Vol_Unit
+
+        result["MouldRisk"]["plot"] = {}
+
+        n_bins = 70
+        for i, (tot,inf,req), xmax in zip(
+                ["Vdot", "LWR"],
+                [[Vdot_Tot, Vdot_Inf, Vdot_req], [LWR_Tot, LWR_Inf, LWR_req]],
+                [Vdot_req.mean(), LWR_Tot.mean()]
+            ):
+            bins=np.arange(0,n_bins)/n_bins*xmax*3
+            hist_tot,_ = np.histogram(np.clip(tot,bins[0],bins[-1]), bins)
+            hist_inf,_ = np.histogram(np.clip(inf,bins[0],bins[-1]), bins)
+            hist_req,_ = np.histogram(np.clip(req,bins[0],bins[-1]), bins)
+
+            result["MouldRisk"]["plot"][i] = {}
+            result["MouldRisk"]["plot"][i]["x"] = bins[:-1]
+            result["MouldRisk"]["plot"][i]["y"] = [hist_tot, hist_inf, hist_req]
+
+        n_bins = 50
+        bins=np.arange(0,n_bins)/n_bins
+        for i,aw in zip(["abs","pre"], [aw_abs,aw_pre]):
+            hist_aw,_ = np.histogram(np.clip(aw,bins[0],bins[-1]), bins)
+
+            result["MouldRisk"]["plot"][i] = {}
+            result["MouldRisk"]["plot"][i]["x"] = bins[:-1]
+            result["MouldRisk"]["plot"][i]["y"] = [hist_aw]
 
         result["MouldRisk"]["MouldRisk"] = np.max([MouldRisk_abs,MouldRisk_pre])
 
