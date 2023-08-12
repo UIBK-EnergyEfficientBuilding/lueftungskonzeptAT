@@ -246,7 +246,7 @@ mould_risk = namespace.model('ResH2O', {
     ),
 })
 
-calculation_result_model = namespace.model('CalculationResult', {
+res_co2 = namespace.model('ResCO2', {
     'airing_acceptable': fields.Boolean(
         description="Fensterlüftung praktikabel/zumutbar"
     ),
@@ -278,6 +278,13 @@ calculation_result_model = namespace.model('CalculationResult', {
         airing_resultdata,
         description='Momentanwert - Ideale Lüftung'
     ),
+})
+
+calculation_result_model = namespace.model('CalculationResult', {
+    'ResCO2': fields.Nested(
+        res_co2,
+        description='Ergebnis CO2 Bewertung'
+     ),
     'ResH2O': fields.Nested(
         mould_risk,
         description='Ergebnis Schimmelrisiko Bewertung (nur für Wohnbau)'

@@ -447,15 +447,17 @@ def calc(
         result["ResH2O"]["MouldRisk"] = np.max([MouldRisk_abs,MouldRisk_pre])
 
     result.update({
-        "airing_acceptable": Fensterlueftung,
-        "t_reasonable": t_zumutbar,
-        "t_avgC_realC0": stats_data_gw_erreicht,
-        "t_instC_realC0": stats_data_gw_periodisch,
-        "t_avgC_idealC0": stats_data_gw_ueberschritten,
-        "t_instC_idealC0": stats_data_gw_ideal,
-        "Vdot": signif(np.quantile(Vdot,quantiles),2),
-        "ACR": signif(np.quantile(LWR,quantiles),2),
-        "CO2_stat": signif(np.quantile(C_stat,quantiles),2),
+        "ResCO2":{
+            "airing_acceptable": Fensterlueftung,
+            "t_reasonable": t_zumutbar,
+            "t_avgC_realC0": stats_data_gw_erreicht,
+            "t_instC_realC0": stats_data_gw_periodisch,
+            "t_avgC_idealC0": stats_data_gw_ueberschritten,
+            "t_instC_idealC0": stats_data_gw_ideal,
+            "Vdot": signif(np.quantile(Vdot,quantiles),2),
+            "ACR": signif(np.quantile(LWR,quantiles),2),
+            "CO2_stat": signif(np.quantile(C_stat,quantiles),2),
+        },
         "inputs": inputs
     })
 
