@@ -422,7 +422,7 @@ def calc(
 
         n_bins = 70
         for i, (tot,inf,req), xmax in zip(
-                ["Vdot", "LWR"],
+                ["Vdot", "ACR"],
                 [[Vdot_Tot, Vdot_Inf, Vdot_req], [LWR_Tot, LWR_Inf, LWR_req]],
                 [Vdot_req.mean(), LWR_Tot.mean()]
             ):

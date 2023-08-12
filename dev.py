@@ -144,7 +144,7 @@ if __name__ == "__main__":
         plt.xlabel("aw Wert [-]")
         plt.savefig(f"ResH2O_aw_{i}.png")
 
-    for i,xlabel in zip(["Vdot", "LWR"],["Mittlerer Luftvolumenstrom [1/h]","Mittlere Luftwechselrate [1/h]"]):
+    for i,xlabel in zip(["Vdot", "ACR"],["Mittlerer Luftvolumenstrom [1/h]","Mittlere Luftwechselrate [1/h]"]):
         plt.figure()
         for l,j in zip(("Inf+Fen","Inf","Erf"),list(range(0,3))):
             plt.plot(result["ResH2O"]["plot"][i]["x"], result["ResH2O"]["plot"][i]["y"][j], marker=".", label=l)

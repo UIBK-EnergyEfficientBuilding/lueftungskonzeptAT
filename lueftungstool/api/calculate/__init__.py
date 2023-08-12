@@ -166,7 +166,7 @@ airing_resultdata = namespace.model('airing_resultdata', {
 })
 
 mouldrisk_plot = namespace.model('mouldrisk_plot', {
-    'LWR': fields.Nested(
+    'ACR': fields.Nested(
         plot_data,
         description='Mittlere Luftwechselrate [1/h]'
     ),
