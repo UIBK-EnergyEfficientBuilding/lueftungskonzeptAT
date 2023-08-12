@@ -127,14 +127,15 @@ if __name__ == "__main__":
 
     import matplotlib.pyplot as plt
 
-    plt.figure()
-    plt.bar(result["ResCO2"]["t_avgC_realC0"]["frequency"]["x"], result["ResCO2"]["t_avgC_realC0"]["frequency"]["y"][0], width=60)
-    plt.savefig("ResCO2_frequency.png")
+    for i in ["t_avgC_realC0", "t_instC_realC0", "t_avgC_idealC0", "t_instC_idealC0"]:
+        plt.figure()
+        plt.bar(result["ResCO2"][i]["frequency"]["x"], result["ResCO2"][i]["frequency"]["y"][0], width=60)
+        plt.savefig(f"ResCO2_frequency_{i}.png")
 
-    plt.figure()
-    for i in range(0,len(quantiles)):
-        plt.plot(result["ResCO2"]["t_avgC_realC0"]["timeseries"]["x"], result["ResCO2"]["t_avgC_realC0"]["timeseries"]["y"][i])
-    plt.savefig("ResCO2_timeseries.png")
+        plt.figure()
+        for j in range(0,len(quantiles)):
+            plt.plot(result["ResCO2"][i]["timeseries"]["x"], result["ResCO2"][i]["timeseries"]["y"][j])
+        plt.savefig(f"ResCO2_timeseries_{i}.png")
 
     for i in ["abs", "pre"]:
         plt.figure()
