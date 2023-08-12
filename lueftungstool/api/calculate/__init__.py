@@ -146,13 +146,13 @@ calculation_parameter_model = namespace.model('CalculationParameter', {
 })
 
 plot_data = namespace.model('plot_data', {
-    "x":fields.List(fields.Float(), default=[0,1,2,3,5]),
-    "y":fields.List(fields.List(fields.Float()), default=[[0,1,2,3,5]]),
+    "x":fields.List(fields.Float(), example=[0,1,2,3,5]),
+    "y":fields.List(fields.List(fields.Float()), example=[[0,1,2,3,5]]),
 })
 
 airing_resultdata = namespace.model('airing_resultdata', {
     "quantiles": fields.List(fields.Float(),
-        default=[0.26,0.43,0.68,1.1,1.6],
+        example=[0.26,0.43,0.68,1.1,1.6],
         description='Zeit bis Grenzwert erreicht - [P5,P25,Med,P75,P95]'
     ),
     'frequency': fields.Nested(
@@ -186,50 +186,50 @@ mouldrisk_plot = namespace.model('mouldrisk_plot', {
 
 mould_risk = namespace.model('ResH2O', {
     'MouldRisk': fields.Float(
-        default=0.219,
+        example=0.219,
         description='Schimmelrisiko als Wahrscheinlichkeit'
     ),
 
     "Vdot_Inf": fields.List(fields.Float(),
-        default=[3.7,5.3,7.6,11,16],
+        example=[3.7,5.3,7.6,11,16],
         description='Luftmenge durch Fugenlüftung [m³/h]'
     ),
     "Vdot_Tot": fields.List(fields.Float(),
-        default=[35,43,51,62,79],
+        example=[35,43,51,62,79],
         description='Luftmenge durch Fugenlüftung + Fensterlüftung [m³/h]'
     ),
 
     "Vdot_req_pre": fields.List(fields.Float(),
-        default=[19,25,32,42,63],
+        example=[19,25,32,42,63],
         description='Erforderliche Luftmenge zur Feuchteabfuhr [m³/h]'
     ),
     'Frac_Inf_insuff_pre': fields.Float(
-        default=1,
+        example=1,
         description='Wahrscheinlichkeit dass Fugenlüftung alleine nicht ausreicht'
     ),
     'MouldRisk_pre': fields.Float(
-        default=0.072,
+        example=0.072,
         description='Wahrscheinlichkeit dass Fugenlüftung und Fensterlüftung nicht ausreicht'
     ),
     "Vdot_acc_pre": fields.Float(
-        default=12,
+        example=12,
         description='Erforderliche zusätzliche Luftmenge damit Wahrscheinlichkeit <1% [m³/h]'
     ),
     "ELA_acc_pre": fields.Float(
-        default=120,
+        example=120,
         description='dafür erforderlicher zusätzlicher freier Querschnitt [cm²]'
     ),
 
     "Vdot_req_abs": fields.List(fields.Float(),
-        default=[2.9,4,5.1,6.5,8.9],
+        example=[2.9,4,5.1,6.5,8.9],
         description='Erforderliche Luftmenge zur Feuchteabfuhr [m³/h]'
     ),
     'Frac_Inf_insuff_abs': fields.Float(
-        default=0.219,
+        example=0.219,
         description='Wahrscheinlichkeit dass Fugenlüftung alleine nicht ausreicht'
     ),
     'MouldRisk_abs': fields.Float(
-        default=0.219,
+        example=0.219,
         description='Wahrscheinlichkeit dass Fugenlüftung nicht ausreicht'
     ),
     "Vdot_acc_abs": fields.Float(
@@ -237,7 +237,7 @@ mould_risk = namespace.model('ResH2O', {
         description='Erforderliche zusätzliche Luftmenge damit Wahrscheinlichkeit<1% [m³/h]'
     ),
     "ELA_acc_abs": fields.Float(
-        default=41,
+        example=41,
         description='dafür erforderlicher zusätzlicher freier Querschnitt [cm²]]'
     ),
     'plot': fields.Nested(
@@ -253,13 +253,13 @@ res_co2 = namespace.model('ResCO2', {
     't_reasonable': fields.Float(
         description="Dies ist kürzer als die zumutbare Zeit zwischen Fensterlüften [min]"
     ),
-    'CO2_stat': fields.List(fields.Float(), default=[ 7900, 13000, 19000, 28000, 46000],
+    'CO2_stat': fields.List(fields.Float(), example=[ 7900, 13000, 19000, 28000, 46000],
         description='CO2 Konzentration im stationären Fall'
     ),
-    'Vdot': fields.List(fields.Float(), default=[0.73, 1.1,  1.4,  1.9,  3.1],
+    'Vdot': fields.List(fields.Float(), example=[0.73, 1.1,  1.4,  1.9,  3.1],
         description='errechnete Luftmenge aufgrund natürlicher Lüftung [m³/h]'
     ),
-    'ACR': fields.List(fields.Float(), default=[0.024, 0.03, 0.039, 0.05, 0.066],
+    'ACR': fields.List(fields.Float(), example=[0.024, 0.03, 0.039, 0.05, 0.066],
         description='errechneter natürlicher Luftwechsel [1/h]'
     ),
     't_avgC_realC0': fields.Nested(
