@@ -68,15 +68,15 @@ def calc_lage(location, inputs, Shield, Terr, quantiles, size):
 
     return C, alfa, gama
 
-def calc_dichtheit(gebaeude_n50, gebaeudeart, inputs, quantiles, size):
+def calc_dichtheit(building_n50, building_type, inputs, quantiles, size):
     #Gebäudichtheit
-    n50 = beta_scaled(*params.n50_map[gebaeude_n50],size=size)
+    n50 = beta_scaled(*params.n50_map[building_n50],size=size)
 
-    inputs["gebaeude_n50"] = signif(np.quantile(n50,quantiles),2)
+    inputs["building_n50"] = signif(np.quantile(n50,quantiles),2)
 
-    H_Bldg = beta_scaled(*params.gebaeudeart2H_Bldg[gebaeudeart],size=size)
+    H_Bldg = beta_scaled(*params.gebaeudeart2H_Bldg[building_type],size=size)
     Windeff = np.max(
-        [[3]*size, H_Bldg*beta_scaled(*params.gebaeudeart2H_WindRel[gebaeudeart],size=size)],
+        [[3]*size, H_Bldg*beta_scaled(*params.gebaeudeart2H_WindRel[building_type],size=size)],
         axis=0
     )
 
@@ -95,9 +95,9 @@ def Undichtheiten(size):
 
     return R,X
 
-def Raum(raumart, inputs, quantiles, H_Rm = None, A_Rm = None, size = 1000):
-    A_Rm = fixed_or_beta_scaled(raumart, params.raumart2A_Rm, A_Rm, size)
-    H_Rm = fixed_or_beta_scaled(raumart, params.raumart2H_Rm, H_Rm, size)
+def Raum(room_type, inputs, quantiles, H_Rm = None, A_Rm = None, size = 1000):
+    A_Rm = fixed_or_beta_scaled(room_type, params.raumart2A_Rm, A_Rm, size)
+    H_Rm = fixed_or_beta_scaled(room_type, params.raumart2H_Rm, H_Rm, size)
 
     inputs["H_Rm"] = signif(np.quantile(H_Rm,quantiles),2)
     inputs["A_Rm"] = signif(np.quantile(A_Rm,quantiles),2)
@@ -130,13 +130,13 @@ def Infiltration(Ti_avg,T_a,C,alfa,gama,H_wind,R,X,H_stack,n50,Vol,v_10m):
 
     return Vdot,fs,fw
 
-def co2_emission(raumart, inputs, quantiles, NrAdu = None, ActAdu = None, NrKids = None, ActKid = None, AgeKid = None, size = 1000):
-    AgeKid = fixed_or_beta_scaled(raumart, params.raumart2AgeKid, AgeKid, size)
+def co2_emission(room_type, inputs, quantiles, NrAdu = None, ActAdu = None, NrKids = None, ActKid = None, AgeKid = None, size = 1000):
+    AgeKid = fixed_or_beta_scaled(room_type, params.raumart2AgeKid, AgeKid, size)
 
-    ActKid = fixed_or_beta_scaled(raumart, params.raumart2ActKid, ActKid, size=size)
-    NrKids = np.round(fixed_or_beta_scaled(raumart, params.raumart2Nr_Kid, NrKids, size=size))
-    ActAdu = fixed_or_beta_scaled(raumart, params.raumart2ActAdu, ActAdu,size=size)
-    NrAdu = np.round(fixed_or_beta_scaled(raumart, params.raumart2Nr_Adu, NrAdu,size=size))
+    ActKid = fixed_or_beta_scaled(room_type, params.raumart2ActKid, ActKid, size=size)
+    NrKids = np.round(fixed_or_beta_scaled(room_type, params.raumart2Nr_Kid, NrKids, size=size))
+    ActAdu = fixed_or_beta_scaled(room_type, params.raumart2ActAdu, ActAdu,size=size)
+    NrAdu = np.round(fixed_or_beta_scaled(room_type, params.raumart2Nr_Adu, NrAdu,size=size))
 
     inputs["AgeKid"] = signif(np.quantile(AgeKid,quantiles),2)
     inputs["ActKid"] = signif(np.quantile(ActKid,quantiles),2)
@@ -152,9 +152,9 @@ def co2_emission(raumart, inputs, quantiles, NrAdu = None, ActAdu = None, NrKids
 
     return CO2_Emi
 
-def Lueften(luefungsart,CO2_Emi,A_Rm,H_Rm,CO2_aussen,CO2_Grenzwert,CO2_Grenzwert2,size):
-    LWR_lueften = beta_scaled(*params.luefungsart2WinACH[luefungsart],size=size)
-    t_lueften = beta_scaled(*params.luefungsart2WinDur[luefungsart],size=size)
+def Lueften(airing_type_room,CO2_Emi,A_Rm,H_Rm,CO2_aussen,CO2_Grenzwert,CO2_Grenzwert2,size):
+    LWR_lueften = beta_scaled(*params.luefungsart2WinACH[airing_type_room],size=size)
+    t_lueften = beta_scaled(*params.luefungsart2WinDur[airing_type_room],size=size)
 
     c_stat_lueft = (LWR_lueften*A_Rm*H_Rm*CO2_aussen/1e6+CO2_Emi/1000)/(LWR_lueften*A_Rm*H_Rm)*1e6
 
@@ -240,12 +240,12 @@ def MouldRisk(fRSI,H2Oemi,Vdot_tot,Vdot_inf,Ti,Ti_min,Ta,Ta_damped,rH_a,v_10m,fs
 
 
 def calc(
-        location, gebaeude_n50, gebaeudeart, inputs, waermebruecken, H_Rm, A_Rm, Shield, Terr, luefungsart, CO2_Emi, WNF, Feuchtelastkategorie, m_H2Od, m_H2Ok, m_H2Od0, quantiles, size = 1000
+        location, building_n50, building_type, inputs, thermalbridges, H_Rm, A_Rm, Shield, Terr, airing_type_room, CO2_Emi, area_home, H2Osource_category, H2Osource_area, H2Osource_pers, H2Osource_area_abs, quantiles, size = 1000
     ):
     T_a, v_10m, rH_a = weather(location)
     C, alfa, gama = calc_lage(location, inputs, Shield, Terr, quantiles, size)
-    n50, H_Bldg, Windeff = calc_dichtheit(gebaeude_n50, gebaeudeart, inputs, quantiles, size)
-    Ti_avg = beta_scaled(*params.waermebruecken2Ti_avg[waermebruecken],size=size)
+    n50, H_Bldg, Windeff = calc_dichtheit(building_n50, building_type, inputs, quantiles, size)
+    Ti_avg = beta_scaled(*params.waermebruecken2Ti_avg[thermalbridges],size=size)
     R, X = Undichtheiten(size)
 
     n50_Raum = n50  #
@@ -261,7 +261,7 @@ def calc(
 
     C_stat = (Vdot*CO2_aussen/1e6+CO2_Emi/1000)/Vdot*1e6
     C0, C0__GWfix = Lueften(
-        luefungsart,CO2_Emi,A_Rm,H_Rm,CO2_aussen,CO2_Grenzwert,CO2_Grenzwert2,size
+        airing_type_room,CO2_Emi,A_Rm,H_Rm,CO2_aussen,CO2_Grenzwert,CO2_Grenzwert2,size
     )
 
     n_max = 192
@@ -327,54 +327,54 @@ def calc(
     result = {}
 
   # humidity calculation
-    if gebaeudeart in params.WNF_list:
+    if building_type in params.WNF_list:
         humcalc = True
     else:
         humcalc = False
     if humcalc:
         result["MouldRisk"] = {}
 
-        WNF = fixed_or_beta_scaled(gebaeudeart, params.WNF, WNF, size)
+        area_home = fixed_or_beta_scaled(building_type, params.WNF, area_home, size)
 
-        inputs["WNF"] = signif(np.quantile(WNF,quantiles),2)
+        inputs["area_home"] = signif(np.quantile(area_home,quantiles),2)
 
-        m_H2Od0 = fixed_or_beta_scaled_range(
+        H2Osource_area_abs = fixed_or_beta_scaled_range(
             "Quellstärke [g/h] Wohnen bei Abwesenheit",
             params.m_H2Od0,
-            *params.Feuchtelastkategorie[Feuchtelastkategorie],
-            m_H2Od0,
+            *params.Feuchtelastkategorie[H2Osource_category],
+            H2Osource_area_abs,
             size
         )
-        m_H2Od = fixed_or_beta_scaled_range(
+        H2Osource_area = fixed_or_beta_scaled_range(
             "Quellstärke [g/h] Wohnen Flächenabhängig",
             params.m_H2Od,
-            *params.Feuchtelastkategorie[Feuchtelastkategorie],
-            m_H2Od,
+            *params.Feuchtelastkategorie[H2Osource_category],
+            H2Osource_area,
             size
         )
-        m_H2Ok = fixed_or_beta_scaled_range(
+        H2Osource_pers = fixed_or_beta_scaled_range(
             "Quellstärke [g/h] Wohnen PersABH",
             params.m_H2Ok,
-            *params.Feuchtelastkategorie[Feuchtelastkategorie],
-            m_H2Ok,
+            *params.Feuchtelastkategorie[H2Osource_category],
+            H2Osource_pers,
             size
         )
-        inputs["m_H2Od0"] = signif(np.quantile(m_H2Od0,quantiles),2)
-        inputs["m_H2Od"] = signif(np.quantile(m_H2Od,quantiles),2)
-        inputs["m_H2Ok"] = signif(np.quantile(m_H2Ok,quantiles),2)
+        inputs["H2Osource_area_abs"] = signif(np.quantile(H2Osource_area_abs,quantiles),2)
+        inputs["H2Osource_area"] = signif(np.quantile(H2Osource_area,quantiles),2)
+        inputs["H2Osource_pers"] = signif(np.quantile(H2Osource_pers,quantiles),2)
 
-        OccDens = beta_scaled(*params.OccDens[gebaeudeart], size)
-        AvgPers = WNF/OccDens
+        OccDens = beta_scaled(*params.OccDens[building_type], size)
+        AvgPers = area_home/OccDens
 
         inputs["AvgPers"] = signif(np.quantile(AvgPers,quantiles),2)
 
         #tbd: through interface
-        Vol_Unit = H_Rm * WNF
+        Vol_Unit = H_Rm * area_home
         Ti_min=18.9
         Ti_abs=17.0
         fRSI=0.7
-        H2Oemi_abs = m_H2Od0 * WNF * 24 / 1000
-        H2Oemi_pre = (m_H2Od * WNF + m_H2Ok * AvgPers) * 24 / 1000
+        H2Oemi_abs = H2Osource_area_abs * area_home * 24 / 1000
+        H2Oemi_pre = (H2Osource_area * area_home + H2Osource_pers * AvgPers) * 24 / 1000
         ACH_Win=20 #depends on window ventilation type
         Dur_Win=15 #in min like above
         Vdot_add = 0 #additional ventilation air flow (for expert use/interface) tbd:add text in output when active

@@ -11,19 +11,19 @@ if __name__ == "__main__":
     quantiles = [0.05, 0.25, 0.5, 0.75, 0.95]
     size = 1000
     signDig=2   #tbd add to a settings dict
-    raumart = "Schlafzimmer"
+    room_type = "Schlafzimmer"
 
     inputs = {}
 
     CO2_Emi = ltool.co2_emission(
-        raumart = raumart,
+        room_type = room_type,
         inputs = inputs,
         quantiles = quantiles,
         size = size
     )
 
     H_Rm, A_Rm = ltool.Raum(
-        raumart = raumart,
+        room_type = room_type,
         inputs = inputs,
         quantiles = quantiles,
         size = size
@@ -31,21 +31,21 @@ if __name__ == "__main__":
 
     result = ltool.calc(
         location = "Wien",
-        gebaeude_n50 = "Standard Neubau",
-        gebaeudeart = "Mehrfamilienhaus",
+        building_n50 = "Standard Neubau",
+        building_type = "Mehrfamilienhaus",
         inputs = inputs,
-        waermebruecken = "Standard Neubau",
+        thermalbridges = "Standard Neubau",
         H_Rm = H_Rm,
         A_Rm = A_Rm,
-        luefungsart = "Querlüftung",
+        airing_type_room = "Querlüftung",
         Shield = None,
         Terr = None,
         CO2_Emi = CO2_Emi,
-        WNF = None,
-        Feuchtelastkategorie = "Mittel",
-        m_H2Od = None,
-        m_H2Ok = None,
-        m_H2Od0 = None,
+        area_home = None,
+        H2Osource_category = "Mittel",
+        H2Osource_area = None,
+        H2Osource_pers = None,
+        H2Osource_area_abs = None,
         quantiles = quantiles,
         size = size
     )
@@ -53,7 +53,7 @@ if __name__ == "__main__":
     print("#Eingaben Gebäude/Raum")
     print("Standort:".ljust(75), "?")
     print("Gebäudeart:".ljust(75), "?")
-    print_row("Luftdichtigkeit n50-Wert (Gebäude) [1/h]:".ljust(75), result["inputs"]["gebaeude_n50"])
+    print_row("Luftdichtigkeit n50-Wert (Gebäude) [1/h]:".ljust(75), result["inputs"]["building_n50"])
     print("Raumart (betrachteter Raum):".ljust(75), "?")
     print_row("Fläche (betrachteter Raum) [m²]:".ljust(75), result["inputs"]["A_Rm"])
     print_row("Höhe (betrachteter Raum) [m]:".ljust(75), result["inputs"]["H_Rm"])
@@ -75,10 +75,10 @@ if __name__ == "__main__":
         print("Berechnung durchführen:".ljust(75), "Ja")
         print("Wärmebrücken / fRSI-Wert".ljust(75), "?")
         print("Feuchtelast [l/d]:".ljust(75), "?")
-        print_row("Feuchtequellstärke pro m² bei Anwesenheit [g/(hm²)]".ljust(75), result["inputs"]["m_H2Od"])
-        print_row("Feuchtequellstärke pro Pers bei Anwesenheit [g/(hPers)]".ljust(75), result["inputs"]["m_H2Ok"])
-        print_row("Feuchtequellstärke pro m² bei Abwesenheit [g/(hm²)]".ljust(75), result["inputs"]["m_H2Od0"])
-        print_row("Fläche gesamte Wohneinheit [m²]:".ljust(75), result["inputs"]["WNF"])
+        print_row("Feuchtequellstärke pro m² bei Anwesenheit [g/(hm²)]".ljust(75), result["inputs"]["H2Osource_area"])
+        print_row("Feuchtequellstärke pro Pers bei Anwesenheit [g/(hPers)]".ljust(75), result["inputs"]["H2Osource_pers"])
+        print_row("Feuchtequellstärke pro m² bei Abwesenheit [g/(hm²)]".ljust(75), result["inputs"]["H2Osource_area_abs"])
+        print_row("Fläche gesamte Wohneinheit [m²]:".ljust(75), result["inputs"]["area_home"])
         print_row("Personenanzahl (gesamter Wohneinheit):".ljust(75), result["inputs"]["AvgPers"])
         print("Lüftungsmöglichkeit (gesamte Wohneinheit):".ljust(75), "?")
         print("Lüftungsdauer gesamt, z.B. morgens und abends [min/Tag]:".ljust(75), "?")
