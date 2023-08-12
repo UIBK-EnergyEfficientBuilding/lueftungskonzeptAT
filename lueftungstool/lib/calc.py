@@ -417,15 +417,15 @@ def calc(
         result["MouldRisk"]["MouldRisk"] = np.max([MouldRisk_abs,MouldRisk_pre])
 
     result.update({
-        "window_airing_acceptable": Fensterlueftung,
-        "t_zumutbar": t_zumutbar,
-        "t_gw_erreicht": stats_data_gw_erreicht,
-        "t_gw_periodisch": stats_data_gw_periodisch,
-        "t_gw_ueberschritten": stats_data_gw_ueberschritten,
-        "t_gw_ideal": stats_data_gw_ideal,
+        "airing_acceptable": Fensterlueftung,
+        "t_reasonable": t_zumutbar,
+        "t_avgC_realC0": stats_data_gw_erreicht,
+        "t_instC_realC0": stats_data_gw_periodisch,
+        "t_avgC_idealC0": stats_data_gw_ueberschritten,
+        "t_instC_idealC0": stats_data_gw_ideal,
         "Vdot": signif(np.quantile(Vdot,quantiles),2),
-        "LWR": signif(np.quantile(LWR,quantiles),2),
-        "C_stat": signif(np.quantile(C_stat,quantiles),2),
+        "ACR": signif(np.quantile(LWR,quantiles),2),
+        "CO2_stat": signif(np.quantile(C_stat,quantiles),2),
         "inputs": inputs
     })
 

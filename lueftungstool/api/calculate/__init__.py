@@ -24,17 +24,17 @@ calculation_parameter_model = namespace.model('CalculationParameter', {
         enum=params.location_list,
         description="Standort",
     ),
-    'gebaeude_n50': fields.String(default="Standard Neubau",
+    'building_n50': fields.String(default="Standard Neubau",
         required=True,
         enum=params.n50_map_list,
         description="Luftdichtigkeit n50-Wert (Gebäude) [1/h]",
     ),
-    'gebaeudeart': fields.String(default="Mehrfamilienhaus",
+    'building_type': fields.String(default="Mehrfamilienhaus",
         required=True,
         enum=params.gebaeudeart_list,
         description="Gebäudeart",
     ),
-    'waermebruecken': fields.String(default="Standard Neubau",
+    'thermalbridges': fields.String(default="Standard Neubau",
         required=True,
         enum=params.waermebruecken_list,
         description="Wärmebrücken / fRSI-Wert",
@@ -47,33 +47,33 @@ calculation_parameter_model = namespace.model('CalculationParameter', {
         required=False,
         description="Fläche (betrachteter Raum) [m²]:",
     ),
-    'raumart': fields.String(default="Schlafzimmer",
+    'room_type': fields.String(default="Schlafzimmer",
         required=True,
         enum=params.raumart_list,
         description="Raumart (betrachteter Raum):",
     ),
-    'fensterflaeche': fields.Float(
+    'window_area': fields.Float(
         required=False,
         description="Fläche öffenbare Fenster (betrachteter Raum) [m²]:",
     ),
-    'fensterklasse': fields.Integer(
+    'window_class': fields.Integer(
         required=False,
         min=1,
         max=4,
         description="Fensterklasse nach EN12207 (betrachteter Raum)",
     ),
-    'luefungsart': fields.String(default="Querlüftung",
+    'airing_type_room': fields.String(default="Querlüftung",
         required=True,
         enum=params.luefungsart_list,
         description="Lüftungsmöglichkeit (betrachteter Raum):",
     ),
-    'terrainklasse': fields.Integer(
+    'terrain_class': fields.Integer(
         required=False,
         min=1,
         max=5,
         description="Gelände-/Terrainklasse (Windeinfluss)",
     ),
-    'shieldingklasse': fields.Integer(
+    'shielding_class': fields.Integer(
         required=False,
         min=1,
         max=5,
@@ -101,36 +101,36 @@ calculation_parameter_model = namespace.model('CalculationParameter', {
         description="Mittleres Alter der Kinder [a]",
     ),
 
-    'Feuchtelastkategorie': fields.String(default="Mittel",
+    'H2Osource_category': fields.String(default="Mittel",
         required=True,
         enum=params.Feuchtelastkategorie_list,
         description="Feuchtelast [l/d]:",
     ),
-    'm_H2Od': fields.Float(
+    'H2Osource_area': fields.Float(
         required=False,
         description="Feuchtequellstärke pro m² bei Anwesenheit [g/(hm²)]",
     ),
-    'm_H2Ok': fields.Float(
+    'H2Osource_pers': fields.Float(
         required=False,
         description="Feuchtequellstärke pro Pers bei Anwesenheit [g/(hPers)]",
     ),
-    'm_H2Od0': fields.Float(
+    'H2Osource_area_abs': fields.Float(
         required=False,
         description="Feuchtequellstärke pro m² bei Abwesenheit [g/(hm²)]",
     ),
-    'WNF': fields.Float(
+    'area_home': fields.Float(
         required=False,
         description="Fläche gesamte Wohneinheit [m²]:",
     ),
-    'AvgPers': fields.Float(
+    'pers_home': fields.Float(
         required=False,
         description="Personenanzahl (gesamter Wohneinheit)",
     ),
-    'luefungsart_ges': fields.Float(
+    'airing_type_home': fields.Float(
         required=False,
         description="Lüftungsmöglichkeit (gesamte Wohneinheit)",
     ),
-    'Dur_Win': fields.Float(
+    'airing_duration': fields.Float(
         required=False,
         description="Lüftungsdauer gesamt, z.B. morgens und abends [min/Tag]",
     ),
@@ -224,34 +224,34 @@ mould_risk = namespace.model('MouldRisk', {
 })
 
 calculation_result_model = namespace.model('CalculationResult', {
-    'window_airing_acceptable': fields.Boolean(
+    'airing_acceptable': fields.Boolean(
         description="Fensterlüftung praktikabel/zumutbar"
     ),
-    't_zumutbar': fields.Float(
+    't_reasonable': fields.Float(
         description="Dies ist kürzer als die zumutbare Zeit zwischen Fensterlüften [min]"
     ),
-    'C_stat': fields.List(fields.Float(), default=[ 7900, 13000, 19000, 28000, 46000],
+    'CO2_stat': fields.List(fields.Float(), default=[ 7900, 13000, 19000, 28000, 46000],
         description='CO2 Konzentration im stationären Fall'
     ),
     'Vdot': fields.List(fields.Float(), default=[0.73, 1.1,  1.4,  1.9,  3.1],
         description='errechnete Luftmenge aufgrund natürlicher Lüftung [m³/h]'
     ),
-    'LWR': fields.List(fields.Float(), default=[0.024, 0.03, 0.039, 0.05, 0.066],
+    'ACR': fields.List(fields.Float(), default=[0.024, 0.03, 0.039, 0.05, 0.066],
         description='errechneter natürlicher Luftwechsel [1/h]'
     ),
-    't_gw_erreicht': fields.Nested(
+    't_avgC_realC0': fields.Nested(
         lueften_statistik,
         description='Gleitender Mittelwert - Realistisches Lüftungsverhalten'
     ),
-    't_gw_periodisch': fields.Nested(
+    't_instC_realC0': fields.Nested(
         lueften_statistik,
         description='Momentanwert - Realistisches Lüftungsverhalten'
     ),
-    't_gw_ueberschritten': fields.Nested(
+    't_avgC_idealC0': fields.Nested(
         lueften_statistik,
         description='Gleitender Mittelwert - Ideale Lüftung'
     ),
-    't_gw_ideal': fields.Nested(
+    't_instC_idealC0': fields.Nested(
         lueften_statistik,
         description='Momentanwert - Ideale Lüftung'
     ),
@@ -284,15 +284,15 @@ class Calculate(Resource):
         args = parser.parse_args()
 
         errors = {}
-        if 'shieldingklasse' in args and args['shieldingklasse'] is not None:
-            if not args['shieldingklasse'] in params.Shield_class2C:
-                errors["shieldingklasse"] = f"{args['shieldingklasse']} is not in {list(params.Shield_class2C.keys())}"
-        if 'terrainklasse' in args and args['terrainklasse'] is not None:
-            if not args['terrainklasse'] in params.Shield_class2C:
-                errors["terrainklasse"] = f"{args['terrainklasse']} is not in {list(params.Shield_class2C.keys())}"
-        if 'fensterklasse' in args and args['fensterklasse'] is not None:
-            if not args['fensterklasse'] in [1,2,3,4]:
-                errors["fensterklasse"] = f"{args['fensterklasse']} is not in [1,2,3,4]"
+        if 'shielding_class' in args and args['shielding_class'] is not None:
+            if not args['shielding_class'] in params.Shield_class2C:
+                errors["shielding_class"] = f"{args['shielding_class']} is not in {list(params.Shield_class2C.keys())}"
+        if 'terrain_class' in args and args['terrain_class'] is not None:
+            if not args['terrain_class'] in params.Shield_class2C:
+                errors["terrain_class"] = f"{args['terrain_class']} is not in {list(params.Shield_class2C.keys())}"
+        if 'window_class' in args and args['window_class'] is not None:
+            if not args['window_class'] in [1,2,3,4]:
+                errors["window_class"] = f"{args['window_class']} is not in [1,2,3,4]"
 
         if len(errors.keys()) != 0:
             namespace.abort(
@@ -305,7 +305,7 @@ class Calculate(Resource):
         quantiles = [0.05, 0.25, 0.5, 0.75, 0.95]
 
         CO2_Emi = ltool.co2_emission(
-            raumart = args['raumart'],
+            room_type = args['room_type'],
             inputs = inputs,
             quantiles = quantiles,
             NrAdu = args['NrAdu'],
@@ -317,7 +317,7 @@ class Calculate(Resource):
         )
 
         H_Rm, A_Rm = ltool.Raum(
-            raumart = args['raumart'],
+            room_type = args['room_type'],
             inputs = inputs,
             quantiles = quantiles,
             H_Rm = args['H_Rm'],
@@ -327,30 +327,30 @@ class Calculate(Resource):
 
         return ltool.calc(
             location = args['location'],
-            gebaeude_n50 = args['gebaeude_n50'],
-            gebaeudeart = args['gebaeudeart'],
+            building_n50 = args['building_n50'],
+            building_type = args['building_type'],
             inputs = inputs,
-            waermebruecken = args['waermebruecken'],
+            thermalbridges = args['thermalbridges'],
             H_Rm = H_Rm,
             A_Rm = A_Rm,
-            luefungsart = args['luefungsart'],
-            Shield = args['shieldingklasse'],
-            Terr = args['terrainklasse'],
+            airing_type_room = args['airing_type_room'],
+            Shield = args['shielding_class'],
+            Terr = args['terrain_class'],
             # todo
-            #fensterflaeche
-            #fensterklasse
+            #window_area
+            #window_class
             #luefungsdauer
-            #AvgPers
-            #luefungsart_ges
-            #Dur_Win
+            #pers_home
+            #airing_type_home
+            #airing_duration
             #Ti_abs
             #Ti_min
             CO2_Emi = CO2_Emi,
-            WNF = args['WNF'],
-            Feuchtelastkategorie = args["Feuchtelastkategorie"],
-            m_H2Od = args['m_H2Od'],
-            m_H2Ok = args['m_H2Ok'],
-            m_H2Od0 = args['m_H2Od0'],
+            area_home = args['area_home'],
+            H2Osource_category = args["H2Osource_category"],
+            H2Osource_area = args['H2Osource_area'],
+            H2Osource_pers = args['H2Osource_pers'],
+            H2Osource_area_abs = args['H2Osource_area_abs'],
             quantiles = quantiles,
             size = size
         )
@@ -363,9 +363,9 @@ parameter_result_model =  namespace.model('ParameterResult', {
 
 params_mapping = {
     "location":params.location_list,
-    "gebaeudeart":params.gebaeudeart_list,
-    "raumart":params.raumart_list,
-    "luefungsart":params.luefungsart_list,
+    "building_type":params.gebaeudeart_list,
+    "room_type":params.raumart_list,
+    "airing_type_room":params.luefungsart_list,
     "n50_map":params.n50_map_list,
 }
 
