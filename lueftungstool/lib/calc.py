@@ -169,12 +169,12 @@ def calc_result(t_gw,t,c_gw,t_max,quantiles):
     hist,_ = np.histogram(t_gw, bins)
 
     return {
-        "Quantile": signif(np.quantile(t_gw*60,quantiles),2),
-        "Häufigkeit": {
+        "quantiles": signif(np.quantile(t_gw*60,quantiles),2),
+        "frequency": {
             "x":bins[:-1]*60,
             "y":[hist]
         },
-        "Mittelwert":{
+        "timeseries":{
             "x":t,
             "y":c_gw.T
         }

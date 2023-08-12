@@ -150,18 +150,18 @@ plot_data = namespace.model('plot_data', {
     "y":fields.List(fields.List(fields.Float()), default=[[0,1,2,3,5]]),
 })
 
-lueften_statistik = namespace.model('LüftenStatistik', {
-    "Quantile": fields.List(fields.Float(),
+airing_resultdata = namespace.model('airing_resultdata', {
+    "quantiles": fields.List(fields.Float(),
         default=[0.26,0.43,0.68,1.1,1.6],
         description='Zeit bis Grenzwert erreicht - [P5,P25,Med,P75,P95]'
     ),
-    'Häufigkeit': fields.Nested(
+    'frequency': fields.Nested(
         plot_data,
         description='Zeit bis Grenzwert erreicht - Häufigkeit'
     ),
-    'Mittelwert': fields.Nested(
+    'timeseries': fields.Nested(
         plot_data,
-        description='CO2 Konzentration - Mittelwert'
+        description='CO2 Konzentration'
     ),
 })
 
@@ -263,19 +263,19 @@ calculation_result_model = namespace.model('CalculationResult', {
         description='errechneter natürlicher Luftwechsel [1/h]'
     ),
     't_avgC_realC0': fields.Nested(
-        lueften_statistik,
+        airing_resultdata,
         description='Gleitender Mittelwert - Realistisches Lüftungsverhalten'
     ),
     't_instC_realC0': fields.Nested(
-        lueften_statistik,
+        airing_resultdata,
         description='Momentanwert - Realistisches Lüftungsverhalten'
     ),
     't_avgC_idealC0': fields.Nested(
-        lueften_statistik,
+        airing_resultdata,
         description='Gleitender Mittelwert - Ideale Lüftung'
     ),
     't_instC_idealC0': fields.Nested(
-        lueften_statistik,
+        airing_resultdata,
         description='Momentanwert - Ideale Lüftung'
     ),
     'MouldRisk': fields.Nested(

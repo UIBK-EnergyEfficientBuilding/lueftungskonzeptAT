@@ -90,17 +90,17 @@ if __name__ == "__main__":
 
     print("#Ergebnis CO2 Bewertung")
     print("Fensterlüftung praktikabel/zumutbar:".ljust(75), result["airing_acceptable"])
-    print_row("Weil errechnete Zeit zwischen erforderlichen Fensterlüften [min]:", result["t_avgC_realC0"]["Quantile"])
+    print_row("Weil errechnete Zeit zwischen erforderlichen Fensterlüften [min]:", result["t_avgC_realC0"]["quantiles"])
     print("Dies ist kürzer als die zumutbare Zeit zwischen Fensterlüften [min]:".ljust(75), result["t_reasonable"])
-    print_row("Informativ: Zeit zwischen erf. Fensterlüften bei idealem Lüften [min]:", result["t_avgC_idealC0"]["Quantile"])
+    print_row("Informativ: Zeit zwischen erf. Fensterlüften bei idealem Lüften [min]:", result["t_avgC_idealC0"]["quantiles"])
     print()
     print("#Detailergebnisse CO2 Bewertung")
     print_row("errechnete Luftmenge aufgrund natürlicher Lüftung [m³/h]:", result["Vdot"])
     print_row("errechneter natürlicher Luftwechsel [1/h]:", result["ACR"])
-    print_row("Zeit bis CO2-Stundenmittelwert=1000 ppm - realistisches Lüften [min]:", result["t_avgC_realC0"]["Quantile"])
-    print_row("Zeit bis CO2-Momentanwert=1000 ppm - realistisches Lüften [min]:", result["t_instC_realC0"]["Quantile"])
-    print_row("Zeit bis CO2-Stundenmittelwert=1000 ppm - ideales Lüften [min]:", result["t_avgC_idealC0"]["Quantile"])
-    print_row("Zeit bis CO2-Momentanwert=1000 ppm - ideales Lüften [min]:", result["t_instC_idealC0"]["Quantile"])
+    print_row("Zeit bis CO2-Stundenmittelwert=1000 ppm - realistisches Lüften [min]:", result["t_avgC_realC0"]["quantiles"])
+    print_row("Zeit bis CO2-Momentanwert=1000 ppm - realistisches Lüften [min]:", result["t_instC_realC0"]["quantiles"])
+    print_row("Zeit bis CO2-Stundenmittelwert=1000 ppm - ideales Lüften [min]:", result["t_avgC_idealC0"]["quantiles"])
+    print_row("Zeit bis CO2-Momentanwert=1000 ppm - ideales Lüften [min]:", result["t_instC_idealC0"]["quantiles"])
     print_row("CO2 Konzentration im stationären Fall (t→∞) [ppm]:", result["CO2_stat"])
 
     if "MouldRisk" in result:
@@ -128,20 +128,20 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
     plt.figure()
-    plt.bar(result["t_avgC_realC0"]["Häufigkeit"]["x"], result["t_avgC_realC0"]["Häufigkeit"]["y"][0], width=60)
-    plt.savefig("Häufigkeit.png")
+    plt.bar(result["t_avgC_realC0"]["frequency"]["x"], result["t_avgC_realC0"]["frequency"]["y"][0], width=60)
+    plt.savefig("ResCO2_frequency.png")
 
     plt.figure()
     for i in range(0,len(quantiles)):
-        plt.plot(result["t_avgC_realC0"]["Mittelwert"]["x"], result["t_avgC_realC0"]["Mittelwert"]["y"][i])
-    plt.savefig("Mittelwert.png")
+        plt.plot(result["t_avgC_realC0"]["timeseries"]["x"], result["t_avgC_realC0"]["timeseries"]["y"][i])
+    plt.savefig("ResCO2_timeseries.png")
 
     for i in ["abs", "pre"]:
         plt.figure()
         plt.bar(result["MouldRisk"]["plot"][i]["x"], result["MouldRisk"]["plot"][i]["y"][0],width=0.01)
         plt.ylabel(f"Häufigkeit (n={size})")
         plt.xlabel("aw Wert [-]")
-        plt.savefig(f"Häufigkeit_h2o_{i}.png")
+        plt.savefig(f"ResH2O_aw_{i}.png")
 
     for i,xlabel in zip(["Vdot", "LWR"],["Mittlerer Luftvolumenstrom [1/h]","Mittlere Luftwechselrate [1/h]"]):
         plt.figure()
@@ -150,4 +150,4 @@ if __name__ == "__main__":
         plt.legend()
         plt.ylabel(f"Häufigkeit (n={size})")
         plt.xlabel(xlabel)
-        plt.savefig(f"Häufigkeit_h2o_{i}.png")
+        plt.savefig(f"ResH2O_Airflows_{i}.png")
