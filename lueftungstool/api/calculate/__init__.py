@@ -184,7 +184,7 @@ mouldrisk_plot = namespace.model('mouldrisk_plot', {
     ),
 })
 
-mould_risk = namespace.model('MouldRisk', {
+mould_risk = namespace.model('ResH2O', {
     'MouldRisk': fields.Float(
         default=0.219,
         description='Schimmelrisiko als Wahrscheinlichkeit'
@@ -278,7 +278,7 @@ calculation_result_model = namespace.model('CalculationResult', {
         airing_resultdata,
         description='Momentanwert - Ideale Lüftung'
     ),
-    'MouldRisk': fields.Nested(
+    'ResH2O': fields.Nested(
         mould_risk,
         description='Ergebnis Schimmelrisiko Bewertung (nur für Wohnbau)'
     ),

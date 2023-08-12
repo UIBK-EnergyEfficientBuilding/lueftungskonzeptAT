@@ -332,7 +332,7 @@ def calc(
     else:
         humcalc = False
     if humcalc:
-        result["MouldRisk"] = {}
+        result["ResH2O"] = {}
 
         area_home = fixed_or_beta_scaled(building_type, params.WNF, area_home, size)
 
@@ -394,31 +394,31 @@ def calc(
         Vdot_Inf,fs,fw= Infiltration(Ti_avg,T_a,C,alfa,gama,H_wind, R, X,H_stack,n50_Unit,Vol_Unit,v_10m)
         Vdot_Win = ACH_Win*Dur_Win/60/24*Vol_Unit
         Vdot_Tot=Vdot_Inf+Vdot_Win+Vdot_add
-        result["MouldRisk"]["Vdot_Inf"] = signif(np.quantile(Vdot_Inf,quantiles),2)
-        result["MouldRisk"]["Vdot_Tot"] = signif(np.quantile(Vdot_Tot,quantiles),2)
+        result["ResH2O"]["Vdot_Inf"] = signif(np.quantile(Vdot_Inf,quantiles),2)
+        result["ResH2O"]["Vdot_Tot"] = signif(np.quantile(Vdot_Tot,quantiles),2)
 
         #mould risk calculation: absence
         MouldRisk_abs,ELA_acc_abs,Vdot_acc_abs,Frac_Inf_insuff_abs,Vdot_req_abs,aw_abs=MouldRisk(fRSI,H2Oemi_abs,Vdot_Tot-Vdot_Win,Vdot_Inf,Ti_avg,Ti_abs,T_a,Ta_damped,rH_a,v_10m,fs,fw,aw_limit,Perc_accept)
-        result["MouldRisk"]["MouldRisk_abs"] = MouldRisk_abs
-        result["MouldRisk"]["Vdot_req_abs"] = signif(np.quantile(Vdot_req_abs,quantiles),2)
-        result["MouldRisk"]["Frac_Inf_insuff_abs"] = Frac_Inf_insuff_abs
-        result["MouldRisk"]["Vdot_acc_abs"] = signif(Vdot_acc_abs,2)
-        result["MouldRisk"]["ELA_acc_abs"] = signif(ELA_acc_abs,2)
+        result["ResH2O"]["MouldRisk_abs"] = MouldRisk_abs
+        result["ResH2O"]["Vdot_req_abs"] = signif(np.quantile(Vdot_req_abs,quantiles),2)
+        result["ResH2O"]["Frac_Inf_insuff_abs"] = Frac_Inf_insuff_abs
+        result["ResH2O"]["Vdot_acc_abs"] = signif(Vdot_acc_abs,2)
+        result["ResH2O"]["ELA_acc_abs"] = signif(ELA_acc_abs,2)
 
         #mould risk calculation: presence
         MouldRisk_pre,ELA_acc_pre,Vdot_acc_pre,Frac_Inf_insuff_pre,Vdot_req_pre,aw_pre=MouldRisk(fRSI,H2Oemi_pre,Vdot_Tot,Vdot_Inf,Ti_avg,Ti_min,T_a,Ta_damped,rH_a,v_10m,fs,fw,aw_limit,Perc_accept)
-        result["MouldRisk"]["MouldRisk_pre"] = MouldRisk_pre
-        result["MouldRisk"]["Vdot_req_pre"] = signif(np.quantile(Vdot_req_pre,quantiles),2)
-        result["MouldRisk"]["Frac_Inf_insuff_pre"] = Frac_Inf_insuff_pre
-        result["MouldRisk"]["Vdot_acc_pre"] = signif(Vdot_acc_pre,2)
-        result["MouldRisk"]["ELA_acc_pre"] = signif(ELA_acc_pre,2)
+        result["ResH2O"]["MouldRisk_pre"] = MouldRisk_pre
+        result["ResH2O"]["Vdot_req_pre"] = signif(np.quantile(Vdot_req_pre,quantiles),2)
+        result["ResH2O"]["Frac_Inf_insuff_pre"] = Frac_Inf_insuff_pre
+        result["ResH2O"]["Vdot_acc_pre"] = signif(Vdot_acc_pre,2)
+        result["ResH2O"]["ELA_acc_pre"] = signif(ELA_acc_pre,2)
 
         Vdot_req = Vdot_req_abs+Vdot_req_pre
         LWR_Tot = Vdot_Tot/Vol_Unit
         LWR_Inf = Vdot_Inf/Vol_Unit
         LWR_req = Vdot_req/Vol_Unit
 
-        result["MouldRisk"]["plot"] = {}
+        result["ResH2O"]["plot"] = {}
 
         n_bins = 70
         for i, (tot,inf,req), xmax in zip(
@@ -431,20 +431,20 @@ def calc(
             hist_inf,_ = np.histogram(np.clip(inf,bins[0],bins[-1]), bins)
             hist_req,_ = np.histogram(np.clip(req,bins[0],bins[-1]), bins)
 
-            result["MouldRisk"]["plot"][i] = {}
-            result["MouldRisk"]["plot"][i]["x"] = bins[:-1]
-            result["MouldRisk"]["plot"][i]["y"] = [hist_tot, hist_inf, hist_req]
+            result["ResH2O"]["plot"][i] = {}
+            result["ResH2O"]["plot"][i]["x"] = bins[:-1]
+            result["ResH2O"]["plot"][i]["y"] = [hist_tot, hist_inf, hist_req]
 
         n_bins = 50
         bins=np.arange(0,n_bins)/n_bins
         for i,aw in zip(["abs","pre"], [aw_abs,aw_pre]):
             hist_aw,_ = np.histogram(np.clip(aw,bins[0],bins[-1]), bins)
 
-            result["MouldRisk"]["plot"][i] = {}
-            result["MouldRisk"]["plot"][i]["x"] = bins[:-1]
-            result["MouldRisk"]["plot"][i]["y"] = [hist_aw]
+            result["ResH2O"]["plot"][i] = {}
+            result["ResH2O"]["plot"][i]["x"] = bins[:-1]
+            result["ResH2O"]["plot"][i]["y"] = [hist_aw]
 
-        result["MouldRisk"]["MouldRisk"] = np.max([MouldRisk_abs,MouldRisk_pre])
+        result["ResH2O"]["MouldRisk"] = np.max([MouldRisk_abs,MouldRisk_pre])
 
     result.update({
         "airing_acceptable": Fensterlueftung,

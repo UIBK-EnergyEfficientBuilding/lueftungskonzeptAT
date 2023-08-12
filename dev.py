@@ -69,7 +69,7 @@ if __name__ == "__main__":
     print_row("Anzahl Kinder:".ljust(75), result["inputs"]["NrKids"])
     print_row("Aktivität Kinder [met]:".ljust(75), result["inputs"]["ActKid"])
     print_row("Mittleres Alter der Kinder [a]".ljust(75), result["inputs"]["AgeKid"])
-    if "MouldRisk" in result:
+    if "ResH2O" in result:
         print()
         print("#Eingaben für Schimmelrisiko Bewertung (nur für Wohnbau)")
         print("Berechnung durchführen:".ljust(75), "Ja")
@@ -103,27 +103,27 @@ if __name__ == "__main__":
     print_row("Zeit bis CO2-Momentanwert=1000 ppm - ideales Lüften [min]:", result["t_instC_idealC0"]["quantiles"])
     print_row("CO2 Konzentration im stationären Fall (t→∞) [ppm]:", result["CO2_stat"])
 
-    if "MouldRisk" in result:
+    if "ResH2O" in result:
         print()
         print("#Ergebnis Schimmelrisiko Bewertung (nur für Wohnbau)")
-        print("Schimmelrisiko als Wahrscheinlichkeit".ljust(75),"%.1f"%(result["MouldRisk"]["MouldRisk"]*100),"%")
+        print("Schimmelrisiko als Wahrscheinlichkeit".ljust(75),"%.1f"%(result["ResH2O"]["MouldRisk"]*100),"%")
         print()
         print("#Anwesenheitsfall (inkl. aktives Lüften)")
-        print_row("Erforderliche Luftmenge zur Feuchteabfuhr [m³/h]:".ljust(75),result["MouldRisk"]["Vdot_req_pre"])
-        print_row("Luftmenge durch Fugenlüftung [m³/h]:".ljust(75),result["MouldRisk"]["Vdot_Inf"])
-        print("Wahrscheinlichkeit dass Fugenlüftung alleine nicht ausreicht:".ljust(75),"%.1f"%(result["MouldRisk"]["Frac_Inf_insuff_pre"]*100),"%")
-        print_row("Luftmenge durch Fugenlüftung + Fensterlüftung [m³/h]:".ljust(75), result["MouldRisk"]["Vdot_Tot"])
-        print("Wahrscheinlichkeit dass Fugenlüftung und Fensterlüftung nicht ausreicht:".ljust(75),"%.1f"%(result["MouldRisk"]["MouldRisk_pre"]*100),"%")
-        print("Erforderliche zusätzliche Luftmenge damit Wahrscheinlichkeit <1% [m³/h]:".ljust(75),result["MouldRisk"]["Vdot_acc_pre"])
-        print("dafür erforderlicher zusätzlicher freier Querschnitt [cm²]:".ljust(75),result["MouldRisk"]["ELA_acc_pre"])
+        print_row("Erforderliche Luftmenge zur Feuchteabfuhr [m³/h]:".ljust(75),result["ResH2O"]["Vdot_req_pre"])
+        print_row("Luftmenge durch Fugenlüftung [m³/h]:".ljust(75),result["ResH2O"]["Vdot_Inf"])
+        print("Wahrscheinlichkeit dass Fugenlüftung alleine nicht ausreicht:".ljust(75),"%.1f"%(result["ResH2O"]["Frac_Inf_insuff_pre"]*100),"%")
+        print_row("Luftmenge durch Fugenlüftung + Fensterlüftung [m³/h]:".ljust(75), result["ResH2O"]["Vdot_Tot"])
+        print("Wahrscheinlichkeit dass Fugenlüftung und Fensterlüftung nicht ausreicht:".ljust(75),"%.1f"%(result["ResH2O"]["MouldRisk_pre"]*100),"%")
+        print("Erforderliche zusätzliche Luftmenge damit Wahrscheinlichkeit <1% [m³/h]:".ljust(75),result["ResH2O"]["Vdot_acc_pre"])
+        print("dafür erforderlicher zusätzlicher freier Querschnitt [cm²]:".ljust(75),result["ResH2O"]["ELA_acc_pre"])
         print()
         print("#Abwesenheitsfall")
-        print_row("Erforderliche Luftmenge zur Feuchteabfuhr [m³/h]:".ljust(75),result["MouldRisk"]["Vdot_req_abs"])
-        print_row("Luftmenge durch Fugenlüftung [m³/h]:".ljust(75),result["MouldRisk"]["Vdot_Inf"])
-        #print("Wahrscheinlichkeit dass Fugenlüftung alleine nicht ausreicht:".ljust(75),"%.1f"%(result["MouldRisk"]["Frac_Inf_insuff_abs"]*100),"%") #wenn kein Vdot_add (nur Experteneingabe) dann gleich wie MouldRisk_abs
-        print("Wahrscheinlichkeit dass Fugenlüftung nicht ausreicht:".ljust(75),"%.1f"%(result["MouldRisk"]["MouldRisk_abs"]*100),"%")
-        print("Erforderliche zusätzliche Luftmenge damit Wahrscheinlichkeit<1% [m³/h]:".ljust(75),result["MouldRisk"]["Vdot_acc_abs"])
-        print("dafür erforderlicher zusätzlicher freier Querschnitt [cm²]:".ljust(75),result["MouldRisk"]["ELA_acc_abs"])
+        print_row("Erforderliche Luftmenge zur Feuchteabfuhr [m³/h]:".ljust(75),result["ResH2O"]["Vdot_req_abs"])
+        print_row("Luftmenge durch Fugenlüftung [m³/h]:".ljust(75),result["ResH2O"]["Vdot_Inf"])
+        #print("Wahrscheinlichkeit dass Fugenlüftung alleine nicht ausreicht:".ljust(75),"%.1f"%(result["ResH2O"]["Frac_Inf_insuff_abs"]*100),"%") #wenn kein Vdot_add (nur Experteneingabe) dann gleich wie MouldRisk_abs
+        print("Wahrscheinlichkeit dass Fugenlüftung nicht ausreicht:".ljust(75),"%.1f"%(result["ResH2O"]["MouldRisk_abs"]*100),"%")
+        print("Erforderliche zusätzliche Luftmenge damit Wahrscheinlichkeit<1% [m³/h]:".ljust(75),result["ResH2O"]["Vdot_acc_abs"])
+        print("dafür erforderlicher zusätzlicher freier Querschnitt [cm²]:".ljust(75),result["ResH2O"]["ELA_acc_abs"])
 
     import matplotlib.pyplot as plt
 
@@ -138,7 +138,7 @@ if __name__ == "__main__":
 
     for i in ["abs", "pre"]:
         plt.figure()
-        plt.bar(result["MouldRisk"]["plot"][i]["x"], result["MouldRisk"]["plot"][i]["y"][0],width=0.01)
+        plt.bar(result["ResH2O"]["plot"][i]["x"], result["ResH2O"]["plot"][i]["y"][0],width=0.01)
         plt.ylabel(f"Häufigkeit (n={size})")
         plt.xlabel("aw Wert [-]")
         plt.savefig(f"ResH2O_aw_{i}.png")
@@ -146,7 +146,7 @@ if __name__ == "__main__":
     for i,xlabel in zip(["Vdot", "LWR"],["Mittlerer Luftvolumenstrom [1/h]","Mittlere Luftwechselrate [1/h]"]):
         plt.figure()
         for l,j in zip(("Inf+Fen","Inf","Erf"),list(range(0,3))):
-            plt.plot(result["MouldRisk"]["plot"][i]["x"], result["MouldRisk"]["plot"][i]["y"][j], marker=".", label=l)
+            plt.plot(result["ResH2O"]["plot"][i]["x"], result["ResH2O"]["plot"][i]["y"][j], marker=".", label=l)
         plt.legend()
         plt.ylabel(f"Häufigkeit (n={size})")
         plt.xlabel(xlabel)
