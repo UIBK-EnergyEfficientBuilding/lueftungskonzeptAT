@@ -165,6 +165,25 @@ lueften_statistik = namespace.model('LüftenStatistik', {
     ),
 })
 
+mouldrisk_plot = namespace.model('mouldrisk_plot', {
+    'LWR': fields.Nested(
+        plot_data,
+        description='Mittlere Luftwechselrate [1/h]'
+    ),
+    'Vdot': fields.Nested(
+        plot_data,
+        description='Mittlerer Luftvolumenstrom [m³/h]'
+    ),
+    'abs': fields.Nested(
+        plot_data,
+        description='Fälle mit Schimmelrisiko bei Anwesenheit'
+    ),
+    'pre': fields.Nested(
+        plot_data,
+        description='Fälle mit Schimmelrisiko bei Abwesenheit'
+    ),
+})
+
 mould_risk = namespace.model('MouldRisk', {
     'MouldRisk': fields.Float(
         default=0.219,
@@ -220,6 +239,10 @@ mould_risk = namespace.model('MouldRisk', {
     "ELA_acc_abs": fields.Float(
         default=41,
         description='dafür erforderlicher zusätzlicher freier Querschnitt [cm²]]'
+    ),
+    'plot': fields.Nested(
+        mouldrisk_plot,
+        description='Feuchtebewertung (Nur Wohnen) - Plot data'
     ),
 })
 

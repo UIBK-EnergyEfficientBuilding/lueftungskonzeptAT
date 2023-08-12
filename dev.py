@@ -135,3 +135,19 @@ if __name__ == "__main__":
     for i in range(0,len(quantiles)):
         plt.plot(result["t_gw_erreicht"]["Mittelwert"]["x"], result["t_gw_erreicht"]["Mittelwert"]["y"][i])
     plt.savefig("Mittelwert.png")
+
+    for i in ["abs", "pre"]:
+        plt.figure()
+        plt.bar(result["MouldRisk"]["plot"][i]["x"], result["MouldRisk"]["plot"][i]["y"][0],width=0.01)
+        plt.ylabel(f"Häufigkeit (n={size})")
+        plt.xlabel("aw Wert [-]")
+        plt.savefig(f"Häufigkeit_h2o_{i}.png")
+
+    for i,xlabel in zip(["Vdot", "LWR"],["Mittlerer Luftvolumenstrom [1/h]","Mittlere Luftwechselrate [1/h]"]):
+        plt.figure()
+        for l,j in zip(("Inf+Fen","Inf","Erf"),list(range(0,3))):
+            plt.plot(result["MouldRisk"]["plot"][i]["x"], result["MouldRisk"]["plot"][i]["y"][j], marker=".", label=l)
+        plt.legend()
+        plt.ylabel(f"Häufigkeit (n={size})")
+        plt.xlabel(xlabel)
+        plt.savefig(f"Häufigkeit_h2o_{i}.png")
