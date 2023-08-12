@@ -31,7 +31,7 @@ calculation_parameter_model = namespace.model('CalculationParameter', {
     ),
     'building_type': fields.String(default="Mehrfamilienhaus",
         required=True,
-        enum=params.gebaeudeart_list,
+        enum=params.buiding_type_list,
         description="Gebäudeart",
     ),
     'thermalbridges': fields.String(default="Standard Neubau",
@@ -49,7 +49,7 @@ calculation_parameter_model = namespace.model('CalculationParameter', {
     ),
     'room_type': fields.String(default="Schlafzimmer",
         required=True,
-        enum=params.raumart_list,
+        enum=params.room_type_list,
         description="Raumart (betrachteter Raum):",
     ),
     'window_area': fields.Float(
@@ -64,7 +64,7 @@ calculation_parameter_model = namespace.model('CalculationParameter', {
     ),
     'airing_type_room': fields.String(default="Querlüftung",
         required=True,
-        enum=params.luefungsart_list,
+        enum=params.airing_type_list,
         description="Lüftungsmöglichkeit (betrachteter Raum):",
     ),
     'terrain_class': fields.Integer(
@@ -386,9 +386,9 @@ parameter_result_model =  namespace.model('ParameterResult', {
 
 params_mapping = {
     "location":params.location_list,
-    "building_type":params.gebaeudeart_list,
-    "room_type":params.raumart_list,
-    "airing_type_room":params.luefungsart_list,
+    "building_type":params.buiding_type_list,
+    "room_type":params.room_type_list,
+    "airing_type_room":params.airing_type_list,
     "n50_map":params.n50_map_list,
 }
 

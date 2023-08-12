@@ -55,7 +55,7 @@ gebaeudeart2H_WindRel = {
     "Apartmentblock":[1,1,0,1],
     "Schule/Kindergarten": [1,1,0,1],
 }
-gebaeudeart_list = ["Einfamilienhaus/Reihenhaus", "Mehrfamilienhaus", "Apartmentblock", "Schule/Kindergarten"]
+buiding_type_list = ["Einfamilienhaus/Reihenhaus", "Mehrfamilienhaus", "Apartmentblock", "Schule/Kindergarten"]
 
 waermebruecken2Ti_avg = {
     "Altbau mit durchbetonierten Bauteilen (Balkone, etc)":[3,3,18,22],
@@ -92,7 +92,7 @@ raumart2AgeKid = {
     "Schlafzimmer": [1,3,0,4],
     "Wohnzimmer": [1,1,1,18],
 }
-raumart_list = ["Schlafzimmer", "Wohnzimmer"]
+room_type_list = ["Schlafzimmer", "Wohnzimmer"]
 
 luefungsart2WinACH = {
     "Querlüftung":[3,3,10,30],
@@ -102,7 +102,7 @@ luefungsart2WinDur = {
     "Querlüftung":[3,3,3,7],
     "einseitig":[3,3,3,15],
 }
-luefungsart_list = ["Querlüftung", "einseitig"]
+airing_type_list = ["Querlüftung", "einseitig"]
 
 n50_map = {
     "Altbau":[3,3,3,4],
