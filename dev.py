@@ -42,6 +42,7 @@ if __name__ == "__main__":
         Terr = None,
         window_area = window_area,
         window_class = None,
+        pers_home = None,
         Ti_avg = None,
         Ti_abs = None,
         Ti_min = None,

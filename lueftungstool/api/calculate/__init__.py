@@ -451,8 +451,7 @@ class Calculate(Resource):
             # todo
             window_area = window_area,
             window_class = args['window_class'],
-            #luefungsdauer
-            #pers_home
+            pers_home = args['pers_home'],
             #airing_type_home
             #airing_duration
             Ti_avg = args['Ti_avg'],

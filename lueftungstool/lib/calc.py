@@ -248,7 +248,7 @@ def MouldRisk(fRSI,H2Oemi,Vdot_tot,Vdot_inf,Ti,Ti_min,Ta,Ta_damped,rH_a,v_10m,fs
 
 
 def calc(
-        location, building_n50, building_type, inputs, thermalbridges, H_Rm, A_Rm, Shield, Terr, window_area, window_class, airing_type_room, Ti_avg, Ti_abs, Ti_min, fRSI, CO2_Emi, area_home, H2Osource_category, H2Osource_area, H2Osource_pers, H2Osource_area_abs, quantiles, size = 1000
+        location, building_n50, building_type, inputs, thermalbridges, H_Rm, A_Rm, Shield, Terr, window_area, window_class, pers_home, airing_type_room, Ti_avg, Ti_abs, Ti_min, fRSI, CO2_Emi, area_home, H2Osource_category, H2Osource_area, H2Osource_pers, H2Osource_area_abs, quantiles, size = 1000
     ):
     T_a, v_10m, rH_a = weather(location)
     C, alfa, gama = calc_lage(location, inputs, Shield, Terr, quantiles, size)
@@ -380,10 +380,10 @@ def calc(
         inputs["H2Osource_area"] = signif(np.quantile(H2Osource_area,quantiles),2)
         inputs["H2Osource_pers"] = signif(np.quantile(H2Osource_pers,quantiles),2)
 
-        OccDens = beta_scaled(*params.OccDens[building_type], size)
-        AvgPers = area_home/OccDens
-
-        inputs["pers_home"] = signif(np.quantile(AvgPers,quantiles),2)
+        if pers_home is None:
+            OccDens = beta_scaled(*params.OccDens[building_type], size)
+            pers_home = area_home/OccDens
+        inputs["pers_home"] = signif(np.quantile(pers_home,quantiles),2)
 
         #tbd: through interface
         Vol_Unit = H_Rm * area_home
@@ -396,7 +396,7 @@ def calc(
         inputs["fRSI"] = signif(np.quantile(fRSI,quantiles),2)
 
         H2Oemi_abs = H2Osource_area_abs * area_home * 24 / 1000
-        H2Oemi_pre = (H2Osource_area * area_home + H2Osource_pers * AvgPers) * 24 / 1000
+        H2Oemi_pre = (H2Osource_area * area_home + H2Osource_pers * pers_home) * 24 / 1000
         ACH_Win=20 #depends on window ventilation type
         Dur_Win=15 #in min like above
         Vdot_add = 0 #additional ventilation air flow (for expert use/interface) tbd:add text in output when active
