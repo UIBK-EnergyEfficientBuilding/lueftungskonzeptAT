@@ -34,13 +34,16 @@ if __name__ == "__main__":
         building_n50 = "Standard Neubau",
         building_type = "Mehrfamilienhaus",
         inputs = inputs,
-        thermalbridges = "Standard Neubau",
+        thermalbridges = None,
         H_Rm = H_Rm,
         A_Rm = A_Rm,
         airing_type_room = "Querlüftung",
         Shield = None,
         Terr = None,
         window_class = None,
+        Ti_avg = None,
+        Ti_abs = None,
+        Ti_min = None,
         CO2_Emi = CO2_Emi,
         area_home = None,
         H2Osource_category = "Mittel",
@@ -74,7 +77,7 @@ if __name__ == "__main__":
         print()
         print("#Eingaben für Schimmelrisiko Bewertung (nur für Wohnbau)")
         print("Berechnung durchführen:".ljust(75), "Ja")
-        print("Wärmebrücken / fRSI-Wert".ljust(75), "?")
+        print_row("Wärmebrücken / fRSI-Wert".ljust(75), result["inputs"]["thermalbridges"])
         print("Feuchtelast [l/d]:".ljust(75), "?")
         print_row("Feuchtequellstärke pro m² bei Anwesenheit [g/(hm²)]".ljust(75), result["inputs"]["H2Osource_area"])
         print_row("Feuchtequellstärke pro Pers bei Anwesenheit [g/(hPers)]".ljust(75), result["inputs"]["H2Osource_pers"])
@@ -83,9 +86,9 @@ if __name__ == "__main__":
         print_row("Personenanzahl (gesamter Wohneinheit):".ljust(75), result["inputs"]["pers_home"])
         print("Lüftungsmöglichkeit (gesamte Wohneinheit):".ljust(75), "?")
         print("Lüftungsdauer gesamt, z.B. morgens und abends [min/Tag]:".ljust(75), "?")
-        print("Mittlere Raumtemperatur in gesamten Wohneinheit [°C]:".ljust(75), "?")
-        print("Raumtemperatur im kühlsten Raum [°C]:".ljust(75), "?")
-        print("Minimale Raumtemperatur bei längerer Abwesenheit [°C]:".ljust(75), "?")
+        print_row("Mittlere Raumtemperatur in gesamten Wohneinheit [°C]:".ljust(75), result["inputs"]["Ti_avg"])
+        print_row("Raumtemperatur im kühlsten Raum [°C]:".ljust(75), result["inputs"]["Ti_min"])
+        print_row("Minimale Raumtemperatur bei längerer Abwesenheit [°C]:".ljust(75), result["inputs"]["Ti_abs"])
 
 
 

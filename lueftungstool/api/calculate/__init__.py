@@ -46,7 +46,6 @@ params_mapping = {
     },
     "thermalbridges":{
         "values":params.waermebruecken_list,
-        "default":"Standard Neubau",
     },
     "H2Osource_category":{
         "values":params.Feuchtelastkategorie_list,
@@ -79,7 +78,7 @@ calculation_parameter_model = namespace.model('CalculationParameter', {
         enum=params_mapping["building_type"]["values"],
         description="Gebäudeart",
     ),
-    'thermalbridges': fields.String(default=params_mapping["thermalbridges"]["default"],
+    'thermalbridges': fields.String(
         required=False,
         enum=params_mapping["thermalbridges"]["values"],
         description="Wärmebrücken / fRSI-Wert",
@@ -410,9 +409,6 @@ class Calculate(Resource):
         #dummy data
         inputs["window_area"] = [1,2,3,4,5]
         inputs["airing_duration"] = [1,2,3,4,5]
-        inputs["Ti_avg"] = [1,2,3,4,5]
-        inputs["Ti_min"] = [1,2,3,4,5]
-        inputs["Ti_abs"] = [1,2,3,4,5]
 
         CO2_Emi = ltool.co2_emission(
             room_type = args['room_type'],
@@ -453,9 +449,9 @@ class Calculate(Resource):
             #pers_home
             #airing_type_home
             #airing_duration
-            #Ti_avg
-            #Ti_abs
-            #Ti_min
+            Ti_avg = args['Ti_avg'],
+            Ti_abs = args['Ti_abs'],
+            Ti_min = args['Ti_min'],
             CO2_Emi = CO2_Emi,
             area_home = args['area_home'],
             H2Osource_category = args["H2Osource_category"],

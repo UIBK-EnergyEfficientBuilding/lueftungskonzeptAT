@@ -83,12 +83,45 @@ gebaeudeart2H_WindRel = {
 }
 buiding_type_list = ["Einfamilienhaus/Reihenhaus", "Mehrfamilienhaus", "Apartmentblock", "Schule/Kindergarten"]
 
+map_n502waermebruecken = {
+    "Undichter Altbau": "Altbau mit durchbetonierten Bauteilen (Balkone, etc)",
+    "Altbau": "Altbau (mit normalen Wärmebrücken)",
+    "Standard Neubau": "Standard Neubau",
+    "Neubau - eher dicht": "NEH (mit geringen Wärmebrücken)",
+    "Neubau - sehr dicht": "NEH (minimale Wärmebrücken)",
+}
+
 waermebruecken2Ti_avg = {
     "Altbau mit durchbetonierten Bauteilen (Balkone, etc)":[3,3,18,22],
     "Altbau (mit normalen Wärmebrücken)":[3,3,18,22],
     "Standard Neubau":[3,3,19,23],
+    "NEH (mit geringen Wärmebrücken)":[3,3,20,24],
+    "NEH (minimale Wärmebrücken)":[3,3,20,24],
 }
 waermebruecken_list = list(waermebruecken2Ti_avg.keys())
+
+waermebruecken2Ti_min = {
+    "Altbau mit durchbetonierten Bauteilen (Balkone, etc)":[3,3,16,20],
+    "Altbau (mit normalen Wärmebrücken)":[3,3,16,20],
+    "Standard Neubau":[3,3,17,20],
+    "NEH (mit geringen Wärmebrücken)":[3,3,18,22],
+    "NEH (minimale Wärmebrücken)":[3,3,18,22],
+}
+waermebruecken2Ti_abs = {
+    "Altbau mit durchbetonierten Bauteilen (Balkone, etc)":[3,3,14,18],
+    "Altbau (mit normalen Wärmebrücken)":[3,3,14,18],
+    "Standard Neubau":[3,3,15,19],
+    "NEH (mit geringen Wärmebrücken)":[3,3,16,20],
+    "NEH (minimale Wärmebrücken)":[3,3,16,20],
+}
+
+waermebruecken2fRSI = {
+    "Altbau mit durchbetonierten Bauteilen (Balkone, etc)":[3,3,0.4,0.6],
+    "Altbau (mit normalen Wärmebrücken)":[3,3,0.5,0.7],
+    "Standard Neubau":[3,3,0.6,0.8],
+    "NEH (mit geringen Wärmebrücken)":[3,3,0.7,0.9],
+    "NEH (minimale Wärmebrücken)":[3,3,0.85,0.95],
+}
 
 raumart2A_Rm = {
     "Schlafzimmer":[2.5,4,6,30],
