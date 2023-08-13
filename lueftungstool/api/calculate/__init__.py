@@ -126,13 +126,18 @@ calculation_parameter_model = namespace.model('CalculationParameter', {
         required=False,
         description="Personenanzahl (gesamter Wohneinheit)",
     ),
-    'airing_type_home': fields.Float(
+    'airing_type_home': fields.String(default="Querlüftung",
         required=False,
+        enum=params.airing_type_home_list,
         description="Lüftungsmöglichkeit (gesamte Wohneinheit)",
     ),
     'airing_duration': fields.Float(
         required=False,
         description="Lüftungsdauer gesamt, z.B. morgens und abends [min/Tag]",
+    ),
+    'Ti_avg': fields.Float(
+        required=False,
+        description="Mittlere Raumtemperatur in gesamten Wohneinheit [°C]",
     ),
     'Ti_min': fields.Float(
         required=False,
@@ -373,6 +378,7 @@ class Calculate(Resource):
             #pers_home
             #airing_type_home
             #airing_duration
+            #Ti_avg
             #Ti_abs
             #Ti_min
             CO2_Emi = CO2_Emi,
@@ -396,6 +402,7 @@ params_mapping = {
     "building_type":params.buiding_type_list,
     "room_type":params.room_type_list,
     "airing_type_room":params.airing_type_list,
+    "airing_type_home":params.airing_type_home_list,
     "n50_map":params.n50_map_list,
 }
 

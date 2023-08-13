@@ -104,6 +104,12 @@ luefungsart2WinDur = {
 }
 airing_type_list = ["Querlüftung", "einseitig"]
 
+airing_type_home_map = {
+    "Querlüftung":"Querlüftung",
+    "Einseitige Fensterfront":"einseitig",
+}
+airing_type_home_list = list(airing_type_home_map.keys())
+
 n50_map = {
     "Altbau":[3,3,3,4],
     "Undichter Altbau": [3,3,3,7],
