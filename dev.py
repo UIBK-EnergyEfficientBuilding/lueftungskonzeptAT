@@ -44,6 +44,7 @@ if __name__ == "__main__":
         Ti_avg = None,
         Ti_abs = None,
         Ti_min = None,
+        fRSI = None,
         CO2_Emi = CO2_Emi,
         area_home = None,
         H2Osource_category = "Mittel",
@@ -77,7 +78,8 @@ if __name__ == "__main__":
         print()
         print("#Eingaben für Schimmelrisiko Bewertung (nur für Wohnbau)")
         print("Berechnung durchführen:".ljust(75), "Ja")
-        print_row("Wärmebrücken / fRSI-Wert".ljust(75), result["inputs"]["thermalbridges"])
+        print("Wärmebrücken".ljust(75), result["inputs"]["thermalbridges"])
+        print_row("fRSI-Wert".ljust(75), result["inputs"]["fRSI"])
         print("Feuchtelast [l/d]:".ljust(75), "?")
         print_row("Feuchtequellstärke pro m² bei Anwesenheit [g/(hm²)]".ljust(75), result["inputs"]["H2Osource_area"])
         print_row("Feuchtequellstärke pro Pers bei Anwesenheit [g/(hPers)]".ljust(75), result["inputs"]["H2Osource_pers"])

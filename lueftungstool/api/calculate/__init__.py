@@ -81,7 +81,11 @@ calculation_parameter_model = namespace.model('CalculationParameter', {
     'thermalbridges': fields.String(
         required=False,
         enum=params_mapping["thermalbridges"]["values"],
-        description="Wärmebrücken / fRSI-Wert",
+        description="Wärmebrücken",
+    ),
+    'fRSI': fields.Float(
+        required=False,
+        description="fRSI-Wert",
     ),
     'H_Rm': fields.Float(
         required=False,
@@ -331,6 +335,7 @@ inputs_result_model  = namespace.model('InputsResult', {
     'building_n50': fields.List(fields.Float(), example=[1,2,3,4,5]),
     'building_type': fields.String(),
     'thermalbridges': fields.String(),
+    'fRSI': fields.List(fields.Float(), example=[1,2,3,4,5]),
     'H_Rm': fields.List(fields.Float(), example=[1,2,3,4,5]),
     'A_Rm': fields.List(fields.Float(), example=[1,2,3,4,5]),
     'room_type': fields.String(),
@@ -452,6 +457,7 @@ class Calculate(Resource):
             Ti_avg = args['Ti_avg'],
             Ti_abs = args['Ti_abs'],
             Ti_min = args['Ti_min'],
+            fRSI = args['fRSI'],
             CO2_Emi = CO2_Emi,
             area_home = args['area_home'],
             H2Osource_category = args["H2Osource_category"],
