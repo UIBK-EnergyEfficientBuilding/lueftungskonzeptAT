@@ -414,10 +414,7 @@ class Calculate(Resource):
         quantiles = [0.05, 0.25, 0.5, 0.75, 0.95]
 
         #add defaults to input results
-        for field in [
-                "location", "building_type", "thermalbridges", "room_type",
-                "airing_type_room", "H2Osource_category", "airing_type_home",
-            ]:
+        for field in params_mapping:
             inputs[field] = args[field]
 
         #dummy data
