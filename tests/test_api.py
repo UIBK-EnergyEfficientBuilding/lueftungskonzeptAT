@@ -7,14 +7,12 @@ from tests.api_base import MyTestCase
 
 class ApiParams(MyTestCase):
     def test_verify_calculation_parameters_are_present_at_params_endpoint(self):
-        for field,item in calculation_parameter_model.items():
-            if isinstance(item, fields.String):
-                with self.app.test_request_context(f'/api/calculate/params/{field}', method='GET'):
-                    res = self.app.full_dispatch_request()
-                    self.assertTrue(res.status_code == 200, f"field: {field}, {res.json}")
-                    result = res.json.get("values")
-                    self.assertIsInstance(result, list)
-                    self.assertGreater(len(result), 0)
+        with self.app.test_request_context(f'/api/calculate/params', method='GET'):
+            res = self.app.full_dispatch_request()
+            self.assertTrue(res.status_code == 200, res.json)
+            a = [field for field,item in calculation_parameter_model.items() if isinstance(item, fields.String)]
+            print(a)
+            self.assertCountEqual(a, res.json.keys())
 
 class ApiCalculation(MyTestCase):
     def test_verify_all_input_fields_are_present_in_results(self):

@@ -18,25 +18,61 @@ def add_model_to_parser(parser,model):
 
 namespace = Namespace('calculate', '#todo')
 
+
+params_mapping = {
+    "location":{
+        "values":params.location_list,
+        "default":"Wien",
+    },
+    "building_type":{
+        "values":params.buiding_type_list,
+        "default":"Mehrfamilienhaus",
+    },
+    "room_type":{
+        "values":params.room_type_list,
+        "default":"Schlafzimmer",
+    },
+    "airing_type_room":{
+        "values":params.airing_type_list,
+        "default":"Querlüftung",
+    },
+    "airing_type_home":{
+        "values":params.airing_type_home_list,
+        "default":"Querlüftung",
+    },
+    "building_n50":{
+        "values":params.n50_map_list,
+        "default":"Standard Neubau",
+    },
+    "thermalbridges":{
+        "values":params.waermebruecken_list,
+        "default":"Standard Neubau",
+    },
+    "H2Osource_category":{
+        "values":params.Feuchtelastkategorie_list,
+        "default":"Mittel",
+    },
+}
+
 calculation_parameter_model = namespace.model('CalculationParameter', {
-    'location': fields.String(default="Wien",
+    'location': fields.String(default=params_mapping["location"]["default"],
         required=True,
-        enum=params.location_list,
+        enum=params_mapping["location"]["values"],
         description="Standort",
     ),
-    'building_n50': fields.String(default="Standard Neubau",
+    'building_n50': fields.String(default=params_mapping["building_n50"]["default"],
         required=True,
-        enum=params.n50_map_list,
+        enum=params_mapping["building_n50"]["values"],
         description="Luftdichtigkeit n50-Wert (Gebäude) [1/h]",
     ),
-    'building_type': fields.String(default="Mehrfamilienhaus",
+    'building_type': fields.String(default=params_mapping["building_type"]["default"],
         required=True,
-        enum=params.buiding_type_list,
+        enum=params_mapping["building_type"]["values"],
         description="Gebäudeart",
     ),
-    'thermalbridges': fields.String(default="Standard Neubau",
+    'thermalbridges': fields.String(default=params_mapping["thermalbridges"]["default"],
         required=False,
-        enum=params.waermebruecken_list,
+        enum=params_mapping["thermalbridges"]["values"],
         description="Wärmebrücken / fRSI-Wert",
     ),
     'H_Rm': fields.Float(
@@ -47,9 +83,9 @@ calculation_parameter_model = namespace.model('CalculationParameter', {
         required=False,
         description="Fläche (betrachteter Raum) [m²]:",
     ),
-    'room_type': fields.String(default="Schlafzimmer",
+    'room_type': fields.String(default=params_mapping["room_type"]["default"],
         required=True,
-        enum=params.room_type_list,
+        enum=params_mapping["room_type"]["values"],
         description="Raumart (betrachteter Raum):",
     ),
     'window_area': fields.Float(
@@ -62,9 +98,9 @@ calculation_parameter_model = namespace.model('CalculationParameter', {
         max=4,
         description="Fensterklasse nach EN12207 (betrachteter Raum)",
     ),
-    'airing_type_room': fields.String(default="Querlüftung",
+    'airing_type_room': fields.String(default=params_mapping["airing_type_room"]["default"],
         required=False,
-        enum=params.airing_type_list,
+        enum=params_mapping["airing_type_room"]["values"],
         description="Lüftungsmöglichkeit (betrachteter Raum):",
     ),
     'terrain_class': fields.Integer(
@@ -101,9 +137,9 @@ calculation_parameter_model = namespace.model('CalculationParameter', {
         description="Mittleres Alter der Kinder [a]",
     ),
 
-    'H2Osource_category': fields.String(default="Mittel",
+    'H2Osource_category': fields.String(default=params_mapping["H2Osource_category"]["default"],
         required=False,
-        enum=params.Feuchtelastkategorie_list,
+        enum=params_mapping["H2Osource_category"]["values"],
         description="Feuchtelast [l/d]:",
     ),
     'H2Osource_area': fields.Float(
@@ -126,9 +162,9 @@ calculation_parameter_model = namespace.model('CalculationParameter', {
         required=False,
         description="Personenanzahl (gesamter Wohneinheit)",
     ),
-    'airing_type_home': fields.String(default="Querlüftung",
+    'airing_type_home': fields.String(default=params_mapping["airing_type_home"]["default"],
         required=False,
-        enum=params.airing_type_home_list,
+        enum=params_mapping["airing_type_home"]["values"],
         description="Lüftungsmöglichkeit (gesamte Wohneinheit)",
     ),
     'airing_duration': fields.Float(
@@ -444,29 +480,18 @@ class Calculate(Resource):
             size = size
         )
 
-parameter_result_model =  namespace.model('ParameterResult', {
-    'values': fields.List(fields.String(),  
-        description='Mögliche Werte für den angegebenen Parameter'
-    )
+parameter_result_model =  namespace.model('ParameterResults', {
+        field: fields.List(
+            fields.Nested(namespace.model('ParameterResult', {
+                "values": fields.List(fields.String(description='Mögliche Werte für den angegebenen Parameter')),
+                "default": fields.String(),
+        })))
+        for field in params_mapping
 })
 
-params_mapping = {
-    "location":params.location_list,
-    "building_type":params.buiding_type_list,
-    "room_type":params.room_type_list,
-    "airing_type_room":params.airing_type_list,
-    "airing_type_home":params.airing_type_home_list,
-    "building_n50":params.n50_map_list,
-    "thermalbridges":params.waermebruecken_list,
-    "H2Osource_category":params.Feuchtelastkategorie_list,
-}
-
-@namespace.route('/params/<string:name>')
+@namespace.route('/params')
 class Parameter(Resource):
     @namespace.marshal_with(parameter_result_model)
-    @namespace.response(404, 'Not Found')
     @namespace.response(500, 'Internal Server error')
-    def get(self, name):
-        if name not in params_mapping:
-            return namespace.abort(404, "Not Found")
-        return {"values":params_mapping[name]}
+    def get(self):
+        return params_mapping
