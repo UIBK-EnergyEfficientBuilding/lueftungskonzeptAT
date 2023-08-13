@@ -323,7 +323,7 @@ res_co2 = namespace.model('ResCO2', {
 
 inputs_result_model  = namespace.model('InputsResult', {
     'location': fields.String(),
-    'building_n50': fields.String(),
+    'building_n50': fields.List(fields.Float(), example=[1,2,3,4,5]),
     'building_type': fields.String(),
     'thermalbridges': fields.String(),
     'H_Rm': fields.List(fields.Float(), example=[1,2,3,4,5]),
