@@ -159,19 +159,13 @@ room_type_list = ["Schlafzimmer", "Wohnzimmer"]
 
 luefungsart2WinACH = {
     "Querlüftung":[3,3,10,30],
-    "einseitig":[3,3,5,15],
+    "Einseitige Fensterfront":[3,3,5,15],
 }
 luefungsart2WinDur = {
     "Querlüftung":[3,3,3,7],
-    "einseitig":[3,3,3,15],
+    "Einseitige Fensterfront":[3,3,3,15],
 }
-airing_type_list = ["Querlüftung", "einseitig"]
-
-airing_type_home_map = {
-    "Querlüftung":"Querlüftung",
-    "Einseitige Fensterfront":"einseitig",
-}
-airing_type_home_list = list(airing_type_home_map.keys())
+airing_type_list = ["Querlüftung", "Einseitige Fensterfront"]
 
 window_class = {
     "Undichter Altbau":[1,1,1,4],

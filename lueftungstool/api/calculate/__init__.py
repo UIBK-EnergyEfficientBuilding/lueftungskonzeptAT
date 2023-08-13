@@ -37,7 +37,7 @@ params_mapping = {
         "default":"Querlüftung",
     },
     "airing_type_home":{
-        "values":params.airing_type_home_list,
+        "values":params.airing_type_list,
         "default":"Querlüftung",
     },
     "building_n50":{
@@ -114,6 +114,10 @@ calculation_parameter_model = namespace.model('CalculationParameter', {
         enum=params_mapping["airing_type_room"]["values"],
         description="Lüftungsmöglichkeit (betrachteter Raum):",
     ),
+    'airing_duration_room': fields.Float(
+        required=False,
+        description="Lüftungsdauer pro Lüftungsvorgang [min]",
+    ),
     'terrain_class': fields.String(
         required=False,
         enum=params_mapping["terrain_class"]["values"],
@@ -176,7 +180,7 @@ calculation_parameter_model = namespace.model('CalculationParameter', {
         enum=params_mapping["airing_type_home"]["values"],
         description="Lüftungsmöglichkeit (gesamte Wohneinheit)",
     ),
-    'airing_duration': fields.Float(
+    'airing_duration_home': fields.Float(
         required=False,
         description="Lüftungsdauer gesamt, z.B. morgens und abends [min/Tag]",
     ),
@@ -342,6 +346,7 @@ inputs_result_model  = namespace.model('InputsResult', {
     'window_area': fields.List(fields.Float(), example=[1,2,3,4,5]),
     'window_class': fields.List(fields.Integer(), example=[1,2,3,4,5]),
     'airing_type_room': fields.String(),
+    'airing_duration_room': fields.List(fields.Integer(), example=[1,2,3,4,5]),
     'terrain_class': fields.List(fields.Integer(), example=[1,2,3,4,5]),
     'shielding_class': fields.List(fields.Integer(), example=[1,2,3,4,5]),
 
@@ -358,7 +363,7 @@ inputs_result_model  = namespace.model('InputsResult', {
     'area_home': fields.List(fields.Float(), example=[1,2,3,4,5]),
     'pers_home': fields.List(fields.Float(), example=[1,2,3,4,5]),
     'airing_type_home': fields.String(),
-    'airing_duration': fields.List(fields.Float(), example=[1,2,3,4,5]),
+    'airing_duration_home': fields.List(fields.Float(), example=[1,2,3,4,5]),
     'Ti_avg': fields.List(fields.Float(), example=[1,2,3,4,5]),
     'Ti_min': fields.List(fields.Float(), example=[1,2,3,4,5]),
     'Ti_abs': fields.List(fields.Float(), example=[1,2,3,4,5]),
@@ -411,10 +416,6 @@ class Calculate(Resource):
         for field in params_mapping:
             inputs[field] = args[field]
 
-        #dummy data
-        inputs["window_area"] = [1,2,3,4,5]
-        inputs["airing_duration"] = [1,2,3,4,5]
-
         CO2_Emi = ltool.co2_emission(
             room_type = args['room_type'],
             inputs = inputs,
@@ -446,14 +447,14 @@ class Calculate(Resource):
             H_Rm = H_Rm,
             A_Rm = A_Rm,
             airing_type_room = args['airing_type_room'],
+            airing_duration_room = args['airing_duration_room'],
             Shield = args['shielding_class'],
             Terr = args['terrain_class'],
-            # todo
             window_area = window_area,
             window_class = args['window_class'],
             pers_home = args['pers_home'],
-            #airing_type_home
-            #airing_duration
+            airing_type_home = args['airing_type_home'],
+            airing_duration_home = args['airing_duration_home'],
             Ti_avg = args['Ti_avg'],
             Ti_abs = args['Ti_abs'],
             Ti_min = args['Ti_min'],

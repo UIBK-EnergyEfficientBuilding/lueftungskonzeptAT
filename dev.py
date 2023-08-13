@@ -38,11 +38,14 @@ if __name__ == "__main__":
         H_Rm = H_Rm,
         A_Rm = A_Rm,
         airing_type_room = "Querlüftung",
+        airing_duration_room = None,
         Shield = None,
         Terr = None,
         window_area = window_area,
         window_class = None,
         pers_home = None,
+        airing_type_home = "Querlüftung",
+        airing_duration_home = None,
         Ti_avg = None,
         Ti_abs = None,
         Ti_min = None,
@@ -67,7 +70,7 @@ if __name__ == "__main__":
     print_row("Fläche öffenbare Fenster (betrachteter Raum) [m²]:".ljust(75), result["inputs"]["window_area"])
     print_row("Fensterklasse nach EN12207 (betrachteter Raum)".ljust(75), result["inputs"]["window_class"])
     print("Lüftungsmöglichkeit (betrachteter Raum):".ljust(75), "?")
-    print("Lüftungsdauer pro Lüftungsvorgang [min]:".ljust(75), "?")
+    print_row("Lüftungsdauer pro Lüftungsvorgang [min]:".ljust(75), result["inputs"]["airing_duration_room"])
     print_row("Gelände-/Terrainklasse (Windeinfluss)".ljust(75), result["inputs"]["terrain_class"])
     print_row("Abschirmung-/Shieldingklasse (Windeinfluss)".ljust(75), result["inputs"]["shielding_class"])
     print("Eingaben Personen für betrachteten Raum".ljust(75), "?")
@@ -89,7 +92,7 @@ if __name__ == "__main__":
         print_row("Fläche gesamte Wohneinheit [m²]:".ljust(75), result["inputs"]["area_home"])
         print_row("Personenanzahl (gesamter Wohneinheit):".ljust(75), result["inputs"]["pers_home"])
         print("Lüftungsmöglichkeit (gesamte Wohneinheit):".ljust(75), "?")
-        print("Lüftungsdauer gesamt, z.B. morgens und abends [min/Tag]:".ljust(75), "?")
+        print_row("Lüftungsdauer gesamt, z.B. morgens und abends [min/Tag]:".ljust(75), result["inputs"]["airing_duration_home"])
         print_row("Mittlere Raumtemperatur in gesamten Wohneinheit [°C]:".ljust(75), result["inputs"]["Ti_avg"])
         print_row("Raumtemperatur im kühlsten Raum [°C]:".ljust(75), result["inputs"]["Ti_min"])
         print_row("Minimale Raumtemperatur bei längerer Abwesenheit [°C]:".ljust(75), result["inputs"]["Ti_abs"])

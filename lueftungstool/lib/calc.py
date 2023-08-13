@@ -160,10 +160,7 @@ def co2_emission(room_type, inputs, quantiles, NrAdu = None, ActAdu = None, NrKi
 
     return CO2_Emi
 
-def Lueften(airing_type_room,CO2_Emi,A_Rm,H_Rm,CO2_aussen,CO2_Grenzwert,CO2_Grenzwert2,size):
-    LWR_lueften = beta_scaled(*params.luefungsart2WinACH[airing_type_room],size=size)
-    t_lueften = beta_scaled(*params.luefungsart2WinDur[airing_type_room],size=size)
-
+def Lueften(LWR_lueften,t_lueften,CO2_Emi,A_Rm,H_Rm,CO2_aussen,CO2_Grenzwert,CO2_Grenzwert2,size):
     c_stat_lueft = (LWR_lueften*A_Rm*H_Rm*CO2_aussen/1e6+CO2_Emi/1000)/(LWR_lueften*A_Rm*H_Rm)*1e6
 
     C0__GWfix = C0_calc_clip(CO2_Grenzwert2,c_stat_lueft,LWR_lueften,t_lueften)
@@ -248,7 +245,7 @@ def MouldRisk(fRSI,H2Oemi,Vdot_tot,Vdot_inf,Ti,Ti_min,Ta,Ta_damped,rH_a,v_10m,fs
 
 
 def calc(
-        location, building_n50, building_type, inputs, thermalbridges, H_Rm, A_Rm, Shield, Terr, window_area, window_class, pers_home, airing_type_room, Ti_avg, Ti_abs, Ti_min, fRSI, CO2_Emi, area_home, H2Osource_category, H2Osource_area, H2Osource_pers, H2Osource_area_abs, quantiles, size = 1000
+        location, building_n50, building_type, inputs, thermalbridges, H_Rm, A_Rm, Shield, Terr, window_area, window_class, pers_home, airing_type_home, airing_duration_home, airing_type_room, airing_duration_room, Ti_avg, Ti_abs, Ti_min, fRSI, CO2_Emi, area_home, H2Osource_category, H2Osource_area, H2Osource_pers, H2Osource_area_abs, quantiles, size = 1000
     ):
     T_a, v_10m, rH_a = weather(location)
     C, alfa, gama = calc_lage(location, inputs, Shield, Terr, quantiles, size)
@@ -276,9 +273,13 @@ def calc(
     CO2_Grenzwert = 1000
     CO2_Grenzwert2 = 1250 #? CA
 
+    LWR_lueften = beta_scaled(*params.luefungsart2WinACH[airing_type_room],size=size)
+    t_lueften = fixed_or_beta_scaled(airing_type_room, params.luefungsart2WinDur, airing_duration_room, size=size)
+    inputs["airing_duration_room"] = signif(np.quantile(t_lueften,quantiles),2)
+
     C_stat = (Vdot*CO2_aussen/1e6+CO2_Emi/1000)/Vdot*1e6
     C0, C0__GWfix = Lueften(
-        airing_type_room,CO2_Emi,A_Rm,H_Rm,CO2_aussen,CO2_Grenzwert,CO2_Grenzwert2,size
+        LWR_lueften,t_lueften,CO2_Emi,A_Rm,H_Rm,CO2_aussen,CO2_Grenzwert,CO2_Grenzwert2,size
     )
 
     n_max = 192
@@ -397,9 +398,11 @@ def calc(
 
         H2Oemi_abs = H2Osource_area_abs * area_home * 24 / 1000
         H2Oemi_pre = (H2Osource_area * area_home + H2Osource_pers * pers_home) * 24 / 1000
-        ACH_Win=20 #depends on window ventilation type
-        Dur_Win=15 #in min like above
+
+        ACH_Win = beta_scaled(*params.luefungsart2WinACH[airing_type_home],size=size)
+        Dur_Win = fixed_or_beta_scaled(airing_type_home, params.luefungsart2WinDur, airing_duration_home,size=size)
         Vdot_add = 0 #additional ventilation air flow (for expert use/interface) tbd:add text in output when active
+        inputs["airing_duration_home"] = signif(np.quantile(Dur_Win,quantiles),2)
         
         #tbd: through functions
         R, X = Undichtheiten(size)
