@@ -98,14 +98,19 @@ def Undichtheiten(size):
 
     return R,X
 
-def Raum(room_type, inputs, quantiles, H_Rm = None, A_Rm = None, size = 1000):
+def Raum(room_type, inputs, quantiles, H_Rm = None, A_Rm = None, window_area = None, size = 1000):
     A_Rm = fixed_or_beta_scaled(room_type, params.raumart2A_Rm, A_Rm, size)
     H_Rm = fixed_or_beta_scaled(room_type, params.raumart2H_Rm, H_Rm, size)
 
+    if window_area is None:
+        WinRat_Rm = beta_scaled(*params.raumart2WinRat_Rm[room_type], size)
+        window_area = WinRat_Rm*A_Rm
+
     inputs["H_Rm"] = signif(np.quantile(H_Rm,quantiles),2)
     inputs["A_Rm"] = signif(np.quantile(A_Rm,quantiles),2)
+    inputs["window_area"] = signif(np.quantile(window_area,quantiles),2)
 
-    return H_Rm, A_Rm
+    return H_Rm, A_Rm, window_area
 
 def Luftwechsel(Ti_avg,T_a,C,alfa,gama,Windeff,R,X,Kamineff,n50_Raum,H_Rm,A_Rm,Vdot_const,v_10m):
     # tbd: ersetzen mit allgemeinerer Funktion Infiltration
@@ -243,7 +248,7 @@ def MouldRisk(fRSI,H2Oemi,Vdot_tot,Vdot_inf,Ti,Ti_min,Ta,Ta_damped,rH_a,v_10m,fs
 
 
 def calc(
-        location, building_n50, building_type, inputs, thermalbridges, H_Rm, A_Rm, Shield, Terr, window_class, airing_type_room, Ti_avg, Ti_abs, Ti_min, fRSI, CO2_Emi, area_home, H2Osource_category, H2Osource_area, H2Osource_pers, H2Osource_area_abs, quantiles, size = 1000
+        location, building_n50, building_type, inputs, thermalbridges, H_Rm, A_Rm, Shield, Terr, window_area, window_class, airing_type_room, Ti_avg, Ti_abs, Ti_min, fRSI, CO2_Emi, area_home, H2Osource_category, H2Osource_area, H2Osource_pers, H2Osource_area_abs, quantiles, size = 1000
     ):
     T_a, v_10m, rH_a = weather(location)
     C, alfa, gama = calc_lage(location, inputs, Shield, Terr, quantiles, size)

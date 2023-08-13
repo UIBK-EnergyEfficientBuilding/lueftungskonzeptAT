@@ -427,12 +427,13 @@ class Calculate(Resource):
             size = size
         )
 
-        H_Rm, A_Rm = ltool.Raum(
+        H_Rm, A_Rm, window_area = ltool.Raum(
             room_type = args['room_type'],
             inputs = inputs,
             quantiles = quantiles,
             H_Rm = args['H_Rm'],
             A_Rm = args['A_Rm'],
+            window_area = args['window_area'],
             size = size
         )
 
@@ -448,7 +449,7 @@ class Calculate(Resource):
             Shield = args['shielding_class'],
             Terr = args['terrain_class'],
             # todo
-            #window_area
+            window_area = window_area,
             window_class = args['window_class'],
             #luefungsdauer
             #pers_home

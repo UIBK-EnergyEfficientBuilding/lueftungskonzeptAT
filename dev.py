@@ -22,7 +22,7 @@ if __name__ == "__main__":
         size = size
     )
 
-    H_Rm, A_Rm = ltool.Raum(
+    H_Rm, A_Rm, window_area = ltool.Raum(
         room_type = room_type,
         inputs = inputs,
         quantiles = quantiles,
@@ -40,6 +40,7 @@ if __name__ == "__main__":
         airing_type_room = "Querlüftung",
         Shield = None,
         Terr = None,
+        window_area = window_area,
         window_class = None,
         Ti_avg = None,
         Ti_abs = None,
@@ -62,8 +63,8 @@ if __name__ == "__main__":
     print("Raumart (betrachteter Raum):".ljust(75), "?")
     print_row("Fläche (betrachteter Raum) [m²]:".ljust(75), result["inputs"]["A_Rm"])
     print_row("Höhe (betrachteter Raum) [m]:".ljust(75), result["inputs"]["H_Rm"])
-    print("Fläche öffenbare Fenster (betrachteter Raum) [m²]:".ljust(75), "?")
-    print("Fensterklasse nach EN12207 (betrachteter Raum)".ljust(75), "?")
+    print_row("Fläche öffenbare Fenster (betrachteter Raum) [m²]:".ljust(75), result["inputs"]["window_area"])
+    print_row("Fensterklasse nach EN12207 (betrachteter Raum)".ljust(75), result["inputs"]["window_class"])
     print("Lüftungsmöglichkeit (betrachteter Raum):".ljust(75), "?")
     print("Lüftungsdauer pro Lüftungsvorgang [min]:".ljust(75), "?")
     print_row("Gelände-/Terrainklasse (Windeinfluss)".ljust(75), result["inputs"]["terrain_class"])

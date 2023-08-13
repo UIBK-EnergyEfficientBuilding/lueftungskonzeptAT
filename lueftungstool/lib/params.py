@@ -151,6 +151,10 @@ raumart2AgeKid = {
     "Schlafzimmer": [1,3,0,4],
     "Wohnzimmer": [1,1,1,18],
 }
+raumart2WinRat_Rm = {
+    "Schlafzimmer": [3,3,0.1,0.5],
+    "Wohnzimmer": [3,3,0.1,0.5],
+}
 room_type_list = ["Schlafzimmer", "Wohnzimmer"]
 
 luefungsart2WinACH = {
