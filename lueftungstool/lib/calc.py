@@ -59,8 +59,8 @@ def calc_lage(location, inputs, Shield, Terr, quantiles, size):
     Shield = np.round(fixed_or_beta_scaled(location, params.location2Shield, Shield, size))
     Terr = np.round(fixed_or_beta_scaled(location, params.location2Terr, Terr, size))
 
-    inputs["terrainklasse"] = signif(np.quantile(Terr,quantiles),2)
-    inputs["shieldingklasse"] = signif(np.quantile(Shield,quantiles),2)
+    inputs["terrain_class"] = signif(np.quantile(Terr,quantiles),2)
+    inputs["shielding_class"] = signif(np.quantile(Shield,quantiles),2)
 
     C = map_values(Shield,params.Shield_class2C)
     alfa = map_values(Shield,params.Terr_class2alfa)
@@ -366,7 +366,7 @@ def calc(
         OccDens = beta_scaled(*params.OccDens[building_type], size)
         AvgPers = area_home/OccDens
 
-        inputs["AvgPers"] = signif(np.quantile(AvgPers,quantiles),2)
+        inputs["pers_home"] = signif(np.quantile(AvgPers,quantiles),2)
 
         #tbd: through interface
         Vol_Unit = H_Rm * area_home

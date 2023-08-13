@@ -35,7 +35,7 @@ calculation_parameter_model = namespace.model('CalculationParameter', {
         description="Gebäudeart",
     ),
     'thermalbridges': fields.String(default="Standard Neubau",
-        required=True,
+        required=False,
         enum=params.waermebruecken_list,
         description="Wärmebrücken / fRSI-Wert",
     ),
@@ -63,7 +63,7 @@ calculation_parameter_model = namespace.model('CalculationParameter', {
         description="Fensterklasse nach EN12207 (betrachteter Raum)",
     ),
     'airing_type_room': fields.String(default="Querlüftung",
-        required=True,
+        required=False,
         enum=params.airing_type_list,
         description="Lüftungsmöglichkeit (betrachteter Raum):",
     ),
@@ -102,7 +102,7 @@ calculation_parameter_model = namespace.model('CalculationParameter', {
     ),
 
     'H2Osource_category': fields.String(default="Mittel",
-        required=True,
+        required=False,
         enum=params.Feuchtelastkategorie_list,
         description="Feuchtelast [l/d]:",
     ),
@@ -285,6 +285,39 @@ res_co2 = namespace.model('ResCO2', {
     ),
 })
 
+inputs_result_model  = namespace.model('InputsResult', {
+    'location': fields.String(),
+    'building_n50': fields.String(),
+    'building_type': fields.String(),
+    'thermalbridges': fields.String(),
+    'H_Rm': fields.List(fields.Float(), example=[1,2,3,4,5]),
+    'A_Rm': fields.List(fields.Float(), example=[1,2,3,4,5]),
+    'room_type': fields.String(),
+    'window_area': fields.List(fields.Float(), example=[1,2,3,4,5]),
+    'window_class': fields.List(fields.Integer(), example=[1,2,3,4,5]),
+    'airing_type_room': fields.String(),
+    'terrain_class': fields.List(fields.Integer(), example=[1,2,3,4,5]),
+    'shielding_class': fields.List(fields.Integer(), example=[1,2,3,4,5]),
+
+    'NrAdu': fields.List(fields.Float(), example=[1,2,3,4,5]),
+    'ActAdu': fields.List(fields.Float(), example=[1,2,3,4,5]),
+    'NrKids': fields.List(fields.Float(), example=[1,2,3,4,5]),
+    'ActKid': fields.List(fields.Float(), example=[1,2,3,4,5]),
+    'AgeKid': fields.List(fields.Float(), example=[1,2,3,4,5]),
+
+    'H2Osource_category': fields.String(),
+    'H2Osource_area': fields.List(fields.Float(), example=[1,2,3,4,5]),
+    'H2Osource_pers': fields.List(fields.Float(), example=[1,2,3,4,5]),
+    'H2Osource_area_abs': fields.List(fields.Float(), example=[1,2,3,4,5]),
+    'area_home': fields.List(fields.Float(), example=[1,2,3,4,5]),
+    'pers_home': fields.List(fields.Float(), example=[1,2,3,4,5]),
+    'airing_type_home': fields.String(),
+    'airing_duration': fields.List(fields.Float(), example=[1,2,3,4,5]),
+    'Ti_avg': fields.List(fields.Float(), example=[1,2,3,4,5]),
+    'Ti_min': fields.List(fields.Float(), example=[1,2,3,4,5]),
+    'Ti_abs': fields.List(fields.Float(), example=[1,2,3,4,5]),
+})
+
 calculation_result_model = namespace.model('CalculationResult', {
     'ResCO2': fields.Nested(
         res_co2,
@@ -293,6 +326,10 @@ calculation_result_model = namespace.model('CalculationResult', {
     'ResH2O': fields.Nested(
         mould_risk,
         description='Ergebnis Schimmelrisiko Bewertung (nur für Wohnbau)'
+    ),
+    'inputs': fields.Nested(
+        inputs_result_model,
+        description='inputs'
     ),
 })
 
@@ -338,6 +375,21 @@ class Calculate(Resource):
 
         inputs = {}
         quantiles = [0.05, 0.25, 0.5, 0.75, 0.95]
+
+        #add defaults to input results
+        for field in [
+                "location", "building_type", "thermalbridges", "room_type",
+                "airing_type_room", "H2Osource_category", "airing_type_home",
+            ]:
+            inputs[field] = args[field]
+
+        #dummy data
+        inputs["window_area"] = [1,2,3,4,5]
+        inputs["window_class"] = [1,2,3,4,5]
+        inputs["airing_duration"] = [1,2,3,4,5]
+        inputs["Ti_avg"] = [1,2,3,4,5]
+        inputs["Ti_min"] = [1,2,3,4,5]
+        inputs["Ti_abs"] = [1,2,3,4,5]
 
         CO2_Emi = ltool.co2_emission(
             room_type = args['room_type'],
