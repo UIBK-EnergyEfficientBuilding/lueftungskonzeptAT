@@ -13,4 +13,4 @@ COPY --from=builder /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 USER app
-CMD ["gunicorn", "-b", "0.0.0.0:8000", "lueftungstool:app"]
+CMD ["gunicorn", "-b", "0.0.0.0:8000", "lueftungstool:create_app()"]
