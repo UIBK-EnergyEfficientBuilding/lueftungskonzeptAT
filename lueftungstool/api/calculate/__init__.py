@@ -352,6 +352,7 @@ class Calculate(Resource):
     @namespace.marshal_with(calculation_result_model)
     @namespace.response(500, 'Internal Server error')
     @namespace.response(400, 'BAD REQUEST', model=valitation_error_model)
+    @namespace.response(429, 'TOO MANY REQUESTS')
     def get(self):
         args = parser.parse_args()
 
