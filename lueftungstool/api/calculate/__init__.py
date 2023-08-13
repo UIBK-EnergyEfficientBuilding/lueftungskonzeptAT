@@ -403,7 +403,9 @@ params_mapping = {
     "room_type":params.room_type_list,
     "airing_type_room":params.airing_type_list,
     "airing_type_home":params.airing_type_home_list,
-    "n50_map":params.n50_map_list,
+    "building_n50":params.n50_map_list,
+    "thermalbridges":params.waermebruecken_list,
+    "H2Osource_category":params.Feuchtelastkategorie_list,
 }
 
 @namespace.route('/params/<string:name>')
