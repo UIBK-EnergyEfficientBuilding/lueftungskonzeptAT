@@ -243,13 +243,17 @@ def MouldRisk(fRSI,H2Oemi,Vdot_tot,Vdot_inf,Ti,Ti_min,Ta,Ta_damped,rH_a,v_10m,fs
 
 
 def calc(
-        location, building_n50, building_type, inputs, thermalbridges, H_Rm, A_Rm, Shield, Terr, airing_type_room, CO2_Emi, area_home, H2Osource_category, H2Osource_area, H2Osource_pers, H2Osource_area_abs, quantiles, size = 1000
+        location, building_n50, building_type, inputs, thermalbridges, H_Rm, A_Rm, Shield, Terr, window_class, airing_type_room, CO2_Emi, area_home, H2Osource_category, H2Osource_area, H2Osource_pers, H2Osource_area_abs, quantiles, size = 1000
     ):
     T_a, v_10m, rH_a = weather(location)
     C, alfa, gama = calc_lage(location, inputs, Shield, Terr, quantiles, size)
     n50, H_Bldg, Windeff = calc_dichtheit(building_n50, building_type, inputs, quantiles, size)
     Ti_avg = beta_scaled(*params.waermebruecken2Ti_avg[thermalbridges],size=size)
     R, X = Undichtheiten(size)
+
+    window_class = params.name2window_class[window_class] if window_class is not None else None
+    window_class = np.round(fixed_or_beta_scaled(building_n50, params.window_class, window_class, size=size))
+    inputs["window_class"] = signif(np.quantile(window_class,quantiles),2)
 
     n50_Raum = n50  #
     Kamineff = 3    # auf H_stack umbenennen

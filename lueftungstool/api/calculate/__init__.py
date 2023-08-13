@@ -58,6 +58,9 @@ params_mapping = {
     "shielding_class":{
         "values":params.Shield_class_list,
     },
+    "window_class":{
+        "values":params.window_class_list,
+    },
 }
 
 calculation_parameter_model = namespace.model('CalculationParameter', {
@@ -98,10 +101,9 @@ calculation_parameter_model = namespace.model('CalculationParameter', {
         required=False,
         description="Fläche öffenbare Fenster (betrachteter Raum) [m²]:",
     ),
-    'window_class': fields.Integer(
+    'window_class': fields.String(
         required=False,
-        min=1,
-        max=4,
+        enum=params_mapping["window_class"]["values"],
         description="Fensterklasse nach EN12207 (betrachteter Raum)",
     ),
     'airing_type_room': fields.String(default=params_mapping["airing_type_room"]["default"],
@@ -396,16 +398,6 @@ class Calculate(Resource):
     def get(self):
         args = parser.parse_args()
 
-        errors = {}
-        if 'window_class' in args and args['window_class'] is not None:
-            if not args['window_class'] in [1,2,3,4]:
-                errors["window_class"] = f"{args['window_class']} is not in [1,2,3,4]"
-
-        if len(errors.keys()) != 0:
-            namespace.abort(
-                400, "Input payload validation failed", errors=errors
-            )
-
         size = 1000
 
         inputs = {}
@@ -417,7 +409,6 @@ class Calculate(Resource):
 
         #dummy data
         inputs["window_area"] = [1,2,3,4,5]
-        inputs["window_class"] = [1,2,3,4,5]
         inputs["airing_duration"] = [1,2,3,4,5]
         inputs["Ti_avg"] = [1,2,3,4,5]
         inputs["Ti_min"] = [1,2,3,4,5]
@@ -457,7 +448,7 @@ class Calculate(Resource):
             Terr = args['terrain_class'],
             # todo
             #window_area
-            #window_class
+            window_class = args['window_class'],
             #luefungsdauer
             #pers_home
             #airing_type_home

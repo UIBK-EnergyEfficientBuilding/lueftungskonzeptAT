@@ -38,6 +38,14 @@ name2Shield_class = {
 }
 Shield_class_list = list(name2Shield_class.keys())
 
+name2window_class = {
+    "1: sehr undicht":1,
+    "2: eher undicht":2,
+    "3: mit guter Dichtung":3,
+    "4: mit sehr guter Dichtung":4,
+}
+window_class_list = list(name2window_class.keys())
+
 location2Terr = {
     "Innsbruck":[1,1,2.5,4.5],
     "Wien":[1,1,2.5,5.5],
@@ -128,10 +136,19 @@ airing_type_home_map = {
 }
 airing_type_home_list = list(airing_type_home_map.keys())
 
+window_class = {
+    "Undichter Altbau":[1,1,1,4],
+    "Altbau":[1,1,2,4],
+    "Standard Neubau":[1,1,3,4],
+    "Neubau - eher dicht":[1,1,4,4],
+    "Neubau - sehr dicht":[1,1,4,4],
+}
 n50_map = {
     "Altbau":[3,3,3,4],
     "Undichter Altbau": [3,3,3,7],
     "Standard Neubau": [3,3,1,2],
+    "Neubau - eher dicht": [3,3,0.6,1],
+    "Neubau - sehr dicht": [3,3,0.2,0.6],
 }
 n50_map_list = list(n50_map.keys())
 

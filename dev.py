@@ -40,6 +40,7 @@ if __name__ == "__main__":
         airing_type_room = "Querlüftung",
         Shield = None,
         Terr = None,
+        window_class = None,
         CO2_Emi = CO2_Emi,
         area_home = None,
         H2Osource_category = "Mittel",
