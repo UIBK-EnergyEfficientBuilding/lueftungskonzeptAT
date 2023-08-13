@@ -20,6 +20,24 @@ Terr_class2gama = {
     5:0.35,
 }
 
+name2Terr_class = {
+    "Freistehend": 1,
+    "Lockere Siedlungsstruktur": 2,
+    "Dorfstruktur": 3,
+    "Städtische Struktur": 4,
+    "Innerstädtisch": 5,
+}
+Terr_class_list = list(name2Terr_class.keys())
+
+name2Shield_class = {
+    "Sehr windausgesetzt": 1,
+    "Leicht windgeschützt": 2,
+    "Moderat windgeschützt": 3,
+    "Sehr windgeschützt": 4,
+    "Extem windgeschützt": 5,
+}
+Shield_class_list = list(name2Shield_class.keys())
+
 location2Terr = {
     "Innsbruck":[1,1,2.5,4.5],
     "Wien":[1,1,2.5,5.5],

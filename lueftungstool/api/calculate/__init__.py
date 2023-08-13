@@ -52,6 +52,12 @@ params_mapping = {
         "values":params.Feuchtelastkategorie_list,
         "default":"Mittel",
     },
+    "terrain_class":{
+        "values":params.Terr_class_list,
+    },
+    "shielding_class":{
+        "values":params.Shield_class_list,
+    },
 }
 
 calculation_parameter_model = namespace.model('CalculationParameter', {
@@ -103,16 +109,14 @@ calculation_parameter_model = namespace.model('CalculationParameter', {
         enum=params_mapping["airing_type_room"]["values"],
         description="Lüftungsmöglichkeit (betrachteter Raum):",
     ),
-    'terrain_class': fields.Integer(
+    'terrain_class': fields.String(
         required=False,
-        min=1,
-        max=5,
+        enum=params_mapping["terrain_class"]["values"],
         description="Gelände-/Terrainklasse (Windeinfluss)",
     ),
-    'shielding_class': fields.Integer(
+    'shielding_class': fields.String(
         required=False,
-        min=1,
-        max=5,
+        enum=params_mapping["shielding_class"]["values"],
         description="Abschirmung-/Shieldingklasse (Windeinfluss)",
     ),
 
@@ -393,12 +397,6 @@ class Calculate(Resource):
         args = parser.parse_args()
 
         errors = {}
-        if 'shielding_class' in args and args['shielding_class'] is not None:
-            if not args['shielding_class'] in params.Shield_class2C:
-                errors["shielding_class"] = f"{args['shielding_class']} is not in {list(params.Shield_class2C.keys())}"
-        if 'terrain_class' in args and args['terrain_class'] is not None:
-            if not args['terrain_class'] in params.Shield_class2C:
-                errors["terrain_class"] = f"{args['terrain_class']} is not in {list(params.Shield_class2C.keys())}"
         if 'window_class' in args and args['window_class'] is not None:
             if not args['window_class'] in [1,2,3,4]:
                 errors["window_class"] = f"{args['window_class']} is not in [1,2,3,4]"

@@ -55,6 +55,9 @@ def weather(location):
     return T_a, v_10m, rH
 
 def calc_lage(location, inputs, Shield, Terr, quantiles, size):
+    Shield = params.name2Shield_class[Shield] if Shield is not None else None
+    Terr = params.name2Terr_class[Terr] if Terr is not None else None
+
     #Lage/Exposition
     Shield = np.round(fixed_or_beta_scaled(location, params.location2Shield, Shield, size))
     Terr = np.round(fixed_or_beta_scaled(location, params.location2Terr, Terr, size))
