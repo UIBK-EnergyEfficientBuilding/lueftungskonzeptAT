@@ -356,7 +356,7 @@ inputs_result_model  = namespace.model('InputsResult', {
     'ActKid': fields.List(fields.Float(), example=[1,2,3,4,5]),
     'AgeKid': fields.List(fields.Float(), example=[1,2,3,4,5]),
 
-    'H2Osource_category': fields.String(),
+    'H2Osource_category': fields.List(fields.Float(), example=[1,2,3,4,5]),
     'H2Osource_area': fields.List(fields.Float(), example=[1,2,3,4,5]),
     'H2Osource_pers': fields.List(fields.Float(), example=[1,2,3,4,5]),
     'H2Osource_area_abs': fields.List(fields.Float(), example=[1,2,3,4,5]),

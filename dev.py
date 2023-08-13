@@ -85,7 +85,7 @@ if __name__ == "__main__":
         print("Berechnung durchführen:".ljust(75), "Ja")
         print("Wärmebrücken".ljust(75), result["inputs"]["thermalbridges"])
         print_row("fRSI-Wert".ljust(75), result["inputs"]["fRSI"])
-        print("Feuchtelast [l/d]:".ljust(75), "?")
+        print_row("Feuchtelast [l/d]:".ljust(75), result["inputs"]["H2Osource_category"])
         print_row("Feuchtequellstärke pro m² bei Anwesenheit [g/(hm²)]".ljust(75), result["inputs"]["H2Osource_area"])
         print_row("Feuchtequellstärke pro Pers bei Anwesenheit [g/(hPers)]".ljust(75), result["inputs"]["H2Osource_pers"])
         print_row("Feuchtequellstärke pro m² bei Abwesenheit [g/(hm²)]".ljust(75), result["inputs"]["H2Osource_area_abs"])

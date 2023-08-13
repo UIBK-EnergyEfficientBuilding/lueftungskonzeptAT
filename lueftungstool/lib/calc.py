@@ -398,6 +398,7 @@ def calc(
 
         H2Oemi_abs = H2Osource_area_abs * area_home * 24 / 1000
         H2Oemi_pre = (H2Osource_area * area_home + H2Osource_pers * pers_home) * 24 / 1000
+        inputs["H2Osource_category"] = signif(np.quantile(H2Oemi_pre,quantiles),2)
 
         ACH_Win = beta_scaled(*params.luefungsart2WinACH[airing_type_home],size=size)
         Dur_Win = fixed_or_beta_scaled(airing_type_home, params.luefungsart2WinDur, airing_duration_home,size=size)
