@@ -199,14 +199,26 @@ calculation_parameter_model = namespace.model('CalculationParameter', {
 
 })
 
+
+result_stats_float_model = namespace.model('ResultStatsFloat', {
+    "mean": fields.Float(),
+    "error": fields.Float(),
+    "quantiles": fields.List(fields.Float(), example=[1,2,3,4,5])
+})
+
+result_stats_integer_model = namespace.model('ResultStatsInteger', {
+    "mean": fields.Integer(),
+    "error": fields.Integer(),
+    "quantiles": fields.List(fields.Integer(), example=[1,2,3,4,5])
+})
+
 plot_data = namespace.model('plot_data', {
     "x":fields.List(fields.Float(), example=[0,1,2,3,5]),
     "y":fields.List(fields.List(fields.Float()), example=[[0,1,2,3,5]]),
 })
 
 airing_resultdata = namespace.model('airing_resultdata', {
-    "quantiles": fields.List(fields.Float(),
-        example=[0.26,0.43,0.68,1.1,1.6],
+    "quantiles": fields.Nested(result_stats_float_model,
         description='Zeit bis Grenzwert erreicht - [P5,P25,Med,P75,P95]'
     ),
     'frequency': fields.Nested(
@@ -244,17 +256,14 @@ mould_risk = namespace.model('ResH2O', {
         description='Schimmelrisiko als Wahrscheinlichkeit'
     ),
 
-    "Vdot_Inf": fields.List(fields.Float(),
-        example=[3.7,5.3,7.6,11,16],
+    "Vdot_Inf": fields.Nested(result_stats_float_model,
         description='Luftmenge durch Fugenlüftung [m³/h]'
     ),
-    "Vdot_Tot": fields.List(fields.Float(),
-        example=[35,43,51,62,79],
+    "Vdot_Tot": fields.Nested(result_stats_float_model,
         description='Luftmenge durch Fugenlüftung + Fensterlüftung [m³/h]'
     ),
 
-    "Vdot_req_pre": fields.List(fields.Float(),
-        example=[19,25,32,42,63],
+    "Vdot_req_pre": fields.Nested(result_stats_float_model,
         description='Erforderliche Luftmenge zur Feuchteabfuhr [m³/h]'
     ),
     'Frac_Inf_insuff_pre': fields.Float(
@@ -274,8 +283,7 @@ mould_risk = namespace.model('ResH2O', {
         description='dafür erforderlicher zusätzlicher freier Querschnitt [cm²]'
     ),
 
-    "Vdot_req_abs": fields.List(fields.Float(),
-        example=[2.9,4,5.1,6.5,8.9],
+    "Vdot_req_abs": fields.Nested(result_stats_float_model,
         description='Erforderliche Luftmenge zur Feuchteabfuhr [m³/h]'
     ),
     'Frac_Inf_insuff_abs': fields.Float(
@@ -307,13 +315,13 @@ res_co2 = namespace.model('ResCO2', {
     't_reasonable': fields.Float(
         description="Dies ist kürzer als die zumutbare Zeit zwischen Fensterlüften [min]"
     ),
-    'CO2_stat': fields.List(fields.Float(), example=[ 7900, 13000, 19000, 28000, 46000],
+    'CO2_stat': fields.Nested(result_stats_float_model,
         description='CO2 Konzentration im stationären Fall'
     ),
-    'Vdot': fields.List(fields.Float(), example=[0.73, 1.1,  1.4,  1.9,  3.1],
+    'Vdot': fields.Nested(result_stats_float_model,
         description='errechnete Luftmenge aufgrund natürlicher Lüftung [m³/h]'
     ),
-    'ACR': fields.List(fields.Float(), example=[0.024, 0.03, 0.039, 0.05, 0.066],
+    'ACR': fields.Nested(result_stats_float_model,
         description='errechneter natürlicher Luftwechsel [1/h]'
     ),
     't_avgC_realC0': fields.Nested(
@@ -336,37 +344,37 @@ res_co2 = namespace.model('ResCO2', {
 
 inputs_result_model  = namespace.model('InputsResult', {
     'location': fields.String(),
-    'building_n50': fields.List(fields.Float(), example=[1,2,3,4,5]),
+    'building_n50': fields.Nested(result_stats_float_model),
     'building_type': fields.String(),
     'thermalbridges': fields.String(),
-    'fRSI': fields.List(fields.Float(), example=[1,2,3,4,5]),
-    'H_Rm': fields.List(fields.Float(), example=[1,2,3,4,5]),
-    'A_Rm': fields.List(fields.Float(), example=[1,2,3,4,5]),
+    'fRSI': fields.Nested(result_stats_float_model),
+    'H_Rm': fields.Nested(result_stats_float_model),
+    'A_Rm': fields.Nested(result_stats_float_model),
     'room_type': fields.String(),
-    'window_area': fields.List(fields.Float(), example=[1,2,3,4,5]),
-    'window_class': fields.List(fields.Integer(), example=[1,2,3,4,5]),
+    'window_area': fields.Nested(result_stats_float_model),
+    'window_class': fields.Nested(result_stats_integer_model),
     'airing_type_room': fields.String(),
-    'airing_duration_room': fields.List(fields.Integer(), example=[1,2,3,4,5]),
-    'terrain_class': fields.List(fields.Integer(), example=[1,2,3,4,5]),
-    'shielding_class': fields.List(fields.Integer(), example=[1,2,3,4,5]),
+    'airing_duration_room': fields.Nested(result_stats_integer_model),
+    'terrain_class': fields.Nested(result_stats_integer_model),
+    'shielding_class': fields.Nested(result_stats_integer_model),
 
-    'NrAdu': fields.List(fields.Float(), example=[1,2,3,4,5]),
-    'ActAdu': fields.List(fields.Float(), example=[1,2,3,4,5]),
-    'NrKids': fields.List(fields.Float(), example=[1,2,3,4,5]),
-    'ActKid': fields.List(fields.Float(), example=[1,2,3,4,5]),
-    'AgeKid': fields.List(fields.Float(), example=[1,2,3,4,5]),
+    'NrAdu': fields.Nested(result_stats_float_model),
+    'ActAdu': fields.Nested(result_stats_float_model),
+    'NrKids': fields.Nested(result_stats_float_model),
+    'ActKid': fields.Nested(result_stats_float_model),
+    'AgeKid': fields.Nested(result_stats_float_model),
 
-    'H2Osource_category': fields.List(fields.Float(), example=[1,2,3,4,5]),
-    'H2Osource_area': fields.List(fields.Float(), example=[1,2,3,4,5]),
-    'H2Osource_pers': fields.List(fields.Float(), example=[1,2,3,4,5]),
-    'H2Osource_area_abs': fields.List(fields.Float(), example=[1,2,3,4,5]),
-    'area_home': fields.List(fields.Float(), example=[1,2,3,4,5]),
-    'pers_home': fields.List(fields.Float(), example=[1,2,3,4,5]),
+    'H2Osource_category': fields.Nested(result_stats_float_model),
+    'H2Osource_area': fields.Nested(result_stats_float_model),
+    'H2Osource_pers': fields.Nested(result_stats_float_model),
+    'H2Osource_area_abs': fields.Nested(result_stats_float_model),
+    'area_home': fields.Nested(result_stats_float_model),
+    'pers_home': fields.Nested(result_stats_float_model),
     'airing_type_home': fields.String(),
-    'airing_duration_home': fields.List(fields.Float(), example=[1,2,3,4,5]),
-    'Ti_avg': fields.List(fields.Float(), example=[1,2,3,4,5]),
-    'Ti_min': fields.List(fields.Float(), example=[1,2,3,4,5]),
-    'Ti_abs': fields.List(fields.Float(), example=[1,2,3,4,5]),
+    'airing_duration_home': fields.Nested(result_stats_float_model),
+    'Ti_avg': fields.Nested(result_stats_float_model),
+    'Ti_min': fields.Nested(result_stats_float_model),
+    'Ti_abs': fields.Nested(result_stats_float_model),
 })
 
 calculation_result_model = namespace.model('CalculationResult', {

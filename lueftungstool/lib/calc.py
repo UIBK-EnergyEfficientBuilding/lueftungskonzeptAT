@@ -36,6 +36,12 @@ def signif(x, p):
     mags = 10 ** (p - 1 - np.floor(np.log10(x_positive)))
     return np.round(x * mags) / mags
 
+def result_stats(value,precision=2):
+    mean = signif(np.mean(value),precision)
+    q = np.quantile(value,[0.05, 0.25, 0.5, 0.75, 0.95])
+    error = signif((q[-1] - q[0])/2,precision)
+    return {"mean": mean, "error": error, "quantiles":signif(q,precision)}
+
 def t_gw_calc(C0,C_stat,LWR,t_max,n_max,CO2_Grenzwert,quantiles,size):
     n_i = np.array([np.arange(1, n_max+1)]*size).T
     c_t=(C0-C_stat)/LWR/(t_max*n_i/n_max)*(1-np.exp(-LWR*(t_max*n_i/n_max)))+C_stat
@@ -62,8 +68,8 @@ def calc_lage(location, inputs, Shield, Terr, quantiles, size):
     Shield = np.round(fixed_or_beta_scaled(location, params.location2Shield, Shield, size))
     Terr = np.round(fixed_or_beta_scaled(location, params.location2Terr, Terr, size))
 
-    inputs["terrain_class"] = signif(np.quantile(Terr,quantiles),2)
-    inputs["shielding_class"] = signif(np.quantile(Shield,quantiles),2)
+    inputs["terrain_class"] = result_stats(Terr)
+    inputs["shielding_class"] = result_stats(Shield)
 
     C = map_values(Shield,params.Shield_class2C)
     alfa = map_values(Shield,params.Terr_class2alfa)
@@ -75,7 +81,7 @@ def calc_dichtheit(building_n50, building_type, inputs, quantiles, size):
     #Gebäudichtheit
     n50 = beta_scaled(*params.n50_map[building_n50],size=size)
 
-    inputs["building_n50"] = signif(np.quantile(n50,quantiles),2)
+    inputs["building_n50"] = result_stats(n50)
 
     H_Bldg = beta_scaled(*params.gebaeudeart2H_Bldg[building_type],size=size)
     Windeff = np.max(
@@ -106,9 +112,9 @@ def Raum(room_type, inputs, quantiles, H_Rm = None, A_Rm = None, window_area = N
         WinRat_Rm = beta_scaled(*params.raumart2WinRat_Rm[room_type], size)
         window_area = WinRat_Rm*A_Rm
 
-    inputs["H_Rm"] = signif(np.quantile(H_Rm,quantiles),2)
-    inputs["A_Rm"] = signif(np.quantile(A_Rm,quantiles),2)
-    inputs["window_area"] = signif(np.quantile(window_area,quantiles),2)
+    inputs["H_Rm"] = result_stats(H_Rm)
+    inputs["A_Rm"] = result_stats(A_Rm)
+    inputs["window_area"] = result_stats(window_area)
 
     return H_Rm, A_Rm, window_area
 
@@ -146,11 +152,11 @@ def co2_emission(room_type, inputs, quantiles, NrAdu = None, ActAdu = None, NrKi
     ActAdu = fixed_or_beta_scaled(room_type, params.raumart2ActAdu, ActAdu,size=size)
     NrAdu = np.round(fixed_or_beta_scaled(room_type, params.raumart2Nr_Adu, NrAdu,size=size))
 
-    inputs["AgeKid"] = signif(np.quantile(AgeKid,quantiles),2)
-    inputs["ActKid"] = signif(np.quantile(ActKid,quantiles),2)
-    inputs["NrKids"] = signif(np.quantile(NrKids,quantiles),2)
-    inputs["ActAdu"] = signif(np.quantile(ActAdu,quantiles),2)
-    inputs["NrAdu"] = signif(np.quantile(NrAdu,quantiles),2)
+    inputs["AgeKid"] = result_stats(AgeKid)
+    inputs["ActKid"] = result_stats(ActKid)
+    inputs["NrKids"] = result_stats(NrKids)
+    inputs["ActAdu"] = result_stats(ActAdu)
+    inputs["NrAdu"] = result_stats(NrAdu)
 
     CO2_Emi_rate_Erw = 18
     CO2_Emi_rate_Kid = 10
@@ -174,7 +180,7 @@ def calc_result(t_gw,t,c_gw,t_max,quantiles):
     hist,_ = np.histogram(t_gw, bins)
 
     return {
-        "quantiles": signif(np.quantile(t_gw*60,quantiles),2),
+        "quantiles": result_stats(t_gw*60),
         "frequency": {
             "x":bins[:-1]*60,
             "y":[hist]
@@ -256,11 +262,11 @@ def calc(
         inputs["thermalbridges"] = thermalbridges
     Ti_avg = fixed_or_beta_scaled(thermalbridges, params.waermebruecken2Ti_avg, Ti_avg, size=size)
     R, X = Undichtheiten(size)
-    inputs["Ti_avg"] = signif(np.quantile(Ti_avg,quantiles),2)
+    inputs["Ti_avg"] = result_stats(Ti_avg)
 
     window_class = params.name2window_class[window_class] if window_class is not None else None
     window_class = np.round(fixed_or_beta_scaled(building_n50, params.window_class, window_class, size=size))
-    inputs["window_class"] = signif(np.quantile(window_class,quantiles),2)
+    inputs["window_class"] = result_stats(window_class)
 
     n50_Raum = n50  #
     Kamineff = 3    # auf H_stack umbenennen
@@ -275,7 +281,7 @@ def calc(
 
     LWR_lueften = beta_scaled(*params.luefungsart2WinACH[airing_type_room],size=size)
     t_lueften = fixed_or_beta_scaled(airing_type_room, params.luefungsart2WinDur, airing_duration_room, size=size)
-    inputs["airing_duration_room"] = signif(np.quantile(t_lueften,quantiles),2)
+    inputs["airing_duration_room"] = result_stats(t_lueften)
 
     C_stat = (Vdot*CO2_aussen/1e6+CO2_Emi/1000)/Vdot*1e6
     C0, C0__GWfix = Lueften(
@@ -354,7 +360,7 @@ def calc(
 
         area_home = fixed_or_beta_scaled(building_type, params.WNF, area_home, size)
 
-        inputs["area_home"] = signif(np.quantile(area_home,quantiles),2)
+        inputs["area_home"] = result_stats(area_home)
 
         H2Osource_area_abs = fixed_or_beta_scaled_range(
             "Quellstärke [g/h] Wohnen bei Abwesenheit",
@@ -377,14 +383,14 @@ def calc(
             H2Osource_pers,
             size
         )
-        inputs["H2Osource_area_abs"] = signif(np.quantile(H2Osource_area_abs,quantiles),2)
-        inputs["H2Osource_area"] = signif(np.quantile(H2Osource_area,quantiles),2)
-        inputs["H2Osource_pers"] = signif(np.quantile(H2Osource_pers,quantiles),2)
+        inputs["H2Osource_area_abs"] = result_stats(H2Osource_area_abs)
+        inputs["H2Osource_area"] = result_stats(H2Osource_area)
+        inputs["H2Osource_pers"] = result_stats(H2Osource_pers)
 
         if pers_home is None:
             OccDens = beta_scaled(*params.OccDens[building_type], size)
             pers_home = area_home/OccDens
-        inputs["pers_home"] = signif(np.quantile(pers_home,quantiles),2)
+        inputs["pers_home"] = result_stats(pers_home)
 
         #tbd: through interface
         Vol_Unit = H_Rm * area_home
@@ -392,18 +398,18 @@ def calc(
         Ti_min = fixed_or_beta_scaled(thermalbridges, params.waermebruecken2Ti_min, Ti_min, size=size)
         Ti_abs = fixed_or_beta_scaled(thermalbridges, params.waermebruecken2Ti_abs, Ti_abs, size=size)
         fRSI = fixed_or_beta_scaled(thermalbridges, params.waermebruecken2fRSI, fRSI,size=size)
-        inputs["Ti_min"] = signif(np.quantile(Ti_min,quantiles),2)
-        inputs["Ti_abs"] = signif(np.quantile(Ti_abs,quantiles),2)
-        inputs["fRSI"] = signif(np.quantile(fRSI,quantiles),2)
+        inputs["Ti_min"] = result_stats(Ti_min)
+        inputs["Ti_abs"] = result_stats(Ti_abs)
+        inputs["fRSI"] = result_stats(fRSI)
 
         H2Oemi_abs = H2Osource_area_abs * area_home * 24 / 1000
         H2Oemi_pre = (H2Osource_area * area_home + H2Osource_pers * pers_home) * 24 / 1000
-        inputs["H2Osource_category"] = signif(np.quantile(H2Oemi_pre,quantiles),2)
+        inputs["H2Osource_category"] = result_stats(H2Oemi_pre)
 
         ACH_Win = beta_scaled(*params.luefungsart2WinACH[airing_type_home],size=size)
         Dur_Win = fixed_or_beta_scaled(airing_type_home, params.luefungsart2WinDur, airing_duration_home,size=size)
         Vdot_add = 0 #additional ventilation air flow (for expert use/interface) tbd:add text in output when active
-        inputs["airing_duration_home"] = signif(np.quantile(Dur_Win,quantiles),2)
+        inputs["airing_duration_home"] = result_stats(Dur_Win)
         
         #tbd: through functions
         R, X = Undichtheiten(size)
@@ -420,13 +426,13 @@ def calc(
         Vdot_Inf,fs,fw= Infiltration(Ti_avg,T_a,C,alfa,gama,H_wind, R, X,H_stack,n50_Unit,Vol_Unit,v_10m)
         Vdot_Win = ACH_Win*Dur_Win/60/24*Vol_Unit
         Vdot_Tot=Vdot_Inf+Vdot_Win+Vdot_add
-        result["ResH2O"]["Vdot_Inf"] = signif(np.quantile(Vdot_Inf,quantiles),2)
-        result["ResH2O"]["Vdot_Tot"] = signif(np.quantile(Vdot_Tot,quantiles),2)
+        result["ResH2O"]["Vdot_Inf"] = result_stats(Vdot_Inf)
+        result["ResH2O"]["Vdot_Tot"] = result_stats(Vdot_Tot)
 
         #mould risk calculation: absence
         MouldRisk_abs,ELA_acc_abs,Vdot_acc_abs,Frac_Inf_insuff_abs,Vdot_req_abs,aw_abs=MouldRisk(fRSI,H2Oemi_abs,Vdot_Tot-Vdot_Win,Vdot_Inf,Ti_avg,Ti_abs,T_a,Ta_damped,rH_a,v_10m,fs,fw,aw_limit,Perc_accept)
         result["ResH2O"]["MouldRisk_abs"] = MouldRisk_abs
-        result["ResH2O"]["Vdot_req_abs"] = signif(np.quantile(Vdot_req_abs,quantiles),2)
+        result["ResH2O"]["Vdot_req_abs"] = result_stats(Vdot_req_abs)
         result["ResH2O"]["Frac_Inf_insuff_abs"] = Frac_Inf_insuff_abs
         result["ResH2O"]["Vdot_acc_abs"] = signif(Vdot_acc_abs,2)
         result["ResH2O"]["ELA_acc_abs"] = signif(ELA_acc_abs,2)
@@ -434,7 +440,7 @@ def calc(
         #mould risk calculation: presence
         MouldRisk_pre,ELA_acc_pre,Vdot_acc_pre,Frac_Inf_insuff_pre,Vdot_req_pre,aw_pre=MouldRisk(fRSI,H2Oemi_pre,Vdot_Tot,Vdot_Inf,Ti_avg,Ti_min,T_a,Ta_damped,rH_a,v_10m,fs,fw,aw_limit,Perc_accept)
         result["ResH2O"]["MouldRisk_pre"] = MouldRisk_pre
-        result["ResH2O"]["Vdot_req_pre"] = signif(np.quantile(Vdot_req_pre,quantiles),2)
+        result["ResH2O"]["Vdot_req_pre"] = result_stats(Vdot_req_pre)
         result["ResH2O"]["Frac_Inf_insuff_pre"] = Frac_Inf_insuff_pre
         result["ResH2O"]["Vdot_acc_pre"] = signif(Vdot_acc_pre,2)
         result["ResH2O"]["ELA_acc_pre"] = signif(ELA_acc_pre,2)
@@ -480,9 +486,9 @@ def calc(
             "t_instC_realC0": stats_data_gw_periodisch,
             "t_avgC_idealC0": stats_data_gw_ueberschritten,
             "t_instC_idealC0": stats_data_gw_ideal,
-            "Vdot": signif(np.quantile(Vdot,quantiles),2),
-            "ACR": signif(np.quantile(LWR,quantiles),2),
-            "CO2_stat": signif(np.quantile(C_stat,quantiles),2),
+            "Vdot": result_stats(Vdot),
+            "ACR": result_stats(LWR),
+            "CO2_stat": result_stats(C_stat),
         },
         "inputs": inputs
     })

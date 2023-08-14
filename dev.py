@@ -4,8 +4,8 @@ import lueftungstool.lib.calc as ltool
 def format_quantile(quantile):
     return f"<{quantile[0]}|{quantile[2]}|{quantile[4]}>"
 
-def print_row(text,quantile):
-    print(text.ljust(75,' '), str(quantile[2]).ljust(10), format_quantile(quantile))
+def print_row(text,result_stats):
+    print(text.ljust(75,' '), f'{result_stats["mean"]}+-{result_stats["error"]}'.ljust(20), format_quantile(result_stats["quantiles"]))
 
 if __name__ == "__main__":
     quantiles = [0.05, 0.25, 0.5, 0.75, 0.95]
