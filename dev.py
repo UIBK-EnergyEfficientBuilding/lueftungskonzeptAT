@@ -101,17 +101,17 @@ if __name__ == "__main__":
 
     print("#Ergebnis CO2 Bewertung")
     print("Fensterlüftung praktikabel/zumutbar:".ljust(75), result["ResCO2"]["airing_acceptable"])
-    print_row("Weil errechnete Zeit zwischen erforderlichen Fensterlüften [min]:", result["ResCO2"]["t_avgC_realC0"]["quantiles"])
+    print_row("Weil errechnete Zeit zwischen erforderlichen Fensterlüften [min]:", result["ResCO2"]["t_avgC_realC0"])
     print("Dies ist kürzer als die zumutbare Zeit zwischen Fensterlüften [min]:".ljust(75), result["ResCO2"]["t_reasonable"])
-    print_row("Informativ: Zeit zwischen erf. Fensterlüften bei idealem Lüften [min]:", result["ResCO2"]["t_avgC_idealC0"]["quantiles"])
+    print_row("Informativ: Zeit zwischen erf. Fensterlüften bei idealem Lüften [min]:", result["ResCO2"]["t_avgC_idealC0"])
     print()
     print("#Detailergebnisse CO2 Bewertung")
     print_row("errechnete Luftmenge aufgrund natürlicher Lüftung [m³/h]:", result["ResCO2"]["Vdot"])
     print_row("errechneter natürlicher Luftwechsel [1/h]:", result["ResCO2"]["ACR"])
-    print_row("Zeit bis CO2-Stundenmittelwert=1000 ppm - realistisches Lüften [min]:", result["ResCO2"]["t_avgC_realC0"]["quantiles"])
-    print_row("Zeit bis CO2-Momentanwert=1000 ppm - realistisches Lüften [min]:", result["ResCO2"]["t_instC_realC0"]["quantiles"])
-    print_row("Zeit bis CO2-Stundenmittelwert=1000 ppm - ideales Lüften [min]:", result["ResCO2"]["t_avgC_idealC0"]["quantiles"])
-    print_row("Zeit bis CO2-Momentanwert=1000 ppm - ideales Lüften [min]:", result["ResCO2"]["t_instC_idealC0"]["quantiles"])
+    print_row("Zeit bis CO2-Stundenmittelwert=1000 ppm - realistisches Lüften [min]:", result["ResCO2"]["t_avgC_realC0"])
+    print_row("Zeit bis CO2-Momentanwert=1000 ppm - realistisches Lüften [min]:", result["ResCO2"]["t_instC_realC0"])
+    print_row("Zeit bis CO2-Stundenmittelwert=1000 ppm - ideales Lüften [min]:", result["ResCO2"]["t_avgC_idealC0"])
+    print_row("Zeit bis CO2-Momentanwert=1000 ppm - ideales Lüften [min]:", result["ResCO2"]["t_instC_idealC0"])
     print_row("CO2 Konzentration im stationären Fall (t→∞) [ppm]:", result["ResCO2"]["CO2_stat"])
 
     if "ResH2O" in result:
@@ -140,12 +140,12 @@ if __name__ == "__main__":
 
     for i in ["t_avgC_realC0", "t_instC_realC0", "t_avgC_idealC0", "t_instC_idealC0"]:
         plt.figure()
-        plt.bar(result["ResCO2"][i]["frequency"]["x"], result["ResCO2"][i]["frequency"]["y"][0], width=60)
+        plt.bar(result["ResCO2"]["plot"][i]["frequency"]["x"], result["ResCO2"]["plot"][i]["frequency"]["y"][0], width=60)
         plt.savefig(f"ResCO2_frequency_{i}.png")
 
         plt.figure()
         for j in range(0,len(quantiles)):
-            plt.plot(result["ResCO2"][i]["timeseries"]["x"], result["ResCO2"][i]["timeseries"]["y"][j])
+            plt.plot(result["ResCO2"]["plot"][i]["timeseries"]["x"], result["ResCO2"]["plot"][i]["timeseries"]["y"][j])
         plt.savefig(f"ResCO2_timeseries_{i}.png")
 
     for i in ["abs", "pre"]:

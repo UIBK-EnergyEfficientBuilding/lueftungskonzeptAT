@@ -174,13 +174,12 @@ def Lueften(LWR_lueften,t_lueften,CO2_Emi,A_Rm,H_Rm,CO2_aussen,CO2_Grenzwert,CO2
 
     return C0, C0__GWfix
 
-def calc_result(t_gw,t,c_gw,t_max,quantiles):
+def calc_result(t_gw,t,c_gw,t_max):
     n_bins = 50
     bins=np.arange(0,n_bins)*t_max/n_bins
     hist,_ = np.histogram(t_gw, bins)
 
     return {
-        "quantiles": result_stats(t_gw*60),
         "frequency": {
             "x":bins[:-1]*60,
             "y":[hist]
@@ -303,7 +302,6 @@ def calc(
         c_quantiles_t_gw_erreicht,
         c_quantiles_gw_erreicht,
         t_max,
-        quantiles
     )
 
     #Momentanwert - realistisches Lüften
@@ -315,7 +313,6 @@ def calc(
         c_quantiles_t_gw_erreicht, #todo
         c_quantiles_gw_erreicht, #todo
         t_max,
-        quantiles
     )
 
     #Stundenmittelwert - ideales Lüften
@@ -329,7 +326,6 @@ def calc(
         c_quantiles_t_gw_ueberschritten,
         c_quantiles_gw_ueberschritten,
         t_max,
-        quantiles
     )
 
     #Momentanwert - ideales Lüften
@@ -341,7 +337,6 @@ def calc(
         c_quantiles_t_gw_erreicht, #todo
         c_quantiles_gw_erreicht, #todo
         t_max,
-        quantiles
     )
 
     t_gw_erreicht_m = np.quantile(t_gw_erreicht,0.5)*60
@@ -482,13 +477,19 @@ def calc(
         "ResCO2":{
             "airing_acceptable": Fensterlueftung,
             "t_reasonable": t_zumutbar,
-            "t_avgC_realC0": stats_data_gw_erreicht,
-            "t_instC_realC0": stats_data_gw_periodisch,
-            "t_avgC_idealC0": stats_data_gw_ueberschritten,
-            "t_instC_idealC0": stats_data_gw_ideal,
+            "t_avgC_realC0": result_stats(t_gw_erreicht*60),
+            "t_instC_realC0": result_stats(t_gw_periodisch*60),
+            "t_avgC_idealC0": result_stats(t_gw_ueberschritten*60),
+            "t_instC_idealC0": result_stats(t_gw_ideal*60),
             "Vdot": result_stats(Vdot),
             "ACR": result_stats(LWR),
             "CO2_stat": result_stats(C_stat),
+            "plot": {
+                "t_avgC_realC0": stats_data_gw_erreicht,
+                "t_instC_realC0": stats_data_gw_periodisch,
+                "t_avgC_idealC0": stats_data_gw_ueberschritten,
+                "t_instC_idealC0": stats_data_gw_ideal,
+            },
         },
         "inputs": inputs
     })

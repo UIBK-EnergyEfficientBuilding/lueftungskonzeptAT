@@ -218,9 +218,6 @@ plot_data = namespace.model('plot_data', {
 })
 
 airing_resultdata = namespace.model('airing_resultdata', {
-    "quantiles": fields.Nested(result_stats_float_model,
-        description='Zeit bis Grenzwert erreicht - [P5,P25,Med,P75,P95]'
-    ),
     'frequency': fields.Nested(
         plot_data,
         description='Zeit bis Grenzwert erreicht - Häufigkeit'
@@ -308,22 +305,7 @@ mould_risk = namespace.model('ResH2O', {
     ),
 })
 
-res_co2 = namespace.model('ResCO2', {
-    'airing_acceptable': fields.Boolean(
-        description="Fensterlüftung praktikabel/zumutbar"
-    ),
-    't_reasonable': fields.Float(
-        description="Dies ist kürzer als die zumutbare Zeit zwischen Fensterlüften [min]"
-    ),
-    'CO2_stat': fields.Nested(result_stats_float_model,
-        description='CO2 Konzentration im stationären Fall'
-    ),
-    'Vdot': fields.Nested(result_stats_float_model,
-        description='errechnete Luftmenge aufgrund natürlicher Lüftung [m³/h]'
-    ),
-    'ACR': fields.Nested(result_stats_float_model,
-        description='errechneter natürlicher Luftwechsel [1/h]'
-    ),
+res_co2_plot = namespace.model('res_co2_plot', {
     't_avgC_realC0': fields.Nested(
         airing_resultdata,
         description='Gleitender Mittelwert - Realistisches Lüftungsverhalten'
@@ -339,6 +321,40 @@ res_co2 = namespace.model('ResCO2', {
     't_instC_idealC0': fields.Nested(
         airing_resultdata,
         description='Momentanwert - Ideale Lüftung'
+    ),
+})
+
+res_co2 = namespace.model('ResCO2', {
+    'airing_acceptable': fields.Boolean(
+        description="Fensterlüftung praktikabel/zumutbar"
+    ),
+    't_reasonable': fields.Float(
+        description="Dies ist kürzer als die zumutbare Zeit zwischen Fensterlüften [min]"
+    ),
+    "t_avgC_realC0": fields.Nested(result_stats_float_model,
+        description='Zeit bis CO2-Stundenmittelwert=1000 ppm - realistisches Lüften [min]'
+    ),
+    "t_instC_realC0": fields.Nested(result_stats_float_model,
+        description='Zeit bis CO2-Momentanwert=1000 ppm - realistisches Lüften [min]'
+    ),
+    "t_avgC_idealC0": fields.Nested(result_stats_float_model,
+        description='Zeit bis CO2-Stundenmittelwert=1000 ppm - ideales Lüften [min]'
+    ),
+    "t_instC_idealC0": fields.Nested(result_stats_float_model,
+        description='Zeit bis CO2-Momentanwert=1000 ppm - ideales Lüften [min]'
+    ),
+    'CO2_stat': fields.Nested(result_stats_float_model,
+        description='CO2 Konzentration im stationären Fall'
+    ),
+    'Vdot': fields.Nested(result_stats_float_model,
+        description='errechnete Luftmenge aufgrund natürlicher Lüftung [m³/h]'
+    ),
+    'ACR': fields.Nested(result_stats_float_model,
+        description='errechneter natürlicher Luftwechsel [1/h]'
+    ),
+    'plot': fields.Nested(
+        res_co2_plot,
+        description='Lüftungsverhalten - Plot data'
     ),
 })
 
