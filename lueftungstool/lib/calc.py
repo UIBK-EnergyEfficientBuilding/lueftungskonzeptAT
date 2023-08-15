@@ -274,7 +274,12 @@ def calc(
     window_class = np.round(fixed_or_beta_scaled(building_n50, params.window_class, window_class, size=size))
     inputs["window_class"] = result_stats_integer(window_class)
 
-    n50_Raum = n50  #
+    air_permeability = map_values(window_class,params.window_class2air_permeability)
+    n50_window_room = air_permeability*(50/100)**(2/3)*window_area/(A_Rm*H_Rm)
+
+    n50Max = 2
+    Fn50 = beta_scaled(*params.Fn50, size=size)
+    n50_Raum =  Fn50*(n50Max*n50-n50_window_room)+n50_window_room
     Kamineff = 3    # auf H_stack umbenennen
     Vdot_const = 0  # allow for user entry
     Vdot, LWR = Luftwechsel(
@@ -414,7 +419,7 @@ def calc(
         
         #tbd: through functions
         R, X = Undichtheiten(size)
-        n50_Unit = n50
+        n50_Unit = n50_Raum
         H_stack = 3
         H_wind = Windeff
         Ta_damped= 1.7

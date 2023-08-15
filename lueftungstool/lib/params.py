@@ -45,6 +45,12 @@ name2window_class = {
     "4: mit sehr guter Dichtung":4,
 }
 window_class_list = list(name2window_class.keys())
+window_class2air_permeability = {
+    1:50.0,
+    2:27.0,
+    3:9.0,
+    4:3.0,
+}
 
 location2Terr = {
     "Innsbruck":[1,1,2.5,4.5],
@@ -190,6 +196,8 @@ n50_map = {
     "Neubau - sehr dicht": [3,3,0.2,0.6],
 }
 n50_map_list = list(n50_map.keys())
+
+Fn50 = [4,4,0,1]
 
 WNF = {
     "Einfamilienhaus/Reihenhaus":[1,1,100,250],
