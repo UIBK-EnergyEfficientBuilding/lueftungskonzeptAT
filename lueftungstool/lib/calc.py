@@ -360,24 +360,26 @@ def calc(
 
         inputs["area_home"] = result_stats(area_home)
 
+        source_category_min_max = [0,1] if H2Osource_category is None else params.Feuchtelastkategorie[H2Osource_category]
+
         H2Osource_area_abs = fixed_or_beta_scaled_range(
             "Quellstärke [g/h] Wohnen bei Abwesenheit",
             params.m_H2Od0,
-            *params.Feuchtelastkategorie[H2Osource_category],
+            *source_category_min_max,
             H2Osource_area_abs,
             size
         )
         H2Osource_area = fixed_or_beta_scaled_range(
             "Quellstärke [g/h] Wohnen Flächenabhängig",
             params.m_H2Od,
-            *params.Feuchtelastkategorie[H2Osource_category],
+            *source_category_min_max,
             H2Osource_area,
             size
         )
         H2Osource_pers = fixed_or_beta_scaled_range(
             "Quellstärke [g/h] Wohnen PersABH",
             params.m_H2Ok,
-            *params.Feuchtelastkategorie[H2Osource_category],
+            *source_category_min_max,
             H2Osource_pers,
             size
         )

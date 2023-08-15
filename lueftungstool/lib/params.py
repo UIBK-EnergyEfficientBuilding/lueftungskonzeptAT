@@ -220,7 +220,6 @@ WNF = {
 }
 
 Feuchtelastkategorie = {
-    None:[0,1],
     "Niedrig":[0, 0.4],
     "Mittel":[0.3, 0.7],
     "Hoch":[0.6, 1,]
