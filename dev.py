@@ -23,6 +23,7 @@ if __name__ == "__main__":
     building_n50 = "Standard Neubau"
     building_type = "Mehrfamilienhaus"
     airing_type_room = "Querlüftung"
+    airing_type_home = "Querlüftung"
 
     inputs = {}
 
@@ -94,6 +95,13 @@ if __name__ == "__main__":
     H2Oemi_abs, H2Oemi_pre = ltool.H2O_emission(H2Osource_area_abs, H2Osource_area, H2Osource_pers, area_home, pers_home)
     inputs["H2Osource_category"] = ltool.result_stats(H2Oemi_pre)
 
+    ACH_airing_home, airing_duration_home = ltool.airing_home(
+        airing_type_home = airing_type_home,
+        inputs = inputs,
+        airing_duration_home = None,
+        size = size
+    )
+
     result = ltool.calc(
         humcalc = humcalc,
         n50_room = n50_room,
@@ -117,8 +125,8 @@ if __name__ == "__main__":
         ACH_airing_room = ACH_airing_room,
         airing_duration_room = airing_duration_room,
 
-        airing_type_home = "Querlüftung",
-        airing_duration_home = None,
+        ACH_airing_home = ACH_airing_home,
+        airing_duration_home = airing_duration_home,
         H2Oemi_abs = H2Oemi_abs,
         H2Oemi_pre = H2Oemi_pre,
         Ti_avg = Ti_avg,

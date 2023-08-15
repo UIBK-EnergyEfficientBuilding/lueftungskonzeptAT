@@ -291,6 +291,13 @@ def airing_room(airing_type_room, inputs, airing_duration_room, size):
 
     return ACH_airing_room, airing_duration_room
 
+def airing_home(airing_type_home, inputs, airing_duration_home, size):
+    ACH_airing_home = beta_scaled(*params.luefungsart2WinACH[airing_type_home],size=size)
+    airing_duration_home = fixed_or_beta_scaled(airing_type_home, params.luefungsart2WinDur2, airing_duration_home,size=size)
+    inputs["airing_duration_home"] = result_stats(airing_duration_home)
+
+    return ACH_airing_home, airing_duration_home
+
 def H2O_sources(H2Osource_category, inputs, H2Osource_area_abs, H2Osource_area, H2Osource_pers, size):
     source_category_min_max = [0,1] if H2Osource_category is None else params.Feuchtelastkategorie[H2Osource_category]
 
@@ -328,7 +335,7 @@ def H2O_emission(H2Osource_area_abs, H2Osource_area, H2Osource_pers, area_home, 
     return H2Oemi_abs, H2Oemi_pre
 
 def calc(
-        humcalc, n50_room, T_a, v_10m, rH_a, C, alfa, gama, H_wind, R, X, H_stack, inputs, t_max, H_Rm, A_Rm, airing_type_home, airing_duration_home, ACH_airing_room, airing_duration_room, H2Oemi_abs, H2Oemi_pre, Ti_avg, Ti_abs, Ti_min, fRSI, CO2_Emi, area_home, quantiles, size = 1000
+        humcalc, n50_room, T_a, v_10m, rH_a, C, alfa, gama, H_wind, R, X, H_stack, inputs, t_max, H_Rm, A_Rm, ACH_airing_home, airing_duration_home, ACH_airing_room, airing_duration_room, H2Oemi_abs, H2Oemi_pre, Ti_avg, Ti_abs, Ti_min, fRSI, CO2_Emi, area_home, quantiles, size = 1000
     ):
 
     Vdot_const = 0  # allow for user entry
@@ -411,12 +418,8 @@ def calc(
 
         #tbd: through interface
         Vol_Unit = H_Rm * area_home
-
-        ACH_Win = beta_scaled(*params.luefungsart2WinACH[airing_type_home],size=size)
-        Dur_Win = fixed_or_beta_scaled(airing_type_home, params.luefungsart2WinDur2, airing_duration_home,size=size)
         Vdot_add = 0 #additional ventilation air flow (for expert use/interface) tbd:add text in output when active
-        inputs["airing_duration_home"] = result_stats(Dur_Win)
-        
+
         #tbd: through functions
         R, X = Undichtheiten(size)
         n50_Unit = n50_room
@@ -428,7 +431,7 @@ def calc(
 
         #calculation of air flows
         Vdot_Inf,fs,fw= Infiltration(Ti_avg,T_a,C,alfa,gama,H_wind, R, X,H_stack,n50_Unit,Vol_Unit,v_10m)
-        Vdot_Win = ACH_Win*Dur_Win/60/24*Vol_Unit
+        Vdot_Win = ACH_airing_home*airing_duration_home/60/24*Vol_Unit
         Vdot_Tot=Vdot_Inf+Vdot_Win+Vdot_add
         result["ResH2O"]["Vdot_Inf"] = result_stats(Vdot_Inf)
         result["ResH2O"]["Vdot_Tot"] = result_stats(Vdot_Tot)
