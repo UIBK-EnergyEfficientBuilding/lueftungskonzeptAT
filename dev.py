@@ -105,37 +105,43 @@ if __name__ == "__main__":
     fs = ltool.stack_effect_factor(Ti_avg,R,X,H_stack)
     fw = ltool.wind_factor(C,alfa,gama,H_wind,R)
 
-    result = ltool.calc(
-        humcalc = humcalc,
+    result = ltool.co2_calculation(
         n50_room = n50_room,
-
         T_a = T_a,
         v_10m = v_10m,
-        rH_a = rH_a,
         fs = fs,
         fw = fw,
-        
         inputs = inputs,
         t_max = t_max,
-        
         H_Rm = H_Rm,
         A_Rm = A_Rm,
         ACH_airing_room = ACH_airing_room,
         airing_duration_room = airing_duration_room,
-
-        ACH_airing_home = ACH_airing_home,
-        airing_duration_home = airing_duration_home,
-        H2Oemi_abs = H2Oemi_abs,
-        H2Oemi_pre = H2Oemi_pre,
         Ti_avg = Ti_avg,
-        Ti_abs = Ti_abs,
-        Ti_min = Ti_min,
-        fRSI = fRSI,
         CO2_Emi = CO2_Emi,
-        area_home = area_home,
         quantiles = quantiles,
         size = size
     )
+
+    if humcalc:
+        ltool.humidity_calculation(
+            result,
+            Vol_Unit = H_Rm * area_home,
+            n50_Unit = n50_room,
+            fRSI = fRSI,
+            H2Oemi_abs = H2Oemi_abs,
+            H2Oemi_pre = H2Oemi_pre,
+            Ti_avg = Ti_avg,
+            Ti_abs = Ti_abs,
+            Ti_min = Ti_min,
+            T_a = T_a,
+            v_10m = v_10m,
+            rH_a = rH_a,
+            fs = fs,
+            fw = fw,
+            ACH_airing_home = ACH_airing_home,
+            airing_duration_home = airing_duration_home,
+        )
 
     print("#Eingaben Gebäude/Raum")
     print("Standort:".ljust(75), "?")

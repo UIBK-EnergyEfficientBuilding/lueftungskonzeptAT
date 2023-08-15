@@ -339,8 +339,78 @@ def H2O_emission(H2Osource_area_abs, H2Osource_area, H2Osource_pers, area_home, 
 
     return H2Oemi_abs, H2Oemi_pre
 
-def calc(
-        humcalc, n50_room, T_a, v_10m, rH_a, fs, fw, inputs, t_max, H_Rm, A_Rm, ACH_airing_home, airing_duration_home, ACH_airing_room, airing_duration_room, H2Oemi_abs, H2Oemi_pre, Ti_avg, Ti_abs, Ti_min, fRSI, CO2_Emi, area_home, quantiles, size = 1000
+def humidity_calculation(result, Vol_Unit, n50_Unit, fRSI, H2Oemi_abs, H2Oemi_pre, Ti_avg, Ti_abs, Ti_min, T_a, v_10m, rH_a, fs, fw, ACH_airing_home, airing_duration_home):
+    result["ResH2O"] = {}
+
+    #tbd: through interface
+    Vdot_add = 0 #additional ventilation air flow (for expert use/interface) tbd:add text in output when active
+
+    #tbd: through functions
+    Ta_damped= 1.7
+
+    #tbd:in code
+    aw_limit=0.8
+    Perc_accept=0.99
+
+    #calculation of air flows
+    Vdot_Inf = Infiltration(Ti_avg,T_a,fs,fw,n50_Unit,Vol_Unit,v_10m)
+    Vdot_Win = ACH_airing_home*airing_duration_home/60/24*Vol_Unit
+    Vdot_Tot=Vdot_Inf+Vdot_Win+Vdot_add
+    result["ResH2O"]["Vdot_Inf"] = result_stats(Vdot_Inf)
+    result["ResH2O"]["Vdot_Tot"] = result_stats(Vdot_Tot)
+
+    #mould risk calculation: absence
+    MouldRisk_abs,ELA_acc_abs,Vdot_acc_abs,Frac_Inf_insuff_abs,Vdot_req_abs,aw_abs=MouldRisk(fRSI,H2Oemi_abs,Vdot_Tot-Vdot_Win,Vdot_Inf,Ti_avg,Ti_abs,T_a,Ta_damped,rH_a,v_10m,fs,fw,aw_limit,Perc_accept)
+    result["ResH2O"]["MouldRisk_abs"] = MouldRisk_abs
+    result["ResH2O"]["Vdot_req_abs"] = result_stats(Vdot_req_abs)
+    result["ResH2O"]["Frac_Inf_insuff_abs"] = Frac_Inf_insuff_abs
+    result["ResH2O"]["Vdot_acc_abs"] = signif(Vdot_acc_abs,2)
+    result["ResH2O"]["ELA_acc_abs"] = signif(ELA_acc_abs,2)
+
+    #mould risk calculation: presence
+    MouldRisk_pre,ELA_acc_pre,Vdot_acc_pre,Frac_Inf_insuff_pre,Vdot_req_pre,aw_pre=MouldRisk(fRSI,H2Oemi_pre,Vdot_Tot,Vdot_Inf,Ti_avg,Ti_min,T_a,Ta_damped,rH_a,v_10m,fs,fw,aw_limit,Perc_accept)
+    result["ResH2O"]["MouldRisk_pre"] = MouldRisk_pre
+    result["ResH2O"]["Vdot_req_pre"] = result_stats(Vdot_req_pre)
+    result["ResH2O"]["Frac_Inf_insuff_pre"] = Frac_Inf_insuff_pre
+    result["ResH2O"]["Vdot_acc_pre"] = signif(Vdot_acc_pre,2)
+    result["ResH2O"]["ELA_acc_pre"] = signif(ELA_acc_pre,2)
+
+    Vdot_req = Vdot_req_abs+Vdot_req_pre
+    LWR_Tot = Vdot_Tot/Vol_Unit
+    LWR_Inf = Vdot_Inf/Vol_Unit
+    LWR_req = Vdot_req/Vol_Unit
+
+    result["ResH2O"]["plot"] = {}
+
+    n_bins = 70
+    for i, (tot,inf,req), xmax in zip(
+            ["Vdot", "ACR"],
+            [[Vdot_Tot, Vdot_Inf, Vdot_req], [LWR_Tot, LWR_Inf, LWR_req]],
+            [Vdot_req.mean(), LWR_Tot.mean()]
+        ):
+        bins=np.arange(0,n_bins)/n_bins*xmax*3
+        hist_tot,_ = np.histogram(np.clip(tot,bins[0],bins[-1]), bins)
+        hist_inf,_ = np.histogram(np.clip(inf,bins[0],bins[-1]), bins)
+        hist_req,_ = np.histogram(np.clip(req,bins[0],bins[-1]), bins)
+
+        result["ResH2O"]["plot"][i] = {}
+        result["ResH2O"]["plot"][i]["x"] = bins[:-1]
+        result["ResH2O"]["plot"][i]["y"] = [hist_tot, hist_inf, hist_req]
+
+    n_bins = 50
+    bins=np.arange(0,n_bins)/n_bins
+    for i,aw in zip(["abs","pre"], [aw_abs,aw_pre]):
+        hist_aw,_ = np.histogram(np.clip(aw,bins[0],bins[-1]), bins)
+
+        result["ResH2O"]["plot"][i] = {}
+        result["ResH2O"]["plot"][i]["x"] = bins[:-1]
+        result["ResH2O"]["plot"][i]["y"] = [hist_aw]
+
+    result["ResH2O"]["MouldRisk"] = np.max([MouldRisk_abs,MouldRisk_pre])
+    result["ResH2O"]["Vdot_acc"] = signif(np.max([Vdot_acc_abs,Vdot_acc_pre]),2)
+
+def co2_calculation(
+        n50_room, T_a, v_10m, fs, fw, inputs, t_max, H_Rm, A_Rm, ACH_airing_room, airing_duration_room, Ti_avg, CO2_Emi, quantiles, size = 1000
     ):
 
     Vdot_const = 0  # allow for user entry
@@ -414,82 +484,7 @@ def calc(
     t_reasonable = t_max*60
     Fensterlueftung = t_gw_erreicht_m>t_reasonable
 
-    result = {}
-
-  # humidity calculation
-    if humcalc:
-        result["ResH2O"] = {}
-
-        #tbd: through interface
-        Vol_Unit = H_Rm * area_home
-        Vdot_add = 0 #additional ventilation air flow (for expert use/interface) tbd:add text in output when active
-
-        #tbd: through functions
-        n50_Unit = n50_room
-        Ta_damped= 1.7
-
-        #tbd:in code
-        aw_limit=0.8
-        Perc_accept=0.99
-
-        #calculation of air flows
-        Vdot_Inf = Infiltration(Ti_avg,T_a,fs,fw,n50_Unit,Vol_Unit,v_10m)
-        Vdot_Win = ACH_airing_home*airing_duration_home/60/24*Vol_Unit
-        Vdot_Tot=Vdot_Inf+Vdot_Win+Vdot_add
-        result["ResH2O"]["Vdot_Inf"] = result_stats(Vdot_Inf)
-        result["ResH2O"]["Vdot_Tot"] = result_stats(Vdot_Tot)
-
-        #mould risk calculation: absence
-        MouldRisk_abs,ELA_acc_abs,Vdot_acc_abs,Frac_Inf_insuff_abs,Vdot_req_abs,aw_abs=MouldRisk(fRSI,H2Oemi_abs,Vdot_Tot-Vdot_Win,Vdot_Inf,Ti_avg,Ti_abs,T_a,Ta_damped,rH_a,v_10m,fs,fw,aw_limit,Perc_accept)
-        result["ResH2O"]["MouldRisk_abs"] = MouldRisk_abs
-        result["ResH2O"]["Vdot_req_abs"] = result_stats(Vdot_req_abs)
-        result["ResH2O"]["Frac_Inf_insuff_abs"] = Frac_Inf_insuff_abs
-        result["ResH2O"]["Vdot_acc_abs"] = signif(Vdot_acc_abs,2)
-        result["ResH2O"]["ELA_acc_abs"] = signif(ELA_acc_abs,2)
-
-        #mould risk calculation: presence
-        MouldRisk_pre,ELA_acc_pre,Vdot_acc_pre,Frac_Inf_insuff_pre,Vdot_req_pre,aw_pre=MouldRisk(fRSI,H2Oemi_pre,Vdot_Tot,Vdot_Inf,Ti_avg,Ti_min,T_a,Ta_damped,rH_a,v_10m,fs,fw,aw_limit,Perc_accept)
-        result["ResH2O"]["MouldRisk_pre"] = MouldRisk_pre
-        result["ResH2O"]["Vdot_req_pre"] = result_stats(Vdot_req_pre)
-        result["ResH2O"]["Frac_Inf_insuff_pre"] = Frac_Inf_insuff_pre
-        result["ResH2O"]["Vdot_acc_pre"] = signif(Vdot_acc_pre,2)
-        result["ResH2O"]["ELA_acc_pre"] = signif(ELA_acc_pre,2)
-
-        Vdot_req = Vdot_req_abs+Vdot_req_pre
-        LWR_Tot = Vdot_Tot/Vol_Unit
-        LWR_Inf = Vdot_Inf/Vol_Unit
-        LWR_req = Vdot_req/Vol_Unit
-
-        result["ResH2O"]["plot"] = {}
-
-        n_bins = 70
-        for i, (tot,inf,req), xmax in zip(
-                ["Vdot", "ACR"],
-                [[Vdot_Tot, Vdot_Inf, Vdot_req], [LWR_Tot, LWR_Inf, LWR_req]],
-                [Vdot_req.mean(), LWR_Tot.mean()]
-            ):
-            bins=np.arange(0,n_bins)/n_bins*xmax*3
-            hist_tot,_ = np.histogram(np.clip(tot,bins[0],bins[-1]), bins)
-            hist_inf,_ = np.histogram(np.clip(inf,bins[0],bins[-1]), bins)
-            hist_req,_ = np.histogram(np.clip(req,bins[0],bins[-1]), bins)
-
-            result["ResH2O"]["plot"][i] = {}
-            result["ResH2O"]["plot"][i]["x"] = bins[:-1]
-            result["ResH2O"]["plot"][i]["y"] = [hist_tot, hist_inf, hist_req]
-
-        n_bins = 50
-        bins=np.arange(0,n_bins)/n_bins
-        for i,aw in zip(["abs","pre"], [aw_abs,aw_pre]):
-            hist_aw,_ = np.histogram(np.clip(aw,bins[0],bins[-1]), bins)
-
-            result["ResH2O"]["plot"][i] = {}
-            result["ResH2O"]["plot"][i]["x"] = bins[:-1]
-            result["ResH2O"]["plot"][i]["y"] = [hist_aw]
-
-        result["ResH2O"]["MouldRisk"] = np.max([MouldRisk_abs,MouldRisk_pre])
-        result["ResH2O"]["Vdot_acc"] = signif(np.max([Vdot_acc_abs,Vdot_acc_pre]),2)
-
-    result.update({
+    result = {
         "ResCO2":{
             "airing_acceptable": Fensterlueftung,
             "t_reasonable": t_reasonable,
@@ -508,6 +503,6 @@ def calc(
             },
         },
         "inputs": inputs
-    })
+    }
 
     return result
