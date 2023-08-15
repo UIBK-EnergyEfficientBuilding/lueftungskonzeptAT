@@ -189,19 +189,23 @@ def calc_result(t_gw,t,c_gw,t_max):
 # Functions needed for humidity calculation
 #note for formulas: reference temperature for all roh's (vapor density) and all Vdot's (air flows) is Ti, no matter of actual air temperature
 
-def C2K(C): #converts from Celcius to Kelvin
+def C2K(C):
+    """converts from Celcius to Kelvin"""
     K = C + 273.15
     return K
 
-def SatPress(T):   # saturation pressure according to Magnus Formula with T in Celcius
+def SatPress(T):
+    """saturation pressure according to Magnus Formula with T in Celcius"""
     E = 611.2*np.exp(17.62*T/(243.12+T))
     return E
 
-def VapDens_AA(rH_a,Ti,Ta):  #calculates vapor density of ambient air (AA)@Ta at indoor temperature Ti
+def VapDens_AA(rH_a,Ti,Ta):
+    """calculates vapor density of ambient air (AA)@Ta at indoor temperature Ti"""
     roh_a = rH_a*SatPress(Ta)/(461.5*C2K(Ti))
     return roh_a
 
-def VapDens_IA(H2Oemi,AirFlow,Ti,Ti_min,Ta,rH_a):  #calculates vapor density with H2O source (H2Oemi) and ventilation (AirFlow@Ti) for air at temperature Ti_min
+def VapDens_IA(H2Oemi,AirFlow,Ti,Ti_min,Ta,rH_a):
+    """calculates vapor density with H2O source (H2Oemi) and ventilation (AirFlow@Ti) for air at temperature Ti_min"""
     roh_a = VapDens_AA(rH_a,Ti,Ta)
     roh_i = (H2Oemi/24/AirFlow + roh_a) * C2K(Ti)/C2K(Ti_min) #calculate vapor density for condition Ti, then convert density to Ti_min
     return roh_i
