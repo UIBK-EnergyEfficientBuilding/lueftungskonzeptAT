@@ -22,6 +22,7 @@ if __name__ == "__main__":
     location = "Wien"
     building_n50 = "Standard Neubau"
     building_type = "Mehrfamilienhaus"
+    airing_type_room = "Querlüftung"
 
     inputs = {}
 
@@ -76,6 +77,13 @@ if __name__ == "__main__":
     else:
         humcalc = False
 
+    ACH_airing_room, airing_duration_room = ltool.airing_room(
+        airing_type_room = airing_type_room,
+        inputs = inputs,
+        airing_duration_room = None,
+        size = size
+    )
+
     result = ltool.calc(
         humcalc = humcalc,
         n50_room = n50_room,
@@ -96,8 +104,8 @@ if __name__ == "__main__":
         
         H_Rm = H_Rm,
         A_Rm = A_Rm,
-        airing_type_room = "Querlüftung",
-        airing_duration_room = None,
+        ACH_airing_room = ACH_airing_room,
+        airing_duration_room = airing_duration_room,
 
         pers_home = pers_home,
         airing_type_home = "Querlüftung",

@@ -283,10 +283,16 @@ def MouldRisk(fRSI,H2Oemi,Vdot_tot,Vdot_inf,Ti,Ti_min,Ta,Ta_damped,rH_a,v_10m,fs
     MR=np.count_nonzero(aw > aw_limit)/aw.size
     return MR,ELA_add,Vdot_add,Frac_Inf_insuff,Vdot_req_tot,aw
 
+def airing_room(airing_type_room, inputs, airing_duration_room, size):
 
+    ACH_airing_room = beta_scaled(*params.luefungsart2WinACH[airing_type_room],size=size)
+    airing_duration_room = fixed_or_beta_scaled(airing_type_room, params.luefungsart2WinDur, airing_duration_room, size=size)
+    inputs["airing_duration_room"] = result_stats(airing_duration_room)
+
+    return ACH_airing_room, airing_duration_room
 
 def calc(
-        humcalc, n50_room, T_a, v_10m, rH_a, C, alfa, gama, H_wind, R, X, H_stack, inputs, t_max, H_Rm, A_Rm, pers_home, airing_type_home, airing_duration_home, airing_type_room, airing_duration_room, Ti_avg, Ti_abs, Ti_min, fRSI, CO2_Emi, area_home, H2Osource_category, H2Osource_area, H2Osource_pers, H2Osource_area_abs, quantiles, size = 1000
+        humcalc, n50_room, T_a, v_10m, rH_a, C, alfa, gama, H_wind, R, X, H_stack, inputs, t_max, H_Rm, A_Rm, pers_home, airing_type_home, airing_duration_home, ACH_airing_room, airing_duration_room, Ti_avg, Ti_abs, Ti_min, fRSI, CO2_Emi, area_home, H2Osource_category, H2Osource_area, H2Osource_pers, H2Osource_area_abs, quantiles, size = 1000
     ):
 
     Vdot_const = 0  # allow for user entry
@@ -301,13 +307,9 @@ def calc(
     CO2_Grenzwert = 1000
     CO2_Grenzwert2 = 1250 #? CA
 
-    LWR_lueften = beta_scaled(*params.luefungsart2WinACH[airing_type_room],size=size)
-    t_lueften = fixed_or_beta_scaled(airing_type_room, params.luefungsart2WinDur, airing_duration_room, size=size)
-    inputs["airing_duration_room"] = result_stats(t_lueften)
-
     C_stat = (Vdot*CO2_aussen/1e6+CO2_Emi/1000)/Vdot*1e6
     C0, C0__GWfix = Lueften(
-        LWR_lueften,t_lueften,CO2_Emi,A_Rm,H_Rm,CO2_aussen,CO2_Grenzwert,CO2_Grenzwert2,size
+        ACH_airing_room,airing_duration_room,CO2_Emi,A_Rm,H_Rm,CO2_aussen,CO2_Grenzwert,CO2_Grenzwert2,size
     )
 
     n_max = 192

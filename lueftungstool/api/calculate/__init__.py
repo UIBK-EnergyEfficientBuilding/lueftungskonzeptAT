@@ -504,6 +504,13 @@ class Calculate(Resource):
         else:
             humcalc = False
 
+        ACH_airing_room, airing_duration_room = ltool.airing_room(
+            airing_type_room = args['airing_type_room'],
+            inputs = inputs,
+            airing_duration_room = args['airing_duration_room'],
+            size = size
+        )
+
         return ltool.calc(
             humcalc = humcalc,
             n50_room = n50_room,
@@ -523,8 +530,8 @@ class Calculate(Resource):
             t_max = t_max,
             H_Rm = H_Rm,
             A_Rm = A_Rm,
-            airing_type_room = args['airing_type_room'],
-            airing_duration_room = args['airing_duration_room'],
+            ACH_airing_room = ACH_airing_room,
+            airing_duration_room = airing_duration_room,
             pers_home = pers_home,
             airing_type_home = args['airing_type_home'],
             airing_duration_home = args['airing_duration_home'],
