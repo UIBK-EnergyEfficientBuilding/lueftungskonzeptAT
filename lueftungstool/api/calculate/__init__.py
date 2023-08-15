@@ -467,8 +467,24 @@ class Calculate(Resource):
             size = size
         )
 
-        return ltool.calc(
+        T_a, v_10m, rH_a = ltool.weather(location = args['location'],)
+        C, alfa, gama = ltool.calc_lage(
             location = args['location'],
+            inputs = inputs,
+            Shield = args['shielding_class'],
+            Terr = args['terrain_class'],
+            quantiles = quantiles,
+            size = size
+        )
+
+        return ltool.calc(
+            T_a = T_a,
+            v_10m = v_10m,
+            rH_a = rH_a,
+            C = C,
+            alfa = alfa,
+            gama = gama,
+
             building_n50 = args['building_n50'],
             building_type = args['building_type'],
             inputs = inputs,
@@ -478,8 +494,6 @@ class Calculate(Resource):
             A_Rm = A_Rm,
             airing_type_room = args['airing_type_room'],
             airing_duration_room = args['airing_duration_room'],
-            Shield = args['shielding_class'],
-            Terr = args['terrain_class'],
             window_area = window_area,
             window_class = args['window_class'],
             pers_home = args['pers_home'],

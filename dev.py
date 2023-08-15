@@ -18,6 +18,7 @@ if __name__ == "__main__":
     size = 1000
     signDig=2   #tbd add to a settings dict
     room_type = "Schlafzimmer"
+    location = "Wien"
 
     inputs = {}
 
@@ -36,8 +37,24 @@ if __name__ == "__main__":
         size = size
     )
 
+    T_a, v_10m, rH_a = ltool.weather(location)
+    C, alfa, gama = ltool.calc_lage(
+        location = location,
+        inputs = inputs,
+        Shield = None,
+        Terr = None,
+        quantiles = quantiles,
+        size = size
+    )
+
     result = ltool.calc(
-        location = "Wien",
+        T_a = T_a,
+        v_10m = v_10m,
+        rH_a = rH_a,
+        C = C,
+        alfa = alfa,
+        gama = gama,
+        
         building_n50 = "Standard Neubau",
         building_type = "Mehrfamilienhaus",
         inputs = inputs,
@@ -47,8 +64,7 @@ if __name__ == "__main__":
         A_Rm = A_Rm,
         airing_type_room = "Querlüftung",
         airing_duration_room = None,
-        Shield = None,
-        Terr = None,
+
         window_area = window_area,
         window_class = None,
         pers_home = None,

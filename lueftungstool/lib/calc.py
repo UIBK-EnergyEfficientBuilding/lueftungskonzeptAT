@@ -253,10 +253,8 @@ def MouldRisk(fRSI,H2Oemi,Vdot_tot,Vdot_inf,Ti,Ti_min,Ta,Ta_damped,rH_a,v_10m,fs
 
 
 def calc(
-        location, building_n50, building_type, inputs, t_max, thermalbridges, H_Rm, A_Rm, Shield, Terr, window_area, window_class, pers_home, airing_type_home, airing_duration_home, airing_type_room, airing_duration_room, Ti_avg, Ti_abs, Ti_min, fRSI, CO2_Emi, area_home, H2Osource_category, H2Osource_area, H2Osource_pers, H2Osource_area_abs, quantiles, size = 1000
+        T_a, v_10m, rH_a, C, alfa, gama, building_n50, building_type, inputs, t_max, thermalbridges, H_Rm, A_Rm, window_area, window_class, pers_home, airing_type_home, airing_duration_home, airing_type_room, airing_duration_room, Ti_avg, Ti_abs, Ti_min, fRSI, CO2_Emi, area_home, H2Osource_category, H2Osource_area, H2Osource_pers, H2Osource_area_abs, quantiles, size = 1000
     ):
-    T_a, v_10m, rH_a = weather(location)
-    C, alfa, gama = calc_lage(location, inputs, Shield, Terr, quantiles, size)
     n50, H_wind, H_stack = calc_dichtheit(building_n50, building_type, inputs, quantiles, size)
 
     if thermalbridges is None:
