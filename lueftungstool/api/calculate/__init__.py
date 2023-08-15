@@ -253,6 +253,10 @@ mould_risk = namespace.model('ResH2O', {
         example=0.219,
         description='Schimmelrisiko als Wahrscheinlichkeit'
     ),
+    'Vdot_acc': fields.Float(
+        example=29.0,
+        description='Erforderliche zusätzliche Luftmenge damit Wahrscheinlichkeit<1% [m³/h]'
+    ),
 
     "Vdot_Inf": fields.Nested(result_stats_float_model,
         description='Luftmenge durch Fugenlüftung [m³/h]'

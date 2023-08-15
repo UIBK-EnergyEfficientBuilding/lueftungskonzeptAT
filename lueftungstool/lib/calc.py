@@ -478,6 +478,7 @@ def calc(
             result["ResH2O"]["plot"][i]["y"] = [hist_aw]
 
         result["ResH2O"]["MouldRisk"] = np.max([MouldRisk_abs,MouldRisk_pre])
+        result["ResH2O"]["Vdot_acc"] = signif(np.max([Vdot_acc_abs,Vdot_acc_pre]),2)
 
     result.update({
         "ResCO2":{

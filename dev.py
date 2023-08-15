@@ -123,6 +123,7 @@ if __name__ == "__main__":
         print()
         print("#Ergebnis Schimmelrisiko Bewertung (nur für Wohnbau)")
         print("Schimmelrisiko als Wahrscheinlichkeit".ljust(75),"%.1f"%(result["ResH2O"]["MouldRisk"]*100),"%")
+        print("Erforderliche zusätzliche Luftmenge damit Wahrscheinlichkeit<1% [m³/h]:".ljust(75),"%.1f"%(result["ResH2O"]["Vdot_acc"]))
         print()
         print("#Anwesenheitsfall (inkl. aktives Lüften)")
         print_row_median("Erforderliche Luftmenge zur Feuchteabfuhr [m³/h]:".ljust(75),result["ResH2O"]["Vdot_req_pre"])
