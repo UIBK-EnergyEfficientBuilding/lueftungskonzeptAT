@@ -421,7 +421,6 @@ def calc(
         Vdot_add = 0 #additional ventilation air flow (for expert use/interface) tbd:add text in output when active
 
         #tbd: through functions
-        R, X = Undichtheiten(size)
         n50_Unit = n50_room
         Ta_damped= 1.7
 
