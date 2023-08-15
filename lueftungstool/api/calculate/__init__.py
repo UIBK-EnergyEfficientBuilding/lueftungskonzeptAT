@@ -372,7 +372,7 @@ inputs_result_model  = namespace.model('InputsResult', {
     'window_area': fields.Nested(result_stats_float_model),
     'window_class': fields.Nested(result_stats_integer_model),
     'airing_type_room': fields.String(),
-    'airing_duration_room': fields.Nested(result_stats_integer_model),
+    'airing_duration_room': fields.Nested(result_stats_float_model),
     'terrain_class': fields.Nested(result_stats_integer_model),
     'shielding_class': fields.Nested(result_stats_integer_model),
 
