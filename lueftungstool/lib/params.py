@@ -169,6 +169,10 @@ luefungsart2WinDur = {
     "Querlüftung":[3,3,3,7],
     "Einseitige Fensterfront":[3,3,3,15],
 }
+luefungsart2WinDur2 = {
+    "Querlüftung":[3,3,5,25],
+    "Einseitige Fensterfront":[3,3,5,35],
+}
 airing_type_list = ["Querlüftung", "Einseitige Fensterfront"]
 
 window_class = {

@@ -408,7 +408,7 @@ def calc(
         inputs["H2Osource_category"] = result_stats(H2Oemi_pre)
 
         ACH_Win = beta_scaled(*params.luefungsart2WinACH[airing_type_home],size=size)
-        Dur_Win = fixed_or_beta_scaled(airing_type_home, params.luefungsart2WinDur, airing_duration_home,size=size)
+        Dur_Win = fixed_or_beta_scaled(airing_type_home, params.luefungsart2WinDur2, airing_duration_home,size=size)
         Vdot_add = 0 #additional ventilation air flow (for expert use/interface) tbd:add text in output when active
         inputs["airing_duration_home"] = result_stats(Dur_Win)
         
