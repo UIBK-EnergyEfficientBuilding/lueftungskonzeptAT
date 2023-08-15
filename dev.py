@@ -86,6 +86,23 @@ if __name__ == "__main__":
     print_row_integer("Anzahl Kinder:".ljust(75), result["inputs"]["NrKids"])
     print_row_mean("Aktivität Kinder [met]:".ljust(75), result["inputs"]["ActKid"])
     print_row_mean("Mittleres Alter der Kinder [a]".ljust(75), result["inputs"]["AgeKid"])
+
+    print()
+    print("#Ergebnis CO2 Bewertung")
+    print("Fensterlüftung praktikabel/zumutbar:".ljust(75), result["ResCO2"]["airing_acceptable"])
+    print_row_median("Weil errechnete Zeit zwischen erforderlichen Fensterlüften [min]:", result["ResCO2"]["t_avgC_realC0"])
+    print("Dies ist kürzer als die zumutbare Zeit zwischen Fensterlüften [min]:".ljust(75), result["ResCO2"]["t_reasonable"])
+    print_row_median("Informativ: Zeit zwischen erf. Fensterlüften bei idealem Lüften [min]:", result["ResCO2"]["t_avgC_idealC0"])
+    print()
+    print("#Detailergebnisse CO2 Bewertung")
+    print_row_median("errechnete Luftmenge aufgrund natürlicher Lüftung [m³/h]:", result["ResCO2"]["Vdot"])
+    print_row_median("errechneter natürlicher Luftwechsel [1/h]:", result["ResCO2"]["ACR"])
+    print_row_median("Zeit bis CO2-Stundenmittelwert=1000 ppm - realistisches Lüften [min]:", result["ResCO2"]["t_avgC_realC0"])
+    print_row_median("Zeit bis CO2-Momentanwert=1000 ppm - realistisches Lüften [min]:", result["ResCO2"]["t_instC_realC0"])
+    print_row_median("Zeit bis CO2-Stundenmittelwert=1000 ppm - ideales Lüften [min]:", result["ResCO2"]["t_avgC_idealC0"])
+    print_row_median("Zeit bis CO2-Momentanwert=1000 ppm - ideales Lüften [min]:", result["ResCO2"]["t_instC_idealC0"])
+    print_row_median("CO2 Konzentration im stationären Fall (t→∞) [ppm]:", result["ResCO2"]["CO2_stat"])
+
     if "ResH2O" in result:
         print()
         print("#Eingaben für Schimmelrisiko Bewertung (nur für Wohnbau)")
@@ -103,25 +120,6 @@ if __name__ == "__main__":
         print_row_mean("Mittlere Raumtemperatur in gesamten Wohneinheit [°C]:".ljust(75), result["inputs"]["Ti_avg"])
         print_row_mean("Raumtemperatur im kühlsten Raum [°C]:".ljust(75), result["inputs"]["Ti_min"])
         print_row_mean("Minimale Raumtemperatur bei längerer Abwesenheit [°C]:".ljust(75), result["inputs"]["Ti_abs"])
-
-
-
-    print("#Ergebnis CO2 Bewertung")
-    print("Fensterlüftung praktikabel/zumutbar:".ljust(75), result["ResCO2"]["airing_acceptable"])
-    print_row_median("Weil errechnete Zeit zwischen erforderlichen Fensterlüften [min]:", result["ResCO2"]["t_avgC_realC0"])
-    print("Dies ist kürzer als die zumutbare Zeit zwischen Fensterlüften [min]:".ljust(75), result["ResCO2"]["t_reasonable"])
-    print_row_median("Informativ: Zeit zwischen erf. Fensterlüften bei idealem Lüften [min]:", result["ResCO2"]["t_avgC_idealC0"])
-    print()
-    print("#Detailergebnisse CO2 Bewertung")
-    print_row_median("errechnete Luftmenge aufgrund natürlicher Lüftung [m³/h]:", result["ResCO2"]["Vdot"])
-    print_row_median("errechneter natürlicher Luftwechsel [1/h]:", result["ResCO2"]["ACR"])
-    print_row_median("Zeit bis CO2-Stundenmittelwert=1000 ppm - realistisches Lüften [min]:", result["ResCO2"]["t_avgC_realC0"])
-    print_row_median("Zeit bis CO2-Momentanwert=1000 ppm - realistisches Lüften [min]:", result["ResCO2"]["t_instC_realC0"])
-    print_row_median("Zeit bis CO2-Stundenmittelwert=1000 ppm - ideales Lüften [min]:", result["ResCO2"]["t_avgC_idealC0"])
-    print_row_median("Zeit bis CO2-Momentanwert=1000 ppm - ideales Lüften [min]:", result["ResCO2"]["t_instC_idealC0"])
-    print_row_median("CO2 Konzentration im stationären Fall (t→∞) [ppm]:", result["ResCO2"]["CO2_stat"])
-
-    if "ResH2O" in result:
         print()
         print("#Ergebnis Schimmelrisiko Bewertung (nur für Wohnbau)")
         print("Schimmelrisiko als Wahrscheinlichkeit".ljust(75),"%.1f"%(result["ResH2O"]["MouldRisk"]*100),"%")
