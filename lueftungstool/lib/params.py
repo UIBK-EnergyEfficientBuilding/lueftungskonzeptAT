@@ -155,6 +155,10 @@ raumart2WinRat_Rm = {
     "Schlafzimmer": [3,3,0.1,0.5],
     "Wohnzimmer": [3,3,0.1,0.5],
 }
+room_type2t_max = {
+    "Schlafzimmer": 8,
+    "Wohnzimmer": 2,
+}
 room_type_list = ["Schlafzimmer", "Wohnzimmer"]
 
 luefungsart2WinACH = {

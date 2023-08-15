@@ -22,7 +22,7 @@ if __name__ == "__main__":
         size = size
     )
 
-    H_Rm, A_Rm, window_area = ltool.Raum(
+    H_Rm, A_Rm, window_area, t_max = ltool.Raum(
         room_type = room_type,
         inputs = inputs,
         quantiles = quantiles,
@@ -34,6 +34,7 @@ if __name__ == "__main__":
         building_n50 = "Standard Neubau",
         building_type = "Mehrfamilienhaus",
         inputs = inputs,
+        t_max = t_max,
         thermalbridges = None,
         H_Rm = H_Rm,
         A_Rm = A_Rm,

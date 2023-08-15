@@ -116,7 +116,9 @@ def Raum(room_type, inputs, quantiles, H_Rm = None, A_Rm = None, window_area = N
     inputs["A_Rm"] = result_stats(A_Rm)
     inputs["window_area"] = result_stats(window_area)
 
-    return H_Rm, A_Rm, window_area
+    t_max = params.room_type2t_max[room_type]
+
+    return H_Rm, A_Rm, window_area, t_max
 
 def Luftwechsel(Ti_avg,T_a,C,alfa,gama,Windeff,R,X,Kamineff,n50_Raum,H_Rm,A_Rm,Vdot_const,v_10m):
     # tbd: ersetzen mit allgemeinerer Funktion Infiltration
@@ -250,7 +252,7 @@ def MouldRisk(fRSI,H2Oemi,Vdot_tot,Vdot_inf,Ti,Ti_min,Ta,Ta_damped,rH_a,v_10m,fs
 
 
 def calc(
-        location, building_n50, building_type, inputs, thermalbridges, H_Rm, A_Rm, Shield, Terr, window_area, window_class, pers_home, airing_type_home, airing_duration_home, airing_type_room, airing_duration_room, Ti_avg, Ti_abs, Ti_min, fRSI, CO2_Emi, area_home, H2Osource_category, H2Osource_area, H2Osource_pers, H2Osource_area_abs, quantiles, size = 1000
+        location, building_n50, building_type, inputs, t_max, thermalbridges, H_Rm, A_Rm, Shield, Terr, window_area, window_class, pers_home, airing_type_home, airing_duration_home, airing_type_room, airing_duration_room, Ti_avg, Ti_abs, Ti_min, fRSI, CO2_Emi, area_home, H2Osource_category, H2Osource_area, H2Osource_pers, H2Osource_area_abs, quantiles, size = 1000
     ):
     T_a, v_10m, rH_a = weather(location)
     C, alfa, gama = calc_lage(location, inputs, Shield, Terr, quantiles, size)
@@ -288,7 +290,6 @@ def calc(
     )
 
     n_max = 192
-    t_max = 8 #Schlafzimmer
     C0_avg2 = C0__GWfix #? CC #genähert
 
     #Stundenmittelwert - realistisches Lüften
@@ -340,8 +341,8 @@ def calc(
     )
 
     t_gw_erreicht_m = np.quantile(t_gw_erreicht,0.5)*60
-    t_zumutbar = t_max*60
-    Fensterlueftung = t_gw_erreicht_m>t_zumutbar
+    t_reasonable = t_max*60
+    Fensterlueftung = t_gw_erreicht_m>t_reasonable
 
     result = {}
 
@@ -476,7 +477,7 @@ def calc(
     result.update({
         "ResCO2":{
             "airing_acceptable": Fensterlueftung,
-            "t_reasonable": t_zumutbar,
+            "t_reasonable": t_reasonable,
             "t_avgC_realC0": result_stats(t_gw_erreicht*60),
             "t_instC_realC0": result_stats(t_gw_periodisch*60),
             "t_avgC_idealC0": result_stats(t_gw_ueberschritten*60),

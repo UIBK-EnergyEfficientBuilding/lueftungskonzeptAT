@@ -452,7 +452,7 @@ class Calculate(Resource):
             size = size
         )
 
-        H_Rm, A_Rm, window_area = ltool.Raum(
+        H_Rm, A_Rm, window_area, t_max = ltool.Raum(
             room_type = args['room_type'],
             inputs = inputs,
             quantiles = quantiles,
@@ -467,6 +467,7 @@ class Calculate(Resource):
             building_n50 = args['building_n50'],
             building_type = args['building_type'],
             inputs = inputs,
+            t_max = t_max,
             thermalbridges = args['thermalbridges'],
             H_Rm = H_Rm,
             A_Rm = A_Rm,
