@@ -40,7 +40,8 @@ def result_stats(value,precision=2):
     mean = signif(np.mean(value),precision)
     q = np.quantile(value,[0.05, 0.25, 0.5, 0.75, 0.95])
     error = signif((q[-1] - q[0])/2,precision)
-    return {"mean": mean, "error": error, "quantiles":signif(q,precision)}
+    q = signif(q,precision)
+    return {"mean": mean, "error": error, "median":q[2], "quantiles":q}
 
 def t_gw_calc(C0,C_stat,LWR,t_max,n_max,CO2_Grenzwert,quantiles,size):
     n_i = np.array([np.arange(1, n_max+1)]*size).T

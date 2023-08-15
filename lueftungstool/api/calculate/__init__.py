@@ -203,12 +203,14 @@ calculation_parameter_model = namespace.model('CalculationParameter', {
 result_stats_float_model = namespace.model('ResultStatsFloat', {
     "mean": fields.Float(),
     "error": fields.Float(),
+    "median": fields.Float(),
     "quantiles": fields.List(fields.Float(), example=[1,2,3,4,5])
 })
 
 result_stats_integer_model = namespace.model('ResultStatsInteger', {
     "mean": fields.Integer(),
     "error": fields.Integer(),
+    "median": fields.Float(),
     "quantiles": fields.List(fields.Integer(), example=[1,2,3,4,5])
 })
 
