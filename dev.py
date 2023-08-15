@@ -82,13 +82,15 @@ if __name__ == "__main__":
     fs = ltool.stack_effect_factor(Ti_avg,R,X,H_stack)
     fw = ltool.wind_factor(C,alfa,gama,H_wind,R)
 
-    result = ltool.co2_calculation(
+    result = {
+        "inputs": inputs,
+    }
+    result["ResCO2"] = ltool.co2_calculation(
         n50_room = n50_room,
         T_a = T_a,
         v_10m = v_10m,
         fs = fs,
         fw = fw,
-        inputs = inputs,
         t_max = t_max,
         H_Rm = H_Rm,
         A_Rm = A_Rm,
@@ -123,8 +125,7 @@ if __name__ == "__main__":
         humcalc = False
 
     if humcalc:
-        ltool.humidity_calculation(
-            result,
+        result["ResH2O"] = ltool.humidity_calculation(
             Vol_Unit = H_Rm * area_home,
             n50_Unit = n50_room,
             fRSI = fRSI,
