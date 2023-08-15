@@ -205,8 +205,8 @@ def co2_emission(NrAdu, ActAdu, NrKids, ActKid, AgeKid):
 
     return CO2_Emi
 
-def Lueften(LWR_lueften,t_lueften,CO2_Emi,A_Rm,H_Rm,CO2_aussen,CO2_Grenzwert,CO2_Grenzwert2,size):
-    c_stat_lueft = (LWR_lueften*A_Rm*H_Rm*CO2_aussen/1e6+CO2_Emi/1000)/(LWR_lueften*A_Rm*H_Rm)*1e6
+def Lueften(LWR_lueften,t_lueften,CO2_Emi,volume,CO2_aussen,CO2_Grenzwert,CO2_Grenzwert2,size):
+    c_stat_lueft = (LWR_lueften*volume*CO2_aussen/1e6+CO2_Emi/1000)/(LWR_lueften*volume)*1e6
 
     C0__GWfix = C0_calc_clip(CO2_Grenzwert2,c_stat_lueft,LWR_lueften,t_lueften)
     C0 = C0_calc_clip(CO2_Grenzwert,c_stat_lueft,LWR_lueften,t_lueften)
@@ -415,11 +415,10 @@ def humidity_calculation(Vol_Unit, n50_Unit, fRSI, H2Oemi_abs, H2Oemi_pre, Ti_av
     return result
 
 def co2_calculation(
-        n50_room, T_a, v_10m, fs, fw, t_max, H_Rm, A_Rm, ACH_airing_room, airing_duration_room, Ti_avg, CO2_Emi, quantiles, size = 1000
+        n50_room, T_a, v_10m, fs, fw, t_max, volume_room, ACH_airing_room, airing_duration_room, Ti_avg, CO2_Emi, quantiles, size = 1000
     ):
 
     Vdot_const = 0  # allow for user entry
-    volume_room = A_Rm*H_Rm
 
     Vdot = Infiltration(Ti_avg,T_a,fs,fw,n50_room,volume_room,v_10m)
     Vdot += Vdot_const
@@ -431,7 +430,7 @@ def co2_calculation(
 
     C_stat = (Vdot*CO2_aussen/1e6+CO2_Emi/1000)/Vdot*1e6
     C0, C0__GWfix = Lueften(
-        ACH_airing_room,airing_duration_room,CO2_Emi,A_Rm,H_Rm,CO2_aussen,CO2_Grenzwert,CO2_Grenzwert2,size
+        ACH_airing_room,airing_duration_room,CO2_Emi,volume_room,CO2_aussen,CO2_Grenzwert,CO2_Grenzwert2,size
     )
 
     n_max = 192
