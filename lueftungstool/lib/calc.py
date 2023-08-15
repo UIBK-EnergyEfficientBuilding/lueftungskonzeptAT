@@ -82,7 +82,7 @@ def calc_lage(location, inputs, Shield, Terr, quantiles, size):
 
     return C, alfa, gama
 
-def calc_dichtheit(building_n50, building_type, inputs, quantiles, size):
+def calc_dichtheit(building_n50, building_type, thermalbridges, Ti_avg, Ti_min, Ti_abs, fRSI, window_class, window_area, A_Rm, H_Rm, area_home, pers_home, inputs, quantiles, size):
     #Gebäudichtheit
     n50 = beta_scaled(*params.n50_map[building_n50],size=size)
 
@@ -97,7 +97,39 @@ def calc_dichtheit(building_n50, building_type, inputs, quantiles, size):
     )
     H_stack = np.max([[H_stack_min]*size, H_Bldg*beta_scaled(*params.H_StackRel[building_n50],size=size)], axis=0)
 
-    return n50, H_wind, H_stack
+    if thermalbridges is None:
+        thermalbridges = params.map_n502waermebruecken[building_n50]
+        inputs["thermalbridges"] = thermalbridges
+    Ti_avg = fixed_or_beta_scaled(thermalbridges, params.waermebruecken2Ti_avg, Ti_avg, size=size)
+    inputs["Ti_avg"] = result_stats(Ti_avg)
+
+    Ti_min = fixed_or_beta_scaled(thermalbridges, params.waermebruecken2Ti_min, Ti_min, size=size)
+    Ti_abs = fixed_or_beta_scaled(thermalbridges, params.waermebruecken2Ti_abs, Ti_abs, size=size)
+    fRSI = fixed_or_beta_scaled(thermalbridges, params.waermebruecken2fRSI, fRSI,size=size)
+    inputs["Ti_min"] = result_stats(Ti_min)
+    inputs["Ti_abs"] = result_stats(Ti_abs)
+    inputs["fRSI"] = result_stats(fRSI)
+
+    window_class = params.name2window_class[window_class] if window_class is not None else None
+    window_class = np.round(fixed_or_beta_scaled(building_n50, params.window_class, window_class, size=size))
+    inputs["window_class"] = result_stats_integer(window_class)
+
+    air_permeability = map_values(window_class,params.window_class2air_permeability)
+    n50_window_room = air_permeability*(50/100)**(2/3)*window_area/(A_Rm*H_Rm)
+
+    n50Max = 2
+    Fn50 = beta_scaled(*params.Fn50, size=size)
+    n50_room =  Fn50*(n50Max*n50-n50_window_room)+n50_window_room
+
+    area_home = fixed_or_beta_scaled(building_type, params.WNF, area_home, size)
+    inputs["area_home"] = result_stats(area_home)
+
+    if pers_home is None:
+        OccDens = beta_scaled(*params.OccDens[building_type], size)
+        pers_home = area_home/OccDens
+    inputs["pers_home"] = result_stats(pers_home)
+
+    return n50_room, H_wind, H_stack, Ti_avg, Ti_min, Ti_abs, fRSI, area_home, pers_home
 
 def Undichtheiten(size):
     #Verteilung Undichtheiten
@@ -252,28 +284,10 @@ def MouldRisk(fRSI,H2Oemi,Vdot_tot,Vdot_inf,Ti,Ti_min,Ta,Ta_damped,rH_a,v_10m,fs
     return MR,ELA_add,Vdot_add,Frac_Inf_insuff,Vdot_req_tot,aw
 
 
+
 def calc(
-        T_a, v_10m, rH_a, C, alfa, gama, building_n50, building_type, inputs, t_max, thermalbridges, H_Rm, A_Rm, window_area, window_class, pers_home, airing_type_home, airing_duration_home, airing_type_room, airing_duration_room, Ti_avg, Ti_abs, Ti_min, fRSI, CO2_Emi, area_home, H2Osource_category, H2Osource_area, H2Osource_pers, H2Osource_area_abs, quantiles, size = 1000
+        humcalc, n50_room, T_a, v_10m, rH_a, C, alfa, gama, H_wind, R, X, H_stack, inputs, t_max, H_Rm, A_Rm, pers_home, airing_type_home, airing_duration_home, airing_type_room, airing_duration_room, Ti_avg, Ti_abs, Ti_min, fRSI, CO2_Emi, area_home, H2Osource_category, H2Osource_area, H2Osource_pers, H2Osource_area_abs, quantiles, size = 1000
     ):
-    n50, H_wind, H_stack = calc_dichtheit(building_n50, building_type, inputs, quantiles, size)
-
-    if thermalbridges is None:
-        thermalbridges = params.map_n502waermebruecken[building_n50]
-        inputs["thermalbridges"] = thermalbridges
-    Ti_avg = fixed_or_beta_scaled(thermalbridges, params.waermebruecken2Ti_avg, Ti_avg, size=size)
-    R, X = Undichtheiten(size)
-    inputs["Ti_avg"] = result_stats(Ti_avg)
-
-    window_class = params.name2window_class[window_class] if window_class is not None else None
-    window_class = np.round(fixed_or_beta_scaled(building_n50, params.window_class, window_class, size=size))
-    inputs["window_class"] = result_stats_integer(window_class)
-
-    air_permeability = map_values(window_class,params.window_class2air_permeability)
-    n50_window_room = air_permeability*(50/100)**(2/3)*window_area/(A_Rm*H_Rm)
-
-    n50Max = 2
-    Fn50 = beta_scaled(*params.Fn50, size=size)
-    n50_room =  Fn50*(n50Max*n50-n50_window_room)+n50_window_room
 
     Vdot_const = 0  # allow for user entry
     volume_room = A_Rm*H_Rm
@@ -354,16 +368,8 @@ def calc(
     result = {}
 
   # humidity calculation
-    if building_type in params.WNF_list:
-        humcalc = True
-    else:
-        humcalc = False
     if humcalc:
         result["ResH2O"] = {}
-
-        area_home = fixed_or_beta_scaled(building_type, params.WNF, area_home, size)
-
-        inputs["area_home"] = result_stats(area_home)
 
         source_category_min_max = [0,1] if H2Osource_category is None else params.Feuchtelastkategorie[H2Osource_category]
 
@@ -392,20 +398,8 @@ def calc(
         inputs["H2Osource_area"] = result_stats(H2Osource_area)
         inputs["H2Osource_pers"] = result_stats(H2Osource_pers)
 
-        if pers_home is None:
-            OccDens = beta_scaled(*params.OccDens[building_type], size)
-            pers_home = area_home/OccDens
-        inputs["pers_home"] = result_stats(pers_home)
-
         #tbd: through interface
         Vol_Unit = H_Rm * area_home
-
-        Ti_min = fixed_or_beta_scaled(thermalbridges, params.waermebruecken2Ti_min, Ti_min, size=size)
-        Ti_abs = fixed_or_beta_scaled(thermalbridges, params.waermebruecken2Ti_abs, Ti_abs, size=size)
-        fRSI = fixed_or_beta_scaled(thermalbridges, params.waermebruecken2fRSI, fRSI,size=size)
-        inputs["Ti_min"] = result_stats(Ti_min)
-        inputs["Ti_abs"] = result_stats(Ti_abs)
-        inputs["fRSI"] = result_stats(fRSI)
 
         H2Oemi_abs = H2Osource_area_abs * area_home * 24 / 1000
         H2Oemi_pre = (H2Osource_area * area_home + H2Osource_pers * pers_home) * 24 / 1000

@@ -1,5 +1,6 @@
 
 import lueftungstool.lib.calc as ltool
+import lueftungstool.lib.params as params
 
 def format_quantile(quantile):
     return f"<{quantile[0]}|{quantile[2]}|{quantile[4]}>"
@@ -19,6 +20,8 @@ if __name__ == "__main__":
     signDig=2   #tbd add to a settings dict
     room_type = "Schlafzimmer"
     location = "Wien"
+    building_n50 = "Standard Neubau"
+    building_type = "Mehrfamilienhaus"
 
     inputs = {}
 
@@ -47,35 +50,64 @@ if __name__ == "__main__":
         size = size
     )
 
+    n50_room, H_wind, H_stack, Ti_avg, Ti_min, Ti_abs, fRSI, area_home, pers_home = ltool.calc_dichtheit(
+        building_n50 = building_n50,
+        building_type = building_type,
+        inputs = inputs,
+        thermalbridges = None,
+        Ti_avg = None,
+        Ti_abs = None,
+        Ti_min = None,
+        fRSI = None,
+        window_class = None,
+        window_area = window_area,
+        A_Rm = A_Rm,
+        H_Rm = H_Rm,
+        area_home = None,
+        pers_home = None,
+        quantiles = quantiles,
+        size = size
+    )
+
+    R, X = ltool.Undichtheiten(size)
+
+    if building_type in params.WNF_list:
+        humcalc = True
+    else:
+        humcalc = False
+
     result = ltool.calc(
+        humcalc = humcalc,
+        n50_room = n50_room,
+
         T_a = T_a,
         v_10m = v_10m,
         rH_a = rH_a,
         C = C,
         alfa = alfa,
         gama = gama,
+        H_wind = H_wind,
+        R = R,
+        X = X,
+        H_stack = H_stack,
         
-        building_n50 = "Standard Neubau",
-        building_type = "Mehrfamilienhaus",
         inputs = inputs,
         t_max = t_max,
-        thermalbridges = None,
+        
         H_Rm = H_Rm,
         A_Rm = A_Rm,
         airing_type_room = "Querlüftung",
         airing_duration_room = None,
 
-        window_area = window_area,
-        window_class = None,
-        pers_home = None,
+        pers_home = pers_home,
         airing_type_home = "Querlüftung",
         airing_duration_home = None,
-        Ti_avg = None,
-        Ti_abs = None,
-        Ti_min = None,
-        fRSI = None,
+        Ti_avg = Ti_avg,
+        Ti_abs = Ti_abs,
+        Ti_min = Ti_min,
+        fRSI = fRSI,
         CO2_Emi = CO2_Emi,
-        area_home = None,
+        area_home = area_home,
         H2Osource_category = None,
         H2Osource_area = None,
         H2Osource_pers = None,

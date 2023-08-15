@@ -436,6 +436,7 @@ class Calculate(Resource):
         args = parser.parse_args()
 
         size = 1000
+        building_type = args["building_type"]
 
         inputs = {}
         quantiles = [0.05, 0.25, 0.5, 0.75, 0.95]
@@ -477,34 +478,62 @@ class Calculate(Resource):
             size = size
         )
 
+        n50_room, H_wind, H_stack, Ti_avg, Ti_min, Ti_abs, fRSI, area_home, pers_home = ltool.calc_dichtheit(
+            building_n50 = args["building_n50"],
+            building_type = building_type,
+            thermalbridges = args["thermalbridges"],
+            inputs = inputs,
+            Ti_avg = args["Ti_avg"],
+            Ti_min = args["Ti_min"],
+            Ti_abs = args["Ti_abs"],
+            fRSI = args["fRSI"],
+            window_class = args["window_class"],
+            window_area = window_area,
+            A_Rm = A_Rm,
+            H_Rm = H_Rm,
+            area_home = args["area_home"],
+            pers_home = args["pers_home"],
+            quantiles = quantiles,
+            size = size
+        )
+
+        R, X = ltool.Undichtheiten(size)
+
+        if building_type in params.WNF_list:
+            humcalc = True
+        else:
+            humcalc = False
+
         return ltool.calc(
+            humcalc = humcalc,
+            n50_room = n50_room,
+
             T_a = T_a,
             v_10m = v_10m,
             rH_a = rH_a,
             C = C,
             alfa = alfa,
             gama = gama,
+            H_wind = H_wind,
+            R = R,
+            X = X,
+            H_stack = H_stack,
 
-            building_n50 = args['building_n50'],
-            building_type = args['building_type'],
             inputs = inputs,
             t_max = t_max,
-            thermalbridges = args['thermalbridges'],
             H_Rm = H_Rm,
             A_Rm = A_Rm,
             airing_type_room = args['airing_type_room'],
             airing_duration_room = args['airing_duration_room'],
-            window_area = window_area,
-            window_class = args['window_class'],
-            pers_home = args['pers_home'],
+            pers_home = pers_home,
             airing_type_home = args['airing_type_home'],
             airing_duration_home = args['airing_duration_home'],
-            Ti_avg = args['Ti_avg'],
-            Ti_abs = args['Ti_abs'],
-            Ti_min = args['Ti_min'],
-            fRSI = args['fRSI'],
+            Ti_avg = Ti_avg,
+            Ti_abs = Ti_abs,
+            Ti_min = Ti_min,
+            fRSI = fRSI,
             CO2_Emi = CO2_Emi,
-            area_home = args['area_home'],
+            area_home = area_home,
             H2Osource_category = args["H2Osource_category"],
             H2Osource_area = args['H2Osource_area'],
             H2Osource_pers = args['H2Osource_pers'],
