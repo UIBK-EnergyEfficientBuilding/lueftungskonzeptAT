@@ -529,6 +529,9 @@ class Calculate(Resource):
             size = size
         )
 
+        fs = ltool.stack_effect_factor(Ti_avg,R,X,H_stack)
+        fw = ltool.wind_factor(C,alfa,gama,H_wind,R)
+
         return ltool.calc(
             humcalc = humcalc,
             n50_room = n50_room,
@@ -536,13 +539,8 @@ class Calculate(Resource):
             T_a = T_a,
             v_10m = v_10m,
             rH_a = rH_a,
-            C = C,
-            alfa = alfa,
-            gama = gama,
-            H_wind = H_wind,
-            R = R,
-            X = X,
-            H_stack = H_stack,
+            fs = fs,
+            fw = fw,
 
             inputs = inputs,
             t_max = t_max,

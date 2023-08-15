@@ -340,14 +340,12 @@ def H2O_emission(H2Osource_area_abs, H2Osource_area, H2Osource_pers, area_home, 
     return H2Oemi_abs, H2Oemi_pre
 
 def calc(
-        humcalc, n50_room, T_a, v_10m, rH_a, C, alfa, gama, H_wind, R, X, H_stack, inputs, t_max, H_Rm, A_Rm, ACH_airing_home, airing_duration_home, ACH_airing_room, airing_duration_room, H2Oemi_abs, H2Oemi_pre, Ti_avg, Ti_abs, Ti_min, fRSI, CO2_Emi, area_home, quantiles, size = 1000
+        humcalc, n50_room, T_a, v_10m, rH_a, fs, fw, inputs, t_max, H_Rm, A_Rm, ACH_airing_home, airing_duration_home, ACH_airing_room, airing_duration_room, H2Oemi_abs, H2Oemi_pre, Ti_avg, Ti_abs, Ti_min, fRSI, CO2_Emi, area_home, quantiles, size = 1000
     ):
 
     Vdot_const = 0  # allow for user entry
     volume_room = A_Rm*H_Rm
 
-    fs = stack_effect_factor(Ti_avg,R,X,H_stack)
-    fw = wind_factor(C,alfa,gama,H_wind,R)
     Vdot = Infiltration(Ti_avg,T_a,fs,fw,n50_room,volume_room,v_10m)
     Vdot += Vdot_const
     LWR = Vdot/volume_room
