@@ -376,9 +376,9 @@ inputs_result_model  = namespace.model('InputsResult', {
     'terrain_class': fields.Nested(result_stats_integer_model),
     'shielding_class': fields.Nested(result_stats_integer_model),
 
-    'NrAdu': fields.Nested(result_stats_float_model),
+    'NrAdu': fields.Nested(result_stats_integer_model),
     'ActAdu': fields.Nested(result_stats_float_model),
-    'NrKids': fields.Nested(result_stats_float_model),
+    'NrKids': fields.Nested(result_stats_integer_model),
     'ActKid': fields.Nested(result_stats_float_model),
     'AgeKid': fields.Nested(result_stats_float_model),
 
