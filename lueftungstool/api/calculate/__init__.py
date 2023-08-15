@@ -497,17 +497,32 @@ class Calculate(Resource):
             size = size
         )
 
-        R, X = ltool.Undichtheiten(size)
-
-        if building_type in params.WNF_list:
-            humcalc = True
-        else:
-            humcalc = False
-
         ACH_airing_room, airing_duration_room = ltool.airing_room(
             airing_type_room = args['airing_type_room'],
             inputs = inputs,
             airing_duration_room = args['airing_duration_room'],
+            size = size
+        )
+
+        R, X = ltool.Undichtheiten(size)
+        fs = ltool.stack_effect_factor(Ti_avg,R,X,H_stack)
+        fw = ltool.wind_factor(C,alfa,gama,H_wind,R)
+
+        result = ltool.co2_calculation(
+            n50_room = n50_room,
+            T_a = T_a,
+            v_10m = v_10m,
+            fs = fs,
+            fw = fw,
+            inputs = inputs,
+            t_max = t_max,
+            H_Rm = H_Rm,
+            A_Rm = A_Rm,
+            ACH_airing_room = ACH_airing_room,
+            airing_duration_room = airing_duration_room, 
+            Ti_avg = Ti_avg,
+            CO2_Emi = CO2_Emi,
+            quantiles = quantiles,
             size = size
         )
 
@@ -529,26 +544,10 @@ class Calculate(Resource):
             size = size
         )
 
-        fs = ltool.stack_effect_factor(Ti_avg,R,X,H_stack)
-        fw = ltool.wind_factor(C,alfa,gama,H_wind,R)
-
-        result = ltool.co2_calculation(
-            n50_room = n50_room,
-            T_a = T_a,
-            v_10m = v_10m,
-            fs = fs,
-            fw = fw,
-            inputs = inputs,
-            t_max = t_max,
-            H_Rm = H_Rm,
-            A_Rm = A_Rm,
-            ACH_airing_room = ACH_airing_room,
-            airing_duration_room = airing_duration_room, 
-            Ti_avg = Ti_avg,
-            CO2_Emi = CO2_Emi,
-            quantiles = quantiles,
-            size = size
-        )
+        if building_type in params.WNF_list:
+            humcalc = True
+        else:
+            humcalc = False
 
         if humcalc:
             ltool.humidity_calculation(

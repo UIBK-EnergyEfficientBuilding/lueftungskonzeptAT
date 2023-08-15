@@ -71,13 +71,6 @@ if __name__ == "__main__":
         size = size
     )
 
-    R, X = ltool.Undichtheiten(size)
-
-    if building_type in params.WNF_list:
-        humcalc = True
-    else:
-        humcalc = False
-
     ACH_airing_room, airing_duration_room = ltool.airing_room(
         airing_type_room = airing_type_room,
         inputs = inputs,
@@ -85,23 +78,7 @@ if __name__ == "__main__":
         size = size
     )
 
-    H2Osource_area_abs, H2Osource_area, H2Osource_pers = ltool.H2O_sources(
-        H2Osource_category = None,
-        inputs = inputs,
-        H2Osource_area_abs = None,
-        H2Osource_area = None,
-        H2Osource_pers = None,
-        size = size,)
-    H2Oemi_abs, H2Oemi_pre = ltool.H2O_emission(H2Osource_area_abs, H2Osource_area, H2Osource_pers, area_home, pers_home)
-    inputs["H2Osource_category"] = ltool.result_stats(H2Oemi_pre)
-
-    ACH_airing_home, airing_duration_home = ltool.airing_home(
-        airing_type_home = airing_type_home,
-        inputs = inputs,
-        airing_duration_home = None,
-        size = size
-    )
-
+    R, X = ltool.Undichtheiten(size)
     fs = ltool.stack_effect_factor(Ti_avg,R,X,H_stack)
     fw = ltool.wind_factor(C,alfa,gama,H_wind,R)
 
@@ -122,6 +99,28 @@ if __name__ == "__main__":
         quantiles = quantiles,
         size = size
     )
+
+    H2Osource_area_abs, H2Osource_area, H2Osource_pers = ltool.H2O_sources(
+        H2Osource_category = None,
+        inputs = inputs,
+        H2Osource_area_abs = None,
+        H2Osource_area = None,
+        H2Osource_pers = None,
+        size = size,)
+    H2Oemi_abs, H2Oemi_pre = ltool.H2O_emission(H2Osource_area_abs, H2Osource_area, H2Osource_pers, area_home, pers_home)
+    inputs["H2Osource_category"] = ltool.result_stats(H2Oemi_pre)
+
+    ACH_airing_home, airing_duration_home = ltool.airing_home(
+        airing_type_home = airing_type_home,
+        inputs = inputs,
+        airing_duration_home = None,
+        size = size
+    )
+
+    if building_type in params.WNF_list:
+        humcalc = True
+    else:
+        humcalc = False
 
     if humcalc:
         ltool.humidity_calculation(
