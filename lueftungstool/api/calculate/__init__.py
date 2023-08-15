@@ -478,7 +478,7 @@ class Calculate(Resource):
             size = size
         )
 
-        n50_room, H_wind, H_stack, Ti_avg, Ti_min, Ti_abs, fRSI, area_home, pers_home = ltool.calc_dichtheit(
+        n50_room, H_wind, H_stack, Ti_avg, Ti_min, Ti_abs, fRSI = ltool.calc_dichtheit(
             building_n50 = args["building_n50"],
             building_type = building_type,
             thermalbridges = args["thermalbridges"],
@@ -491,8 +491,6 @@ class Calculate(Resource):
             window_area = window_area,
             A_Rm = A_Rm,
             H_Rm = H_Rm,
-            area_home = args["area_home"],
-            pers_home = args["pers_home"],
             quantiles = quantiles,
             size = size
         )
@@ -528,30 +526,38 @@ class Calculate(Resource):
             size = size
         )
 
-        H2Osource_area_abs, H2Osource_area, H2Osource_pers = ltool.H2O_sources(
-            H2Osource_category = args["H2Osource_category"],
-            inputs = inputs,
-            H2Osource_area = args['H2Osource_area'],
-            H2Osource_pers = args['H2Osource_pers'],
-            H2Osource_area_abs = args['H2Osource_area_abs'],
-            size = size
-        )
-        H2Oemi_abs, H2Oemi_pre = ltool.H2O_emission(H2Osource_area_abs, H2Osource_area, H2Osource_pers, area_home, pers_home)
-        inputs["H2Osource_category"] = ltool.result_stats(H2Oemi_pre)
-
-        ACH_airing_home, airing_duration_home = ltool.airing_home(
-            airing_type_home = args['airing_type_home'],
-            inputs = inputs,
-            airing_duration_home = args['airing_duration_home'],
-            size = size
-        )
-
         if building_type in params.WNF_list:
             humcalc = True
         else:
             humcalc = False
 
         if humcalc:
+            area_home, pers_home = ltool.H2Oonlyparams(
+                building_type = building_type,
+                inputs = inputs,
+                area_home = args["area_home"],
+                pers_home = args["pers_home"],
+                size = size
+            )
+
+            H2Osource_area_abs, H2Osource_area, H2Osource_pers = ltool.H2O_sources(
+                H2Osource_category = args["H2Osource_category"],
+                inputs = inputs,
+                H2Osource_area = args['H2Osource_area'],
+                H2Osource_pers = args['H2Osource_pers'],
+                H2Osource_area_abs = args['H2Osource_area_abs'],
+                size = size
+            )
+            H2Oemi_abs, H2Oemi_pre = ltool.H2O_emission(H2Osource_area_abs, H2Osource_area, H2Osource_pers, area_home, pers_home)
+            inputs["H2Osource_category"] = ltool.result_stats(H2Oemi_pre)
+
+            ACH_airing_home, airing_duration_home = ltool.airing_home(
+                airing_type_home = args['airing_type_home'],
+                inputs = inputs,
+                airing_duration_home = args['airing_duration_home'],
+                size = size
+            )
+
             result["ResH2O"] = ltool.humidity_calculation(
                 Vol_Unit = H_Rm * area_home,
                 n50_Unit = n50_room,

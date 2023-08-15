@@ -82,7 +82,7 @@ def calc_lage(location, inputs, Shield, Terr, quantiles, size):
 
     return C, alfa, gama
 
-def calc_dichtheit(building_n50, building_type, thermalbridges, Ti_avg, Ti_min, Ti_abs, fRSI, window_class, window_area, A_Rm, H_Rm, area_home, pers_home, inputs, quantiles, size):
+def calc_dichtheit(building_n50, building_type, thermalbridges, Ti_avg, Ti_min, Ti_abs, fRSI, window_class, window_area, A_Rm, H_Rm, inputs, quantiles, size):
     #Gebäudichtheit
     n50 = beta_scaled(*params.n50_map[building_n50],size=size)
 
@@ -121,6 +121,9 @@ def calc_dichtheit(building_n50, building_type, thermalbridges, Ti_avg, Ti_min, 
     Fn50 = beta_scaled(*params.Fn50, size=size)
     n50_room =  Fn50*(n50Max*n50-n50_window_room)+n50_window_room
 
+    return n50_room, H_wind, H_stack, Ti_avg, Ti_min, Ti_abs, fRSI
+
+def H2Oonlyparams(building_type, inputs, area_home, pers_home, size):
     area_home = fixed_or_beta_scaled(building_type, params.WNF, area_home, size)
     inputs["area_home"] = result_stats(area_home)
 
@@ -129,7 +132,7 @@ def calc_dichtheit(building_n50, building_type, thermalbridges, Ti_avg, Ti_min, 
         pers_home = area_home/OccDens
     inputs["pers_home"] = result_stats(pers_home)
 
-    return n50_room, H_wind, H_stack, Ti_avg, Ti_min, Ti_abs, fRSI, area_home, pers_home
+    return area_home, pers_home
 
 def Undichtheiten(size):
     #Verteilung Undichtheiten

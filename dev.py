@@ -52,7 +52,7 @@ if __name__ == "__main__":
         size = size
     )
 
-    n50_room, H_wind, H_stack, Ti_avg, Ti_min, Ti_abs, fRSI, area_home, pers_home = ltool.calc_dichtheit(
+    n50_room, H_wind, H_stack, Ti_avg, Ti_min, Ti_abs, fRSI = ltool.calc_dichtheit(
         building_n50 = building_n50,
         building_type = building_type,
         inputs = inputs,
@@ -65,8 +65,6 @@ if __name__ == "__main__":
         window_area = window_area,
         A_Rm = A_Rm,
         H_Rm = H_Rm,
-        area_home = None,
-        pers_home = None,
         quantiles = quantiles,
         size = size
     )
@@ -102,29 +100,37 @@ if __name__ == "__main__":
         size = size
     )
 
-    H2Osource_area_abs, H2Osource_area, H2Osource_pers = ltool.H2O_sources(
-        H2Osource_category = None,
-        inputs = inputs,
-        H2Osource_area_abs = None,
-        H2Osource_area = None,
-        H2Osource_pers = None,
-        size = size,)
-    H2Oemi_abs, H2Oemi_pre = ltool.H2O_emission(H2Osource_area_abs, H2Osource_area, H2Osource_pers, area_home, pers_home)
-    inputs["H2Osource_category"] = ltool.result_stats(H2Oemi_pre)
-
-    ACH_airing_home, airing_duration_home = ltool.airing_home(
-        airing_type_home = airing_type_home,
-        inputs = inputs,
-        airing_duration_home = None,
-        size = size
-    )
-
     if building_type in params.WNF_list:
         humcalc = True
     else:
         humcalc = False
 
     if humcalc:
+        area_home, pers_home = ltool.H2Oonlyparams(
+            building_type = building_type,
+            inputs = inputs,
+            area_home = None,
+            pers_home = None,
+            size = size
+        )
+
+        H2Osource_area_abs, H2Osource_area, H2Osource_pers = ltool.H2O_sources(
+            H2Osource_category = None,
+            inputs = inputs,
+            H2Osource_area_abs = None,
+            H2Osource_area = None,
+            H2Osource_pers = None,
+            size = size,)
+        H2Oemi_abs, H2Oemi_pre = ltool.H2O_emission(H2Osource_area_abs, H2Osource_area, H2Osource_pers, area_home, pers_home)
+        inputs["H2Osource_category"] = ltool.result_stats(H2Oemi_pre)
+
+        ACH_airing_home, airing_duration_home = ltool.airing_home(
+            airing_type_home = airing_type_home,
+            inputs = inputs,
+            airing_duration_home = None,
+            size = size
+        )
+
         result["ResH2O"] = ltool.humidity_calculation(
             Vol_Unit = H_Rm * area_home,
             n50_Unit = n50_room,
@@ -230,18 +236,19 @@ if __name__ == "__main__":
             plt.plot(result["ResCO2"]["plot"][i]["timeseries"]["x"], result["ResCO2"]["plot"][i]["timeseries"]["y"][j])
         plt.savefig(f"ResCO2_timeseries_{i}.png")
 
-    for i in ["abs", "pre"]:
-        plt.figure()
-        plt.bar(result["ResH2O"]["plot"][i]["x"], result["ResH2O"]["plot"][i]["y"][0],width=0.01)
-        plt.ylabel(f"Häufigkeit (n={size})")
-        plt.xlabel("aw Wert [-]")
-        plt.savefig(f"ResH2O_aw_{i}.png")
+    if "ResH2O" in result:
+        for i in ["abs", "pre"]:
+            plt.figure()
+            plt.bar(result["ResH2O"]["plot"][i]["x"], result["ResH2O"]["plot"][i]["y"][0],width=0.01)
+            plt.ylabel(f"Häufigkeit (n={size})")
+            plt.xlabel("aw Wert [-]")
+            plt.savefig(f"ResH2O_aw_{i}.png")
 
-    for i,xlabel in zip(["Vdot", "ACR"],["Mittlerer Luftvolumenstrom [1/h]","Mittlere Luftwechselrate [1/h]"]):
-        plt.figure()
-        for l,j in zip(("Inf+Fen","Inf","Erf"),list(range(0,3))):
-            plt.plot(result["ResH2O"]["plot"][i]["x"], result["ResH2O"]["plot"][i]["y"][j], marker=".", label=l)
-        plt.legend()
-        plt.ylabel(f"Häufigkeit (n={size})")
-        plt.xlabel(xlabel)
-        plt.savefig(f"ResH2O_Airflows_{i}.png")
+        for i,xlabel in zip(["Vdot", "ACR"],["Mittlerer Luftvolumenstrom [1/h]","Mittlere Luftwechselrate [1/h]"]):
+            plt.figure()
+            for l,j in zip(("Inf+Fen","Inf","Erf"),list(range(0,3))):
+                plt.plot(result["ResH2O"]["plot"][i]["x"], result["ResH2O"]["plot"][i]["y"][j], marker=".", label=l)
+            plt.legend()
+            plt.ylabel(f"Häufigkeit (n={size})")
+            plt.xlabel(xlabel)
+            plt.savefig(f"ResH2O_Airflows_{i}.png")
