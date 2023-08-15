@@ -21,12 +21,13 @@ if __name__ == "__main__":
 
     inputs = {}
 
-    CO2_Emi = ltool.co2_emission(
+    NrAdu, ActAdu, NrKids, ActKid, AgeKid = ltool.occupancy_parameters(
         room_type = room_type,
         inputs = inputs,
-        quantiles = quantiles,
         size = size
     )
+
+    CO2_Emi = ltool.co2_emission(NrAdu, ActAdu, NrKids, ActKid, AgeKid)
 
     H_Rm, A_Rm, window_area, t_max = ltool.Raum(
         room_type = room_type,

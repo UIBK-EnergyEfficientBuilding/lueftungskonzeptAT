@@ -128,19 +128,7 @@ def Raum(room_type, inputs, quantiles, H_Rm = None, A_Rm = None, window_area = N
 
     return H_Rm, A_Rm, window_area, t_max
 
-def Infiltration(Ti_avg,T_a,C,alfa,gama,H_wind,R,X,H_stack,n50,Vol,v_10m):
-    fw = C*(1-R)**(1/3)*alfa*(H_wind/10)**gama
-    fs =((1+R/2)/3)*(1-X**2/(2-R)**2)**(3/2)*(9.81*H_stack/(Ti_avg+273))
-
-    n = 0.66
-    roh = 1.247
-
-    ELA_tot = (n50/3600*Vol*(4/50)**n)/np.sqrt(2*4/roh)
-    Vdot = ELA_tot*3600*np.sqrt(fs**2*(Ti_avg-T_a)+fw**2*v_10m**2)
-
-    return Vdot,fs,fw
-
-def co2_emission(room_type, inputs, quantiles, NrAdu = None, ActAdu = None, NrKids = None, ActKid = None, AgeKid = None, size = 1000):
+def occupancy_parameters(room_type, inputs, NrAdu = None, ActAdu = None, NrKids = None, ActKid = None, AgeKid = None, size = 1000):
     AgeKid = fixed_or_beta_scaled(room_type, params.raumart2AgeKid, AgeKid, size)
 
     ActKid = fixed_or_beta_scaled(room_type, params.raumart2ActKid, ActKid, size=size)
@@ -154,6 +142,21 @@ def co2_emission(room_type, inputs, quantiles, NrAdu = None, ActAdu = None, NrKi
     inputs["ActAdu"] = result_stats(ActAdu)
     inputs["NrAdu"] = result_stats_integer(NrAdu)
 
+    return NrAdu, ActAdu, NrKids, ActKid, AgeKid
+
+def Infiltration(Ti_avg,T_a,C,alfa,gama,H_wind,R,X,H_stack,n50,Vol,v_10m):
+    fw = C*(1-R)**(1/3)*alfa*(H_wind/10)**gama
+    fs =((1+R/2)/3)*(1-X**2/(2-R)**2)**(3/2)*(9.81*H_stack/(Ti_avg+273))
+
+    n = 0.66
+    roh = 1.247
+
+    ELA_tot = (n50/3600*Vol*(4/50)**n)/np.sqrt(2*4/roh)
+    Vdot = ELA_tot*3600*np.sqrt(fs**2*(Ti_avg-T_a)+fw**2*v_10m**2)
+
+    return Vdot,fs,fw
+
+def co2_emission(NrAdu, ActAdu, NrKids, ActKid, AgeKid):
     CO2_Emi_rate_Erw = 18
     CO2_Emi_rate_Kid = 10
 

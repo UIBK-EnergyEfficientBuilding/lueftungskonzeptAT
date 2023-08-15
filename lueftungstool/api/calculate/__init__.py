@@ -444,10 +444,9 @@ class Calculate(Resource):
         for field in params_mapping:
             inputs[field] = args[field]
 
-        CO2_Emi = ltool.co2_emission(
+        NrAdu, ActAdu, NrKids, ActKid, AgeKid = ltool.occupancy_parameters(
             room_type = args['room_type'],
             inputs = inputs,
-            quantiles = quantiles,
             NrAdu = args['NrAdu'],
             ActAdu = args['ActAdu'],
             NrKids = args['NrKids'],
@@ -455,6 +454,8 @@ class Calculate(Resource):
             AgeKid = args['AgeKid'],
             size = size
         )
+
+        CO2_Emi = ltool.co2_emission(NrAdu, ActAdu, NrKids, ActKid, AgeKid)
 
         H_Rm, A_Rm, window_area, t_max = ltool.Raum(
             room_type = args['room_type'],
