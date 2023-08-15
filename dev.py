@@ -59,7 +59,7 @@ if __name__ == "__main__":
         fRSI = None,
         CO2_Emi = CO2_Emi,
         area_home = None,
-        H2Osource_category = "Mittel",
+        H2Osource_category = None,
         H2Osource_area = None,
         H2Osource_pers = None,
         H2Osource_area_abs = None,

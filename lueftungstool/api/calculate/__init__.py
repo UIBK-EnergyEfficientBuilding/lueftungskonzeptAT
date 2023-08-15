@@ -49,7 +49,6 @@ params_mapping = {
     },
     "H2Osource_category":{
         "values":params.Feuchtelastkategorie_list,
-        "default":"Mittel",
     },
     "terrain_class":{
         "values":params.Terr_class_list,
@@ -150,7 +149,7 @@ calculation_parameter_model = namespace.model('CalculationParameter', {
         description="Mittleres Alter der Kinder [a]",
     ),
 
-    'H2Osource_category': fields.String(default=params_mapping["H2Osource_category"]["default"],
+    'H2Osource_category': fields.String(
         required=False,
         enum=params_mapping["H2Osource_category"]["values"],
         description="Feuchtelast [l/d]:",
