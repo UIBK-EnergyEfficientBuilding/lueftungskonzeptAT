@@ -84,16 +84,15 @@ if __name__ == "__main__":
         size = size
     )
 
-    H2Oemi_abs, H2Oemi_pre =  ltool.H2O_emission(
+    H2Osource_area_abs, H2Osource_area, H2Osource_pers = ltool.H2O_sources(
         H2Osource_category = None,
         inputs = inputs,
         H2Osource_area_abs = None,
         H2Osource_area = None,
         H2Osource_pers = None,
-        area_home = area_home,
-        pers_home = pers_home,
-        size = size,
-    )
+        size = size,)
+    H2Oemi_abs, H2Oemi_pre = ltool.H2O_emission(H2Osource_area_abs, H2Osource_area, H2Osource_pers, area_home, pers_home)
+    inputs["H2Osource_category"] = ltool.result_stats(H2Oemi_pre)
 
     result = ltool.calc(
         humcalc = humcalc,

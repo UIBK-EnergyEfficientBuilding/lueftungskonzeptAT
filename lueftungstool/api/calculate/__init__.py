@@ -511,16 +511,16 @@ class Calculate(Resource):
             size = size
         )
 
-        H2Oemi_abs, H2Oemi_pre =  ltool.H2O_emission(
+        H2Osource_area_abs, H2Osource_area, H2Osource_pers = ltool.H2O_sources(
             H2Osource_category = args["H2Osource_category"],
             inputs = inputs,
             H2Osource_area = args['H2Osource_area'],
             H2Osource_pers = args['H2Osource_pers'],
             H2Osource_area_abs = args['H2Osource_area_abs'],
-            area_home = area_home,
-            pers_home = pers_home,
-            size = size,
+            size = size
         )
+        H2Oemi_abs, H2Oemi_pre = ltool.H2O_emission(H2Osource_area_abs, H2Osource_area, H2Osource_pers, area_home, pers_home)
+        inputs["H2Osource_category"] = ltool.result_stats(H2Oemi_pre)
 
         return ltool.calc(
             humcalc = humcalc,

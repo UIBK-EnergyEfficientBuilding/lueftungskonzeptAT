@@ -291,7 +291,7 @@ def airing_room(airing_type_room, inputs, airing_duration_room, size):
 
     return ACH_airing_room, airing_duration_room
 
-def H2O_emission(H2Osource_category, inputs, H2Osource_area_abs, H2Osource_area, H2Osource_pers, area_home, pers_home, size):
+def H2O_sources(H2Osource_category, inputs, H2Osource_area_abs, H2Osource_area, H2Osource_pers, size):
     source_category_min_max = [0,1] if H2Osource_category is None else params.Feuchtelastkategorie[H2Osource_category]
 
     H2Osource_area_abs = fixed_or_beta_scaled_range(
@@ -319,9 +319,11 @@ def H2O_emission(H2Osource_category, inputs, H2Osource_area_abs, H2Osource_area,
     inputs["H2Osource_area"] = result_stats(H2Osource_area)
     inputs["H2Osource_pers"] = result_stats(H2Osource_pers)
 
+    return H2Osource_area_abs, H2Osource_area, H2Osource_pers
+
+def H2O_emission(H2Osource_area_abs, H2Osource_area, H2Osource_pers, area_home, pers_home):
     H2Oemi_abs = H2Osource_area_abs * area_home * 24 / 1000
     H2Oemi_pre = (H2Osource_area * area_home + H2Osource_pers * pers_home) * 24 / 1000
-    inputs["H2Osource_category"] = result_stats(H2Oemi_pre)
 
     return H2Oemi_abs, H2Oemi_pre
 
