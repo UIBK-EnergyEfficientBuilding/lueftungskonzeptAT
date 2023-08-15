@@ -43,6 +43,10 @@ def result_stats(value,precision=2):
     q = signif(q,precision)
     return {"mean": mean, "error": error, "median":q[2], "quantiles":q}
 
+def result_stats_integer(value,precision=2):
+    q = np.quantile(value,[0.05, 0.25, 0.5, 0.75, 0.95])
+    return {"min": np.min(value), "max": np.max(value), "quantiles":signif(q,precision)}
+
 def t_gw_calc(C0,C_stat,LWR,t_max,n_max,CO2_Grenzwert,quantiles,size):
     n_i = np.array([np.arange(1, n_max+1)]*size).T
     c_t=(C0-C_stat)/LWR/(t_max*n_i/n_max)*(1-np.exp(-LWR*(t_max*n_i/n_max)))+C_stat
@@ -69,8 +73,8 @@ def calc_lage(location, inputs, Shield, Terr, quantiles, size):
     Shield = np.round(fixed_or_beta_scaled(location, params.location2Shield, Shield, size))
     Terr = np.round(fixed_or_beta_scaled(location, params.location2Terr, Terr, size))
 
-    inputs["terrain_class"] = result_stats(Terr)
-    inputs["shielding_class"] = result_stats(Shield)
+    inputs["terrain_class"] = result_stats_integer(Terr)
+    inputs["shielding_class"] = result_stats_integer(Shield)
 
     C = map_values(Shield,params.Shield_class2C)
     alfa = map_values(Shield,params.Terr_class2alfa)
@@ -157,9 +161,9 @@ def co2_emission(room_type, inputs, quantiles, NrAdu = None, ActAdu = None, NrKi
 
     inputs["AgeKid"] = result_stats(AgeKid)
     inputs["ActKid"] = result_stats(ActKid)
-    inputs["NrKids"] = result_stats(NrKids)
+    inputs["NrKids"] = result_stats_integer(NrKids)
     inputs["ActAdu"] = result_stats(ActAdu)
-    inputs["NrAdu"] = result_stats(NrAdu)
+    inputs["NrAdu"] = result_stats_integer(NrAdu)
 
     CO2_Emi_rate_Erw = 18
     CO2_Emi_rate_Kid = 10
@@ -268,7 +272,7 @@ def calc(
 
     window_class = params.name2window_class[window_class] if window_class is not None else None
     window_class = np.round(fixed_or_beta_scaled(building_n50, params.window_class, window_class, size=size))
-    inputs["window_class"] = result_stats(window_class)
+    inputs["window_class"] = result_stats_integer(window_class)
 
     n50_Raum = n50  #
     Kamineff = 3    # auf H_stack umbenennen

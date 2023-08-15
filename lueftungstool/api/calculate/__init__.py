@@ -208,9 +208,8 @@ result_stats_float_model = namespace.model('ResultStatsFloat', {
 })
 
 result_stats_integer_model = namespace.model('ResultStatsInteger', {
-    "mean": fields.Integer(),
-    "error": fields.Integer(),
-    "median": fields.Float(),
+    "min": fields.Integer(),
+    "max": fields.Integer(),
     "quantiles": fields.List(fields.Integer(), example=[1,2,3,4,5])
 })
 

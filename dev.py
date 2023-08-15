@@ -10,6 +10,9 @@ def print_row_mean(text,result_stats):
 def print_row_median(text,result_stats):
     print(text.ljust(75,' '), f'{result_stats["median"]}'.ljust(20), format_quantile(result_stats["quantiles"]))
 
+def print_row_integer(text,result_stats):
+    print(text.ljust(75,' '), f'{result_stats["min"]} bis {result_stats["max"]}'.ljust(20), format_quantile(result_stats["quantiles"]))
+
 if __name__ == "__main__":
     quantiles = [0.05, 0.25, 0.5, 0.75, 0.95]
     size = 1000
@@ -72,15 +75,15 @@ if __name__ == "__main__":
     print_row_mean("Fläche (betrachteter Raum) [m²]:".ljust(75), result["inputs"]["A_Rm"])
     print_row_mean("Höhe (betrachteter Raum) [m]:".ljust(75), result["inputs"]["H_Rm"])
     print_row_mean("Fläche öffenbare Fenster (betrachteter Raum) [m²]:".ljust(75), result["inputs"]["window_area"])
-    print_row_mean("Fensterklasse nach EN12207 (betrachteter Raum)".ljust(75), result["inputs"]["window_class"])
+    print_row_integer("Fensterklasse nach EN12207 (betrachteter Raum)".ljust(75), result["inputs"]["window_class"])
     print("Lüftungsmöglichkeit (betrachteter Raum):".ljust(75), "?")
     print_row_mean("Lüftungsdauer pro Lüftungsvorgang [min]:".ljust(75), result["inputs"]["airing_duration_room"])
-    print_row_mean("Gelände-/Terrainklasse (Windeinfluss)".ljust(75), result["inputs"]["terrain_class"])
-    print_row_mean("Abschirmung-/Shieldingklasse (Windeinfluss)".ljust(75), result["inputs"]["shielding_class"])
+    print_row_integer("Gelände-/Terrainklasse (Windeinfluss)".ljust(75), result["inputs"]["terrain_class"])
+    print_row_integer("Abschirmung-/Shieldingklasse (Windeinfluss)".ljust(75), result["inputs"]["shielding_class"])
     print("Eingaben Personen für betrachteten Raum".ljust(75), "?")
-    print_row_mean("Anzahl Erwachsene:".ljust(75), result["inputs"]["NrAdu"])
+    print_row_integer("Anzahl Erwachsene:".ljust(75), result["inputs"]["NrAdu"])
     print_row_mean("Aktivität Erwachsene [met]:".ljust(75), result["inputs"]["ActAdu"])
-    print_row_mean("Anzahl Kinder:".ljust(75), result["inputs"]["NrKids"])
+    print_row_integer("Anzahl Kinder:".ljust(75), result["inputs"]["NrKids"])
     print_row_mean("Aktivität Kinder [met]:".ljust(75), result["inputs"]["ActKid"])
     print_row_mean("Mittleres Alter der Kinder [a]".ljust(75), result["inputs"]["AgeKid"])
     if "ResH2O" in result:
