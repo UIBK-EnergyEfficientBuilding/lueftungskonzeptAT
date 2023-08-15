@@ -125,7 +125,7 @@ def Raum(room_type, inputs, quantiles, H_Rm = None, A_Rm = None, window_area = N
 
     return H_Rm, A_Rm, window_area, t_max
 
-def Luftwechsel(Ti_avg,T_a,C,alfa,gama,Windeff,R,X,Kamineff,n50_Raum,H_Rm,A_Rm,Vdot_const,v_10m):
+def Luftwechsel(Ti_avg,T_a,C,alfa,gama,Windeff,R,X,Kamineff,n50,H_Rm,A_Rm,Vdot_const,v_10m):
     # tbd: ersetzen mit allgemeinerer Funktion Infiltration
     fw = C*(1-R)**(1/3)*alfa*(Windeff/10)**gama
     fs =((1+R/2)/3)*(1-X**2/(2-R)**2)**(3/2)*(9.81*Kamineff/(Ti_avg+273))
@@ -133,7 +133,7 @@ def Luftwechsel(Ti_avg,T_a,C,alfa,gama,Windeff,R,X,Kamineff,n50_Raum,H_Rm,A_Rm,V
     n = 0.66
     roh = 1.247
 
-    ELA_tot = (n50_Raum/3600*A_Rm*H_Rm*(4/50)**n)/np.sqrt(2*4/roh)
+    ELA_tot = (n50/3600*A_Rm*H_Rm*(4/50)**n)/np.sqrt(2*4/roh)
     Vdot = ELA_tot*3600*np.sqrt(fs**2*(Ti_avg-T_a)+fw**2*v_10m**2) + Vdot_const
     LWR = Vdot/(A_Rm*H_Rm)
 
@@ -279,11 +279,11 @@ def calc(
 
     n50Max = 2
     Fn50 = beta_scaled(*params.Fn50, size=size)
-    n50_Raum =  Fn50*(n50Max*n50-n50_window_room)+n50_window_room
+    n50_room =  Fn50*(n50Max*n50-n50_window_room)+n50_window_room
     Kamineff = 3    # auf H_stack umbenennen
     Vdot_const = 0  # allow for user entry
     Vdot, LWR = Luftwechsel(
-        Ti_avg,T_a,C,alfa,gama,Windeff,R,X,Kamineff,n50_Raum,H_Rm,A_Rm,Vdot_const,v_10m
+        Ti_avg,T_a,C,alfa,gama,Windeff,R,X,Kamineff,n50_room,H_Rm,A_Rm,Vdot_const,v_10m
     )
 
     CO2_aussen = 450
@@ -419,7 +419,7 @@ def calc(
         
         #tbd: through functions
         R, X = Undichtheiten(size)
-        n50_Unit = n50_Raum
+        n50_Unit = n50_room
         H_stack = 3
         H_wind = Windeff
         Ta_damped= 1.7
