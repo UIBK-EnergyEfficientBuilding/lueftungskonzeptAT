@@ -93,8 +93,10 @@ def calc_dichtheit(building_n50, building_type, inputs, quantiles, size):
         [[3]*size, H_Bldg*beta_scaled(*params.gebaeudeart2H_WindRel[building_type],size=size)],
         axis=0
     )
+    H_stack_min = 3
+    H_stack = np.max([[H_stack_min]*size, H_Bldg*beta_scaled(*params.H_StackRel[building_n50],size=size)], axis=0)
 
-    return n50, H_Bldg, Windeff
+    return n50, Windeff, H_stack
 
 def Undichtheiten(size):
     #Verteilung Undichtheiten
@@ -247,7 +249,7 @@ def calc(
     ):
     T_a, v_10m, rH_a = weather(location)
     C, alfa, gama = calc_lage(location, inputs, Shield, Terr, quantiles, size)
-    n50, H_Bldg, Windeff = calc_dichtheit(building_n50, building_type, inputs, quantiles, size)
+    n50, Windeff, H_stack = calc_dichtheit(building_n50, building_type, inputs, quantiles, size)
 
     if thermalbridges is None:
         thermalbridges = params.map_n502waermebruecken[building_n50]
@@ -266,11 +268,11 @@ def calc(
     n50Max = 2
     Fn50 = beta_scaled(*params.Fn50, size=size)
     n50_room =  Fn50*(n50Max*n50-n50_window_room)+n50_window_room
-    Kamineff = 3    # auf H_stack umbenennen
+
     Vdot_const = 0  # allow for user entry
     volume_room = A_Rm*H_Rm
     Vdot,_,_ = Infiltration(
-        Ti_avg,T_a,C,alfa,gama,Windeff,R,X,Kamineff,n50_room,volume_room,v_10m
+        Ti_avg,T_a,C,alfa,gama,Windeff,R,X,H_stack,n50_room,volume_room,v_10m
     )
     Vdot += Vdot_const
     LWR = Vdot/volume_room
@@ -409,7 +411,6 @@ def calc(
         #tbd: through functions
         R, X = Undichtheiten(size)
         n50_Unit = n50_room
-        H_stack = 3
         H_wind = Windeff
         Ta_damped= 1.7
 

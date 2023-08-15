@@ -188,6 +188,13 @@ window_class = {
     "Neubau - eher dicht":[1,1,4,4],
     "Neubau - sehr dicht":[1,1,4,4],
 }
+H_StackRel = {
+    "Altbau":[1,1,0,1],
+    "Undichter Altbau": [1,1,0,1],
+    "Standard Neubau": [1,1,0,0.1],
+    "Neubau - eher dicht": [1,1,0,0.1],
+    "Neubau - sehr dicht": [1,1,0,0.1],
+}
 n50_map = {
     "Altbau":[3,3,3,4],
     "Undichter Altbau": [3,3,3,7],
