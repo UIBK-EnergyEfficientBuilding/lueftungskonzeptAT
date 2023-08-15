@@ -176,17 +176,22 @@ def occupancy_parameters(room_type, inputs, NrAdu = None, ActAdu = None, NrKids 
 
     return NrAdu, ActAdu, NrKids, ActKid, AgeKid
 
-def Infiltration(Ti_avg,T_a,C,alfa,gama,H_wind,R,X,H_stack,n50,Vol,v_10m):
-    fw = C*(1-R)**(1/3)*alfa*(H_wind/10)**gama
+def stack_effect_factor(Ti_avg,R,X,H_stack):
     fs =((1+R/2)/3)*(1-X**2/(2-R)**2)**(3/2)*(9.81*H_stack/(Ti_avg+273))
+    return fs
 
+def wind_factor(C,alfa,gama,H_wind,R):
+    fw = C*(1-R)**(1/3)*alfa*(H_wind/10)**gama
+    return fw
+
+def Infiltration(Ti_avg,T_a,fs,fw,n50,Vol,v_10m):
     n = 0.66
     roh = 1.247
 
     ELA_tot = (n50/3600*Vol*(4/50)**n)/np.sqrt(2*4/roh)
     Vdot = ELA_tot*3600*np.sqrt(fs**2*(Ti_avg-T_a)+fw**2*v_10m**2)
 
-    return Vdot,fs,fw
+    return Vdot
 
 def co2_emission(NrAdu, ActAdu, NrKids, ActKid, AgeKid):
     CO2_Emi_rate_Erw = 18
@@ -340,9 +345,10 @@ def calc(
 
     Vdot_const = 0  # allow for user entry
     volume_room = A_Rm*H_Rm
-    Vdot,_,_ = Infiltration(
-        Ti_avg,T_a,C,alfa,gama,H_wind,R,X,H_stack,n50_room,volume_room,v_10m
-    )
+
+    fs = stack_effect_factor(Ti_avg,R,X,H_stack)
+    fw = wind_factor(C,alfa,gama,H_wind,R)
+    Vdot = Infiltration(Ti_avg,T_a,fs,fw,n50_room,volume_room,v_10m)
     Vdot += Vdot_const
     LWR = Vdot/volume_room
 
@@ -429,7 +435,7 @@ def calc(
         Perc_accept=0.99
 
         #calculation of air flows
-        Vdot_Inf,fs,fw= Infiltration(Ti_avg,T_a,C,alfa,gama,H_wind, R, X,H_stack,n50_Unit,Vol_Unit,v_10m)
+        Vdot_Inf = Infiltration(Ti_avg,T_a,fs,fw,n50_Unit,Vol_Unit,v_10m)
         Vdot_Win = ACH_airing_home*airing_duration_home/60/24*Vol_Unit
         Vdot_Tot=Vdot_Inf+Vdot_Win+Vdot_add
         result["ResH2O"]["Vdot_Inf"] = result_stats(Vdot_Inf)
