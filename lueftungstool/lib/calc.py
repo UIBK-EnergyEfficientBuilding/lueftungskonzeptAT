@@ -291,8 +291,42 @@ def airing_room(airing_type_room, inputs, airing_duration_room, size):
 
     return ACH_airing_room, airing_duration_room
 
+def H2O_emission(H2Osource_category, inputs, H2Osource_area_abs, H2Osource_area, H2Osource_pers, area_home, pers_home, size):
+    source_category_min_max = [0,1] if H2Osource_category is None else params.Feuchtelastkategorie[H2Osource_category]
+
+    H2Osource_area_abs = fixed_or_beta_scaled_range(
+        "Quellstärke [g/h] Wohnen bei Abwesenheit",
+        params.m_H2Od0,
+        *source_category_min_max,
+        H2Osource_area_abs,
+        size
+    )
+    H2Osource_area = fixed_or_beta_scaled_range(
+        "Quellstärke [g/h] Wohnen Flächenabhängig",
+        params.m_H2Od,
+        *source_category_min_max,
+        H2Osource_area,
+        size
+    )
+    H2Osource_pers = fixed_or_beta_scaled_range(
+        "Quellstärke [g/h] Wohnen PersABH",
+        params.m_H2Ok,
+        *source_category_min_max,
+        H2Osource_pers,
+        size
+    )
+    inputs["H2Osource_area_abs"] = result_stats(H2Osource_area_abs)
+    inputs["H2Osource_area"] = result_stats(H2Osource_area)
+    inputs["H2Osource_pers"] = result_stats(H2Osource_pers)
+
+    H2Oemi_abs = H2Osource_area_abs * area_home * 24 / 1000
+    H2Oemi_pre = (H2Osource_area * area_home + H2Osource_pers * pers_home) * 24 / 1000
+    inputs["H2Osource_category"] = result_stats(H2Oemi_pre)
+
+    return H2Oemi_abs, H2Oemi_pre
+
 def calc(
-        humcalc, n50_room, T_a, v_10m, rH_a, C, alfa, gama, H_wind, R, X, H_stack, inputs, t_max, H_Rm, A_Rm, pers_home, airing_type_home, airing_duration_home, ACH_airing_room, airing_duration_room, Ti_avg, Ti_abs, Ti_min, fRSI, CO2_Emi, area_home, H2Osource_category, H2Osource_area, H2Osource_pers, H2Osource_area_abs, quantiles, size = 1000
+        humcalc, n50_room, T_a, v_10m, rH_a, C, alfa, gama, H_wind, R, X, H_stack, inputs, t_max, H_Rm, A_Rm, airing_type_home, airing_duration_home, ACH_airing_room, airing_duration_room, H2Oemi_abs, H2Oemi_pre, Ti_avg, Ti_abs, Ti_min, fRSI, CO2_Emi, area_home, quantiles, size = 1000
     ):
 
     Vdot_const = 0  # allow for user entry
@@ -373,39 +407,8 @@ def calc(
     if humcalc:
         result["ResH2O"] = {}
 
-        source_category_min_max = [0,1] if H2Osource_category is None else params.Feuchtelastkategorie[H2Osource_category]
-
-        H2Osource_area_abs = fixed_or_beta_scaled_range(
-            "Quellstärke [g/h] Wohnen bei Abwesenheit",
-            params.m_H2Od0,
-            *source_category_min_max,
-            H2Osource_area_abs,
-            size
-        )
-        H2Osource_area = fixed_or_beta_scaled_range(
-            "Quellstärke [g/h] Wohnen Flächenabhängig",
-            params.m_H2Od,
-            *source_category_min_max,
-            H2Osource_area,
-            size
-        )
-        H2Osource_pers = fixed_or_beta_scaled_range(
-            "Quellstärke [g/h] Wohnen PersABH",
-            params.m_H2Ok,
-            *source_category_min_max,
-            H2Osource_pers,
-            size
-        )
-        inputs["H2Osource_area_abs"] = result_stats(H2Osource_area_abs)
-        inputs["H2Osource_area"] = result_stats(H2Osource_area)
-        inputs["H2Osource_pers"] = result_stats(H2Osource_pers)
-
         #tbd: through interface
         Vol_Unit = H_Rm * area_home
-
-        H2Oemi_abs = H2Osource_area_abs * area_home * 24 / 1000
-        H2Oemi_pre = (H2Osource_area * area_home + H2Osource_pers * pers_home) * 24 / 1000
-        inputs["H2Osource_category"] = result_stats(H2Oemi_pre)
 
         ACH_Win = beta_scaled(*params.luefungsart2WinACH[airing_type_home],size=size)
         Dur_Win = fixed_or_beta_scaled(airing_type_home, params.luefungsart2WinDur2, airing_duration_home,size=size)

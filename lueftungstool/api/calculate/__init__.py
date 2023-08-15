@@ -511,6 +511,17 @@ class Calculate(Resource):
             size = size
         )
 
+        H2Oemi_abs, H2Oemi_pre =  ltool.H2O_emission(
+            H2Osource_category = args["H2Osource_category"],
+            inputs = inputs,
+            H2Osource_area = args['H2Osource_area'],
+            H2Osource_pers = args['H2Osource_pers'],
+            H2Osource_area_abs = args['H2Osource_area_abs'],
+            area_home = area_home,
+            pers_home = pers_home,
+            size = size,
+        )
+
         return ltool.calc(
             humcalc = humcalc,
             n50_room = n50_room,
@@ -532,19 +543,16 @@ class Calculate(Resource):
             A_Rm = A_Rm,
             ACH_airing_room = ACH_airing_room,
             airing_duration_room = airing_duration_room,
-            pers_home = pers_home,
             airing_type_home = args['airing_type_home'],
             airing_duration_home = args['airing_duration_home'],
+            H2Oemi_abs = H2Oemi_abs,
+            H2Oemi_pre = H2Oemi_pre,
             Ti_avg = Ti_avg,
             Ti_abs = Ti_abs,
             Ti_min = Ti_min,
             fRSI = fRSI,
             CO2_Emi = CO2_Emi,
             area_home = area_home,
-            H2Osource_category = args["H2Osource_category"],
-            H2Osource_area = args['H2Osource_area'],
-            H2Osource_pers = args['H2Osource_pers'],
-            H2Osource_area_abs = args['H2Osource_area_abs'],
             quantiles = quantiles,
             size = size
         )

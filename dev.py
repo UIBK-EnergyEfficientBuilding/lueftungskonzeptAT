@@ -84,6 +84,17 @@ if __name__ == "__main__":
         size = size
     )
 
+    H2Oemi_abs, H2Oemi_pre =  ltool.H2O_emission(
+        H2Osource_category = None,
+        inputs = inputs,
+        H2Osource_area_abs = None,
+        H2Osource_area = None,
+        H2Osource_pers = None,
+        area_home = area_home,
+        pers_home = pers_home,
+        size = size,
+    )
+
     result = ltool.calc(
         humcalc = humcalc,
         n50_room = n50_room,
@@ -107,19 +118,16 @@ if __name__ == "__main__":
         ACH_airing_room = ACH_airing_room,
         airing_duration_room = airing_duration_room,
 
-        pers_home = pers_home,
         airing_type_home = "Querlüftung",
         airing_duration_home = None,
+        H2Oemi_abs = H2Oemi_abs,
+        H2Oemi_pre = H2Oemi_pre,
         Ti_avg = Ti_avg,
         Ti_abs = Ti_abs,
         Ti_min = Ti_min,
         fRSI = fRSI,
         CO2_Emi = CO2_Emi,
         area_home = area_home,
-        H2Osource_category = None,
-        H2Osource_area = None,
-        H2Osource_pers = None,
-        H2Osource_area_abs = None,
         quantiles = quantiles,
         size = size
     )
