@@ -1,4 +1,4 @@
-FROM python:3.11-alpine as builder
+FROM python:3.11-slim as builder
 
 COPY . /app/
 ENV PATH="/opt/venv/bin:$PATH"
@@ -6,8 +6,8 @@ RUN python -m venv /opt/venv
 RUN pip install --no-cache-dir /app/
 RUN pip install --no-cache-dir gunicorn
 
-FROM python:3.11-alpine
-RUN addgroup --system app && adduser -S -G app app
+FROM python:3.11-slim
+RUN useradd -r -U app
 
 COPY --from=builder /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
