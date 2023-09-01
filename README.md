@@ -32,7 +32,8 @@ or use vscode run the tests.
 # Build an run container image
 
 ```
-docker build -t lueftungstool:latest .
+docker buildx build --output=type=docker -t lueftungstool:latest --platform=linux/amd64 .
+docker buildx build --output=type=docker -t lueftungstool:latest --platform=linux/arm64/v8 .
 docker run --rm -p 8000:8000 lueftungstool:latest
 ```
 open http://127.0.0.1:8000/api/doc with your browser for the rest api documentation.
