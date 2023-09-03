@@ -14,6 +14,8 @@ def print_row_integer(text,result_stats):
     print(text.ljust(75,' '), f'{result_stats["min"]} bis {result_stats["max"]}'.ljust(20), format_quantile(result_stats["quantiles"]))
 
 if __name__ == "__main__":
+    profile = False
+
     quantiles = [0.05, 0.25, 0.5, 0.75, 0.95]
     size = 1000
     signDig=2   #tbd add to a settings dict
@@ -25,7 +27,14 @@ if __name__ == "__main__":
         "building_type": "Mehrfamilienhaus",
     }
 
+    if profile:
+        import cProfile
+        pr = cProfile.Profile()
+        size *= 100
+
+    if profile: pr.enable()
     result = calc2.calc(args,size)
+    if profile: pr.disable()
 
     print("#Eingaben Gebäude/Raum")
     print("Standort:".ljust(75), result["inputs"]["location"])
@@ -62,9 +71,9 @@ if __name__ == "__main__":
     print_row_median("Zeit bis CO2-Stundenmittelwert=1000 ppm - ideales Lüften [min]:", result["ResCO2"]["t_avgC_idealC0"])
     print_row_median("Zeit bis CO2-Momentanwert=1000 ppm - ideales Lüften [min]:", result["ResCO2"]["t_instC_idealC0"])
     print_row_median("CO2 Konzentration im stationären Fall (t→∞) [ppm]:", result["ResCO2"]["CO2_stat"])
+    print()
 
     if "ResH2O" in result:
-        print()
         print("#Eingaben für Schimmelrisiko Bewertung (nur für Wohnbau)")
         print("Berechnung durchführen:".ljust(75), "Ja")
         print("Wärmebrücken".ljust(75), result["inputs"]["thermalbridges"])
@@ -101,6 +110,7 @@ if __name__ == "__main__":
         print("Wahrscheinlichkeit dass Fugenlüftung nicht ausreicht:".ljust(75),"%.1f"%(result["ResH2O"]["MouldRisk_abs"]*100),"%")
         print("Erforderliche zusätzliche Luftmenge damit Wahrscheinlichkeit<1% [m³/h]:".ljust(75),result["ResH2O"]["Vdot_acc_abs"])
         print("dafür erforderlicher zusätzlicher freier Querschnitt [cm²]:".ljust(75),result["ResH2O"]["ELA_acc_abs"])
+        print()
 
     import matplotlib.pyplot as plt
 
@@ -130,3 +140,9 @@ if __name__ == "__main__":
             plt.ylabel(f"Häufigkeit (n={size})")
             plt.xlabel(xlabel)
             plt.savefig(f"ResH2O_Airflows_{i}.png")
+
+    if profile:
+        import pstats
+        p = pstats.Stats(pr).strip_dirs()
+        p.sort_stats(pstats.SortKey.CUMULATIVE).print_stats(15)
+        p.sort_stats(pstats.SortKey.TIME).print_stats(15)
