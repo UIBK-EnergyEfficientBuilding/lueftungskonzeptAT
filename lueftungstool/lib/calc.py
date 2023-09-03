@@ -82,24 +82,27 @@ def calc_lage(location, inputs, Shield, Terr, quantiles, size):
 
     return C, alfa, gama
 
-def calc_dichtheit(building_n50, building_type, thermalbridges, Ti_avg, Ti_min, Ti_abs, fRSI, window_class, window_area, A_Rm, H_Rm, inputs, quantiles, size):
-    #Gebäudichtheit
-    n50 = beta_scaled(*params.n50_map[building_n50],size=size)
-
-    inputs["building_n50"] = result_stats(n50)
-
-    H_wind_min = 3
-    H_stack_min = 3
-    H_Bldg = beta_scaled(*params.gebaeudeart2H_Bldg[building_type],size=size)
-    H_wind = np.max(
-        [[H_wind_min]*size, H_Bldg*beta_scaled(*params.gebaeudeart2H_WindRel[building_type],size=size)],
-        axis=0
-    )
-    H_stack = np.max([[H_stack_min]*size, H_Bldg*beta_scaled(*params.H_StackRel[building_n50],size=size)], axis=0)
-
+def building_standard2thermalbridges(building_n50,inputs,thermalbridges):
     if thermalbridges is None:
         thermalbridges = params.map_n502waermebruecken[building_n50]
         inputs["thermalbridges"] = thermalbridges
+    else:
+        inputs["thermalbridges"] = thermalbridges
+
+    return thermalbridges
+
+def building_standard(building_n50,inputs,window_class,size):
+    n50 = beta_scaled(*params.n50_map[building_n50],size=size)
+    inputs["building_n50"] = result_stats(n50)
+
+    window_class = params.name2window_class[window_class] if window_class is not None else None
+    window_class = np.round(fixed_or_beta_scaled(building_n50, params.window_class, window_class, size=size))
+    inputs["window_class"] = result_stats_integer(window_class)
+    air_permeability = map_values(window_class,params.window_class2air_permeability)
+
+    return n50,air_permeability
+
+def calc_temperatures(thermalbridges, inputs, Ti_avg, Ti_min, Ti_abs, fRSI, size):
     Ti_avg = fixed_or_beta_scaled(thermalbridges, params.waermebruecken2Ti_avg, Ti_avg, size=size)
     inputs["Ti_avg"] = result_stats(Ti_avg)
 
@@ -110,18 +113,30 @@ def calc_dichtheit(building_n50, building_type, thermalbridges, Ti_avg, Ti_min, 
     inputs["Ti_abs"] = result_stats(Ti_abs)
     inputs["fRSI"] = result_stats(fRSI)
 
-    window_class = params.name2window_class[window_class] if window_class is not None else None
-    window_class = np.round(fixed_or_beta_scaled(building_n50, params.window_class, window_class, size=size))
-    inputs["window_class"] = result_stats_integer(window_class)
+    return Ti_avg, Ti_min, Ti_abs, fRSI
 
-    air_permeability = map_values(window_class,params.window_class2air_permeability)
-    n50_window_room = air_permeability*(50/100)**(2/3)*window_area/(A_Rm*H_Rm)
-
-    n50Max = 2
+def n50factor(size):
     Fn50 = beta_scaled(*params.Fn50, size=size)
-    n50_room =  Fn50*(n50Max*n50-n50_window_room)+n50_window_room
+    return Fn50
 
-    return n50_room, H_wind, H_stack, Ti_avg, Ti_min, Ti_abs, fRSI
+def calc_LBL_model_factors(building_n50, building_type, size):
+    H_wind_min = 3
+    H_stack = beta_scaled(*params.gebaeudeart2H_Bldg[building_type],size=size)
+    H_wind = np.max(
+        [[H_wind_min]*size, H_stack*beta_scaled(*params.gebaeudeart2H_WindRel[building_type],size=size)],
+        axis=0
+    )
+
+    H_stack_min = 3
+    H_stack = np.max([[H_stack_min]*size, H_stack*beta_scaled(*params.H_StackRel[building_n50],size=size)], axis=0)
+
+    return H_wind, H_stack
+
+def n50room(n50,Fn50,air_permeability,window_area,A_Rm,H_Rm):
+    n50_window_room = air_permeability*(50/100)**(2/3)*window_area/(A_Rm*H_Rm)
+    n50Max = 2
+    n50_room =  Fn50*(n50Max*n50-n50_window_room)+n50_window_room
+    return n50_room
 
 def H2Oonlyparams(building_type, inputs, area_home, pers_home, size):
     area_home = fixed_or_beta_scaled(building_type, params.WNF, area_home, size)

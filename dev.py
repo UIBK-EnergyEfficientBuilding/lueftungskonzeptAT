@@ -52,21 +52,44 @@ if __name__ == "__main__":
         size = size
     )
 
-    n50_room, H_wind, H_stack, Ti_avg, Ti_min, Ti_abs, fRSI = ltool.calc_dichtheit(
+    H_wind, H_stack = ltool.calc_LBL_model_factors(
         building_n50 = building_n50,
         building_type = building_type,
+        size = size
+    )
+
+    n50,air_permeability = ltool.building_standard(
+        building_n50 = building_n50,
+        inputs = inputs,
+        window_class = None,
+        size = size
+    )
+
+    thermalbridges = ltool.building_standard2thermalbridges(
+        building_n50 = building_n50,
         inputs = inputs,
         thermalbridges = None,
+    )
+
+    Ti_avg, Ti_min, Ti_abs, fRSI = ltool.calc_temperatures(
+        thermalbridges = thermalbridges,
+        inputs = inputs,
         Ti_avg = None,
-        Ti_abs = None,
         Ti_min = None,
+        Ti_abs = None,
         fRSI = None,
-        window_class = None,
+        size = size
+    )
+
+    Fn50 = ltool.n50factor(size)
+
+    n50_room = ltool.n50room(
+        n50 = n50,
+        Fn50 = Fn50,
+        air_permeability = air_permeability,
         window_area = window_area,
         A_Rm = A_Rm,
         H_Rm = H_Rm,
-        quantiles = quantiles,
-        size = size
     )
 
     ACH_airing_room, airing_duration_room = ltool.airing_room(

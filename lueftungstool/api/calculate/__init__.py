@@ -437,6 +437,7 @@ class Calculate(Resource):
 
         size = 1000
         building_type = args["building_type"]
+        building_n50 = args["building_n50"]
 
         inputs = {}
         quantiles = [0.05, 0.25, 0.5, 0.75, 0.95]
@@ -478,21 +479,44 @@ class Calculate(Resource):
             size = size
         )
 
-        n50_room, H_wind, H_stack, Ti_avg, Ti_min, Ti_abs, fRSI = ltool.calc_dichtheit(
-            building_n50 = args["building_n50"],
+        H_wind, H_stack = ltool.calc_LBL_model_factors(
+            building_n50 = building_n50,
             building_type = building_type,
+            size = size
+        )
+
+        n50,air_permeability = ltool.building_standard(
+            building_n50 = building_n50,
+            inputs = inputs,
+            window_class = args["window_class"],
+            size = size
+        )
+
+        thermalbridges = ltool.building_standard2thermalbridges(
+            building_n50 = building_n50,
+            inputs = inputs,
             thermalbridges = args["thermalbridges"],
+        )
+
+        Ti_avg, Ti_min, Ti_abs, fRSI = ltool.calc_temperatures(
+            thermalbridges = thermalbridges,
             inputs = inputs,
             Ti_avg = args["Ti_avg"],
             Ti_min = args["Ti_min"],
             Ti_abs = args["Ti_abs"],
             fRSI = args["fRSI"],
-            window_class = args["window_class"],
+            size = size
+        )
+
+        Fn50 = ltool.n50factor(size)
+
+        n50_room = ltool.n50room(
+            n50 = n50,
+            Fn50 = Fn50,
+            air_permeability = air_permeability,
             window_area = window_area,
             A_Rm = A_Rm,
             H_Rm = H_Rm,
-            quantiles = quantiles,
-            size = size
         )
 
         ACH_airing_room, airing_duration_room = ltool.airing_room(
