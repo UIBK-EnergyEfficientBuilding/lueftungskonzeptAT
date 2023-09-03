@@ -1,6 +1,8 @@
 
 import lueftungstool.lib.calc as ltool
+import lueftungstool.lib.params_lookups as params_lookups
 import lueftungstool.lib.params as params
+import lueftungstool.lib.helper as helper
 
 def format_quantile(quantile):
     return f"<{quantile[0]}|{quantile[2]}|{quantile[4]}>"
@@ -27,7 +29,7 @@ if __name__ == "__main__":
 
     inputs = {}
 
-    NrAdu, ActAdu, NrKids, ActKid, AgeKid = ltool.occupancy_parameters(
+    NrAdu, ActAdu, NrKids, ActKid, AgeKid = params_lookups.occupancy_parameters(
         room_type = room_type,
         inputs = inputs,
         size = size
@@ -35,15 +37,15 @@ if __name__ == "__main__":
 
     CO2_Emi = ltool.co2_emission(NrAdu, ActAdu, NrKids, ActKid, AgeKid)
 
-    H_Rm, A_Rm, window_area, t_max = ltool.Raum(
+    H_Rm, A_Rm, window_area, t_max = params_lookups.Raum(
         room_type = room_type,
         inputs = inputs,
         quantiles = quantiles,
         size = size
     )
 
-    T_a, v_10m, rH_a = ltool.weather(location)
-    C, alfa, gama = ltool.calc_lage(
+    T_a, v_10m, rH_a = params_lookups.weather(location)
+    C, alfa, gama = params_lookups.calc_lage(
         location = location,
         inputs = inputs,
         Shield = None,
@@ -52,26 +54,26 @@ if __name__ == "__main__":
         size = size
     )
 
-    H_wind, H_stack = ltool.calc_LBL_model_factors(
+    H_wind, H_stack = params_lookups.calc_LBL_model_factors(
         building_n50 = building_n50,
         building_type = building_type,
         size = size
     )
 
-    n50,air_permeability = ltool.building_standard(
+    n50,air_permeability = params_lookups.building_standard(
         building_n50 = building_n50,
         inputs = inputs,
         window_class = None,
         size = size
     )
 
-    thermalbridges = ltool.building_standard2thermalbridges(
+    thermalbridges = params_lookups.building_standard2thermalbridges(
         building_n50 = building_n50,
         inputs = inputs,
         thermalbridges = None,
     )
 
-    Ti_avg, Ti_min, Ti_abs, fRSI = ltool.calc_temperatures(
+    Ti_avg, Ti_min, Ti_abs, fRSI = params_lookups.calc_temperatures(
         thermalbridges = thermalbridges,
         inputs = inputs,
         Ti_avg = None,
@@ -81,7 +83,7 @@ if __name__ == "__main__":
         size = size
     )
 
-    Fn50 = ltool.n50factor(size)
+    Fn50 = params_lookups.n50factor(size)
 
     n50_room = ltool.n50room(
         n50 = n50,
@@ -92,14 +94,14 @@ if __name__ == "__main__":
         H_Rm = H_Rm,
     )
 
-    ACH_airing_room, airing_duration_room = ltool.airing_room(
+    ACH_airing_room, airing_duration_room = params_lookups.airing_room(
         airing_type_room = airing_type_room,
         inputs = inputs,
         airing_duration_room = None,
         size = size
     )
 
-    R, X = ltool.Undichtheiten(size)
+    R, X = params_lookups.Undichtheiten(size)
     fs = ltool.stack_effect_factor(Ti_avg,R,X,H_stack)
     fw = ltool.wind_factor(C,alfa,gama,H_wind,R)
 
@@ -128,7 +130,7 @@ if __name__ == "__main__":
         humcalc = False
 
     if humcalc:
-        area_home, pers_home = ltool.H2Oonlyparams(
+        area_home, pers_home = params_lookups.H2Oonlyparams(
             building_type = building_type,
             inputs = inputs,
             area_home = None,
@@ -136,7 +138,7 @@ if __name__ == "__main__":
             size = size
         )
 
-        H2Osource_area_abs, H2Osource_area, H2Osource_pers = ltool.H2O_sources(
+        H2Osource_area_abs, H2Osource_area, H2Osource_pers = params_lookups.H2O_sources(
             H2Osource_category = None,
             inputs = inputs,
             H2Osource_area_abs = None,
@@ -144,9 +146,9 @@ if __name__ == "__main__":
             H2Osource_pers = None,
             size = size,)
         H2Oemi_abs, H2Oemi_pre = ltool.H2O_emission(H2Osource_area_abs, H2Osource_area, H2Osource_pers, area_home, pers_home)
-        inputs["H2Osource_category"] = ltool.result_stats(H2Oemi_pre)
+        inputs["H2Osource_category"] = helper.result_stats(H2Oemi_pre)
 
-        ACH_airing_home, airing_duration_home = ltool.airing_home(
+        ACH_airing_home, airing_duration_home = params_lookups.airing_home(
             airing_type_home = airing_type_home,
             inputs = inputs,
             airing_duration_home = None,

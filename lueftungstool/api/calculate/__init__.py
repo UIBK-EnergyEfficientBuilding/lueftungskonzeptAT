@@ -1,7 +1,9 @@
 from flask import request
 from flask_restx import Namespace, Resource, fields, reqparse
 import lueftungstool.lib.calc as ltool
+import lueftungstool.lib.params_lookups as params_lookups
 import lueftungstool.lib.params as params
+import lueftungstool.lib.helper as helper
 
 def add_model_to_parser(parser,model):
     for k,v in model.items():
@@ -446,7 +448,7 @@ class Calculate(Resource):
         for field in params_mapping:
             inputs[field] = args[field]
 
-        NrAdu, ActAdu, NrKids, ActKid, AgeKid = ltool.occupancy_parameters(
+        NrAdu, ActAdu, NrKids, ActKid, AgeKid = params_lookups.occupancy_parameters(
             room_type = args['room_type'],
             inputs = inputs,
             NrAdu = args['NrAdu'],
@@ -459,7 +461,7 @@ class Calculate(Resource):
 
         CO2_Emi = ltool.co2_emission(NrAdu, ActAdu, NrKids, ActKid, AgeKid)
 
-        H_Rm, A_Rm, window_area, t_max = ltool.Raum(
+        H_Rm, A_Rm, window_area, t_max = params_lookups.Raum(
             room_type = args['room_type'],
             inputs = inputs,
             quantiles = quantiles,
@@ -469,8 +471,8 @@ class Calculate(Resource):
             size = size
         )
 
-        T_a, v_10m, rH_a = ltool.weather(location = args['location'],)
-        C, alfa, gama = ltool.calc_lage(
+        T_a, v_10m, rH_a = params_lookups.weather(location = args['location'],)
+        C, alfa, gama = params_lookups.calc_lage(
             location = args['location'],
             inputs = inputs,
             Shield = args['shielding_class'],
@@ -479,26 +481,26 @@ class Calculate(Resource):
             size = size
         )
 
-        H_wind, H_stack = ltool.calc_LBL_model_factors(
+        H_wind, H_stack = params_lookups.calc_LBL_model_factors(
             building_n50 = building_n50,
             building_type = building_type,
             size = size
         )
 
-        n50,air_permeability = ltool.building_standard(
+        n50,air_permeability = params_lookups.building_standard(
             building_n50 = building_n50,
             inputs = inputs,
             window_class = args["window_class"],
             size = size
         )
 
-        thermalbridges = ltool.building_standard2thermalbridges(
+        thermalbridges = params_lookups.building_standard2thermalbridges(
             building_n50 = building_n50,
             inputs = inputs,
             thermalbridges = args["thermalbridges"],
         )
 
-        Ti_avg, Ti_min, Ti_abs, fRSI = ltool.calc_temperatures(
+        Ti_avg, Ti_min, Ti_abs, fRSI = params_lookups.calc_temperatures(
             thermalbridges = thermalbridges,
             inputs = inputs,
             Ti_avg = args["Ti_avg"],
@@ -508,7 +510,7 @@ class Calculate(Resource):
             size = size
         )
 
-        Fn50 = ltool.n50factor(size)
+        Fn50 = params_lookups.n50factor(size)
 
         n50_room = ltool.n50room(
             n50 = n50,
@@ -519,14 +521,14 @@ class Calculate(Resource):
             H_Rm = H_Rm,
         )
 
-        ACH_airing_room, airing_duration_room = ltool.airing_room(
+        ACH_airing_room, airing_duration_room = params_lookups.airing_room(
             airing_type_room = args['airing_type_room'],
             inputs = inputs,
             airing_duration_room = args['airing_duration_room'],
             size = size
         )
 
-        R, X = ltool.Undichtheiten(size)
+        R, X = params_lookups.Undichtheiten(size)
         fs = ltool.stack_effect_factor(Ti_avg,R,X,H_stack)
         fw = ltool.wind_factor(C,alfa,gama,H_wind,R)
 
@@ -555,7 +557,7 @@ class Calculate(Resource):
             humcalc = False
 
         if humcalc:
-            area_home, pers_home = ltool.H2Oonlyparams(
+            area_home, pers_home = params_lookups.H2Oonlyparams(
                 building_type = building_type,
                 inputs = inputs,
                 area_home = args["area_home"],
@@ -563,7 +565,7 @@ class Calculate(Resource):
                 size = size
             )
 
-            H2Osource_area_abs, H2Osource_area, H2Osource_pers = ltool.H2O_sources(
+            H2Osource_area_abs, H2Osource_area, H2Osource_pers = params_lookups.H2O_sources(
                 H2Osource_category = args["H2Osource_category"],
                 inputs = inputs,
                 H2Osource_area = args['H2Osource_area'],
@@ -572,9 +574,9 @@ class Calculate(Resource):
                 size = size
             )
             H2Oemi_abs, H2Oemi_pre = ltool.H2O_emission(H2Osource_area_abs, H2Osource_area, H2Osource_pers, area_home, pers_home)
-            inputs["H2Osource_category"] = ltool.result_stats(H2Oemi_pre)
+            inputs["H2Osource_category"] = helper.result_stats(H2Oemi_pre)
 
-            ACH_airing_home, airing_duration_home = ltool.airing_home(
+            ACH_airing_home, airing_duration_home = params_lookups.airing_home(
                 airing_type_home = args['airing_type_home'],
                 inputs = inputs,
                 airing_duration_home = args['airing_duration_home'],

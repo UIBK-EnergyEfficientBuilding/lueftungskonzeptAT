@@ -1,51 +1,7 @@
 
 import numpy as np
-from scipy.stats import beta as scipy_beta
 
-import lueftungstool.lib.params as params
-
-def beta_scaled(alpha,beta,min_value,max_value,size):
-    return np.random.default_rng().beta(a=alpha, b=beta, size=size)*(max_value-min_value)+min_value
-
-def fixed_or_beta_scaled(key, param, field, size):
-    if not field:
-        return beta_scaled(*param[key],size=size)
-    else:
-        return np.array([field]*size)
-
-def beta_scaled_range(alpha,beta,min_value,max_value,start,stop,size):
-    x = np.linspace(start,stop,size)
-    return scipy_beta.ppf(np.random.choice(x,size),alpha,beta)*(max_value-min_value)+min_value
-
-def fixed_or_beta_scaled_range(key, param, start, stop, field, size):
-    if not field:
-        return beta_scaled_range(*param[key], start, stop, size=size)
-    else:
-        return np.array([field]*size)
-
-def map_values(a, d):
-    b = np.copy(a)
-    for k, v in d.items():
-        b[a==k] = v
-    return b
-
-#https://stackoverflow.com/questions/18915378/rounding-to-significant-figures-in-numpy
-def signif(x, p):
-    x = np.asarray(x)
-    x_positive = np.where(np.isfinite(x) & (x != 0), np.abs(x), 10**(p-1))
-    mags = 10 ** (p - 1 - np.floor(np.log10(x_positive)))
-    return np.round(x * mags) / mags
-
-def result_stats(value,precision=2):
-    mean = signif(np.mean(value),precision)
-    q = np.quantile(value,[0.05, 0.25, 0.5, 0.75, 0.95])
-    error = signif((q[-1] - q[0])/2,precision)
-    q = signif(q,precision)
-    return {"mean": mean, "error": error, "median":q[2], "quantiles":q}
-
-def result_stats_integer(value,precision=2):
-    q = np.quantile(value,[0.05, 0.25, 0.5, 0.75, 0.95])
-    return {"min": np.min(value), "max": np.max(value), "quantiles":signif(q,precision)}
+import lueftungstool.lib.helper as helper
 
 def t_gw_calc(C0,C_stat,LWR,t_max,n_max,CO2_Grenzwert,quantiles,size):
     n_i = np.array([np.arange(1, n_max+1)]*size).T
@@ -58,141 +14,11 @@ def C0_calc(C0,C_stat,LWR,t):
 def C0_calc_clip(C0,C_stat,LWR,t):
     return np.max([C0_calc(C0,C_stat,LWR,t),C_stat],axis=0)
 
-
-def weather(location):
-    T_a = params.location2T_a[location]
-    v_10m = params.location2v_10m[location]
-    rH = params.location2rH[location]
-    return T_a, v_10m, rH
-
-def calc_lage(location, inputs, Shield, Terr, quantiles, size):
-    Shield = params.name2Shield_class[Shield] if Shield is not None else None
-    Terr = params.name2Terr_class[Terr] if Terr is not None else None
-
-    #Lage/Exposition
-    Shield = np.round(fixed_or_beta_scaled(location, params.location2Shield, Shield, size))
-    Terr = np.round(fixed_or_beta_scaled(location, params.location2Terr, Terr, size))
-
-    inputs["terrain_class"] = result_stats_integer(Terr)
-    inputs["shielding_class"] = result_stats_integer(Shield)
-
-    C = map_values(Shield,params.Shield_class2C)
-    alfa = map_values(Shield,params.Terr_class2alfa)
-    gama = map_values(Terr,params.Terr_class2gama)
-
-    return C, alfa, gama
-
-def building_standard2thermalbridges(building_n50,inputs,thermalbridges):
-    if thermalbridges is None:
-        thermalbridges = params.map_n502waermebruecken[building_n50]
-        inputs["thermalbridges"] = thermalbridges
-    else:
-        inputs["thermalbridges"] = thermalbridges
-
-    return thermalbridges
-
-def building_standard(building_n50,inputs,window_class,size):
-    n50 = beta_scaled(*params.n50_map[building_n50],size=size)
-    inputs["building_n50"] = result_stats(n50)
-
-    window_class = params.name2window_class[window_class] if window_class is not None else None
-    window_class = np.round(fixed_or_beta_scaled(building_n50, params.window_class, window_class, size=size))
-    inputs["window_class"] = result_stats_integer(window_class)
-    air_permeability = map_values(window_class,params.window_class2air_permeability)
-
-    return n50,air_permeability
-
-def calc_temperatures(thermalbridges, inputs, Ti_avg, Ti_min, Ti_abs, fRSI, size):
-    Ti_avg = fixed_or_beta_scaled(thermalbridges, params.waermebruecken2Ti_avg, Ti_avg, size=size)
-    inputs["Ti_avg"] = result_stats(Ti_avg)
-
-    Ti_min = fixed_or_beta_scaled(thermalbridges, params.waermebruecken2Ti_min, Ti_min, size=size)
-    Ti_abs = fixed_or_beta_scaled(thermalbridges, params.waermebruecken2Ti_abs, Ti_abs, size=size)
-    fRSI = fixed_or_beta_scaled(thermalbridges, params.waermebruecken2fRSI, fRSI,size=size)
-    inputs["Ti_min"] = result_stats(Ti_min)
-    inputs["Ti_abs"] = result_stats(Ti_abs)
-    inputs["fRSI"] = result_stats(fRSI)
-
-    return Ti_avg, Ti_min, Ti_abs, fRSI
-
-def n50factor(size):
-    Fn50 = beta_scaled(*params.Fn50, size=size)
-    return Fn50
-
-def calc_LBL_model_factors(building_n50, building_type, size):
-    H_wind_min = 3
-    H_stack = beta_scaled(*params.gebaeudeart2H_Bldg[building_type],size=size)
-    H_wind = np.max(
-        [[H_wind_min]*size, H_stack*beta_scaled(*params.gebaeudeart2H_WindRel[building_type],size=size)],
-        axis=0
-    )
-
-    H_stack_min = 3
-    H_stack = np.max([[H_stack_min]*size, H_stack*beta_scaled(*params.H_StackRel[building_n50],size=size)], axis=0)
-
-    return H_wind, H_stack
-
 def n50room(n50,Fn50,air_permeability,window_area,A_Rm,H_Rm):
     n50_window_room = air_permeability*(50/100)**(2/3)*window_area/(A_Rm*H_Rm)
     n50Max = 2
     n50_room =  Fn50*(n50Max*n50-n50_window_room)+n50_window_room
     return n50_room
-
-def H2Oonlyparams(building_type, inputs, area_home, pers_home, size):
-    area_home = fixed_or_beta_scaled(building_type, params.WNF, area_home, size)
-    inputs["area_home"] = result_stats(area_home)
-
-    if pers_home is None:
-        OccDens = beta_scaled(*params.OccDens[building_type], size)
-        pers_home = area_home/OccDens
-    inputs["pers_home"] = result_stats(pers_home)
-
-    return area_home, pers_home
-
-def Undichtheiten(size):
-    #Verteilung Undichtheiten
-    LeakDistr_1 = beta_scaled(5,7,0,1,size=size) #Anteil Decke+Boden 5,7,0,1
-    LeakDistr_2 = beta_scaled(4,4,0,1,size=size) #Anteil Decke von Anteil Decke+Boden 4,4,0,1
-
-    Anteil_Decke = LeakDistr_1*LeakDistr_2
-    Anteil_Boden = LeakDistr_1*(1-LeakDistr_2)
-
-    R = Anteil_Decke+Anteil_Boden
-    X = Anteil_Decke-Anteil_Boden
-
-    return R,X
-
-def Raum(room_type, inputs, quantiles, H_Rm = None, A_Rm = None, window_area = None, size = 1000):
-    A_Rm = fixed_or_beta_scaled(room_type, params.raumart2A_Rm, A_Rm, size)
-    H_Rm = fixed_or_beta_scaled(room_type, params.raumart2H_Rm, H_Rm, size)
-
-    if window_area is None:
-        WinRat_Rm = beta_scaled(*params.raumart2WinRat_Rm[room_type], size)
-        window_area = WinRat_Rm*A_Rm
-
-    inputs["H_Rm"] = result_stats(H_Rm)
-    inputs["A_Rm"] = result_stats(A_Rm)
-    inputs["window_area"] = result_stats(window_area)
-
-    t_max = params.room_type2t_max[room_type]
-
-    return H_Rm, A_Rm, window_area, t_max
-
-def occupancy_parameters(room_type, inputs, NrAdu = None, ActAdu = None, NrKids = None, ActKid = None, AgeKid = None, size = 1000):
-    AgeKid = fixed_or_beta_scaled(room_type, params.raumart2AgeKid, AgeKid, size)
-
-    ActKid = fixed_or_beta_scaled(room_type, params.raumart2ActKid, ActKid, size=size)
-    NrKids = np.round(fixed_or_beta_scaled(room_type, params.raumart2Nr_Kid, NrKids, size=size))
-    ActAdu = fixed_or_beta_scaled(room_type, params.raumart2ActAdu, ActAdu,size=size)
-    NrAdu = np.round(fixed_or_beta_scaled(room_type, params.raumart2Nr_Adu, NrAdu,size=size))
-
-    inputs["AgeKid"] = result_stats(AgeKid)
-    inputs["ActKid"] = result_stats(ActKid)
-    inputs["NrKids"] = result_stats_integer(NrKids)
-    inputs["ActAdu"] = result_stats(ActAdu)
-    inputs["NrAdu"] = result_stats_integer(NrAdu)
-
-    return NrAdu, ActAdu, NrKids, ActKid, AgeKid
 
 def stack_effect_factor(Ti_avg,R,X,H_stack):
     fs =((1+R/2)/3)*(1-X**2/(2-R)**2)**(3/2)*(9.81*H_stack/(Ti_avg+273))
@@ -306,51 +132,6 @@ def MouldRisk(fRSI,H2Oemi,Vdot_tot,Vdot_inf,Ti,Ti_min,Ta,Ta_damped,rH_a,v_10m,fs
     MR=np.count_nonzero(aw > aw_limit)/aw.size
     return MR,ELA_add,Vdot_add,Frac_Inf_insuff,Vdot_req_tot,aw
 
-def airing_room(airing_type_room, inputs, airing_duration_room, size):
-
-    ACH_airing_room = beta_scaled(*params.luefungsart2WinACH[airing_type_room],size=size)
-    airing_duration_room = fixed_or_beta_scaled(airing_type_room, params.luefungsart2WinDur, airing_duration_room, size=size)
-    inputs["airing_duration_room"] = result_stats(airing_duration_room)
-
-    return ACH_airing_room, airing_duration_room
-
-def airing_home(airing_type_home, inputs, airing_duration_home, size):
-    ACH_airing_home = beta_scaled(*params.luefungsart2WinACH[airing_type_home],size=size)
-    airing_duration_home = fixed_or_beta_scaled(airing_type_home, params.luefungsart2WinDur2, airing_duration_home,size=size)
-    inputs["airing_duration_home"] = result_stats(airing_duration_home)
-
-    return ACH_airing_home, airing_duration_home
-
-def H2O_sources(H2Osource_category, inputs, H2Osource_area_abs, H2Osource_area, H2Osource_pers, size):
-    source_category_min_max = [0,1] if H2Osource_category is None else params.Feuchtelastkategorie[H2Osource_category]
-
-    H2Osource_area_abs = fixed_or_beta_scaled_range(
-        "Quellstärke [g/h] Wohnen bei Abwesenheit",
-        params.m_H2Od0,
-        *source_category_min_max,
-        H2Osource_area_abs,
-        size
-    )
-    H2Osource_area = fixed_or_beta_scaled_range(
-        "Quellstärke [g/h] Wohnen Flächenabhängig",
-        params.m_H2Od,
-        *source_category_min_max,
-        H2Osource_area,
-        size
-    )
-    H2Osource_pers = fixed_or_beta_scaled_range(
-        "Quellstärke [g/h] Wohnen PersABH",
-        params.m_H2Ok,
-        *source_category_min_max,
-        H2Osource_pers,
-        size
-    )
-    inputs["H2Osource_area_abs"] = result_stats(H2Osource_area_abs)
-    inputs["H2Osource_area"] = result_stats(H2Osource_area)
-    inputs["H2Osource_pers"] = result_stats(H2Osource_pers)
-
-    return H2Osource_area_abs, H2Osource_area, H2Osource_pers
-
 def H2O_emission(H2Osource_area_abs, H2Osource_area, H2Osource_pers, area_home, pers_home):
     H2Oemi_abs = H2Osource_area_abs * area_home * 24 / 1000
     H2Oemi_pre = (H2Osource_area * area_home + H2Osource_pers * pers_home) * 24 / 1000
@@ -374,24 +155,24 @@ def humidity_calculation(Vol_Unit, n50_Unit, fRSI, H2Oemi_abs, H2Oemi_pre, Ti_av
     Vdot_Inf = Infiltration(Ti_avg,T_a,fs,fw,n50_Unit,Vol_Unit,v_10m)
     Vdot_Win = ACH_airing_home*airing_duration_home/60/24*Vol_Unit
     Vdot_Tot=Vdot_Inf+Vdot_Win+Vdot_add
-    result["Vdot_Inf"] = result_stats(Vdot_Inf)
-    result["Vdot_Tot"] = result_stats(Vdot_Tot)
+    result["Vdot_Inf"] = helper.result_stats(Vdot_Inf)
+    result["Vdot_Tot"] = helper.result_stats(Vdot_Tot)
 
     #mould risk calculation: absence
     MouldRisk_abs,ELA_acc_abs,Vdot_acc_abs,Frac_Inf_insuff_abs,Vdot_req_abs,aw_abs=MouldRisk(fRSI,H2Oemi_abs,Vdot_Tot-Vdot_Win,Vdot_Inf,Ti_avg,Ti_abs,T_a,Ta_damped,rH_a,v_10m,fs,fw,aw_limit,Perc_accept)
     result["MouldRisk_abs"] = MouldRisk_abs
-    result["Vdot_req_abs"] = result_stats(Vdot_req_abs)
+    result["Vdot_req_abs"] = helper.result_stats(Vdot_req_abs)
     result["Frac_Inf_insuff_abs"] = Frac_Inf_insuff_abs
-    result["Vdot_acc_abs"] = signif(Vdot_acc_abs,2)
-    result["ELA_acc_abs"] = signif(ELA_acc_abs,2)
+    result["Vdot_acc_abs"] = helper.signif(Vdot_acc_abs,2)
+    result["ELA_acc_abs"] = helper.signif(ELA_acc_abs,2)
 
     #mould risk calculation: presence
     MouldRisk_pre,ELA_acc_pre,Vdot_acc_pre,Frac_Inf_insuff_pre,Vdot_req_pre,aw_pre=MouldRisk(fRSI,H2Oemi_pre,Vdot_Tot,Vdot_Inf,Ti_avg,Ti_min,T_a,Ta_damped,rH_a,v_10m,fs,fw,aw_limit,Perc_accept)
     result["MouldRisk_pre"] = MouldRisk_pre
-    result["Vdot_req_pre"] = result_stats(Vdot_req_pre)
+    result["Vdot_req_pre"] = helper.result_stats(Vdot_req_pre)
     result["Frac_Inf_insuff_pre"] = Frac_Inf_insuff_pre
-    result["Vdot_acc_pre"] = signif(Vdot_acc_pre,2)
-    result["ELA_acc_pre"] = signif(ELA_acc_pre,2)
+    result["Vdot_acc_pre"] = helper.signif(Vdot_acc_pre,2)
+    result["ELA_acc_pre"] = helper.signif(ELA_acc_pre,2)
 
     Vdot_req = Vdot_req_abs+Vdot_req_pre
     LWR_Tot = Vdot_Tot/Vol_Unit
@@ -425,7 +206,7 @@ def humidity_calculation(Vol_Unit, n50_Unit, fRSI, H2Oemi_abs, H2Oemi_pre, Ti_av
         result["plot"][i]["y"] = [hist_aw]
 
     result["MouldRisk"] = np.max([MouldRisk_abs,MouldRisk_pre])
-    result["Vdot_acc"] = signif(np.max([Vdot_acc_abs,Vdot_acc_pre]),2)
+    result["Vdot_acc"] = helper.signif(np.max([Vdot_acc_abs,Vdot_acc_pre]),2)
 
     return result
 
@@ -506,13 +287,13 @@ def co2_calculation(
     result = {
         "airing_acceptable": Fensterlueftung,
         "t_reasonable": t_reasonable,
-        "t_avgC_realC0": result_stats(t_gw_erreicht*60),
-        "t_instC_realC0": result_stats(t_gw_periodisch*60),
-        "t_avgC_idealC0": result_stats(t_gw_ueberschritten*60),
-        "t_instC_idealC0": result_stats(t_gw_ideal*60),
-        "Vdot": result_stats(Vdot),
-        "ACR": result_stats(LWR),
-        "CO2_stat": result_stats(C_stat),
+        "t_avgC_realC0": helper.result_stats(t_gw_erreicht*60),
+        "t_instC_realC0": helper.result_stats(t_gw_periodisch*60),
+        "t_avgC_idealC0": helper.result_stats(t_gw_ueberschritten*60),
+        "t_instC_idealC0": helper.result_stats(t_gw_ideal*60),
+        "Vdot": helper.result_stats(Vdot),
+        "ACR": helper.result_stats(LWR),
+        "CO2_stat": helper.result_stats(C_stat),
         "plot": {
             "t_avgC_realC0": stats_data_gw_erreicht,
             "t_instC_realC0": stats_data_gw_periodisch,
