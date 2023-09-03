@@ -245,3 +245,45 @@ OccDens = {
     "Apartmentblock":[2,4,15,80],
 }
 OccDens_list = list(OccDens.keys())
+
+params_mapping = {
+    "location":{
+        "values":location_list,
+        "default":"Wien",
+    },
+    "building_type":{
+        "values":buiding_type_list,
+        "default":"Mehrfamilienhaus",
+    },
+    "room_type":{
+        "values":room_type_list,
+        "default":"Schlafzimmer",
+    },
+    "airing_type_room":{
+        "values":airing_type_list,
+        "default":"Querlüftung",
+    },
+    "airing_type_home":{
+        "values":airing_type_list,
+        "default":"Querlüftung",
+    },
+    "building_n50":{
+        "values":n50_map_list,
+        "default":"Standard Neubau",
+    },
+    "thermalbridges":{
+        "values":waermebruecken_list,
+    },
+    "H2Osource_category":{
+        "values":Feuchtelastkategorie_list,
+    },
+    "terrain_class":{
+        "values":Terr_class_list,
+    },
+    "shielding_class":{
+        "values":Shield_class_list,
+    },
+    "window_class":{
+        "values":window_class_list,
+    },
+}

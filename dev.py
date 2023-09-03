@@ -1,8 +1,5 @@
 
-import lueftungstool.lib.calc as ltool
-import lueftungstool.lib.params_lookups as params_lookups
-import lueftungstool.lib.params as params
-import lueftungstool.lib.helper as helper
+import lueftungstool.lib.calc2 as calc2
 
 def format_quantile(quantile):
     return f"<{quantile[0]}|{quantile[2]}|{quantile[4]}>"
@@ -20,169 +17,26 @@ if __name__ == "__main__":
     quantiles = [0.05, 0.25, 0.5, 0.75, 0.95]
     size = 1000
     signDig=2   #tbd add to a settings dict
-    room_type = "Schlafzimmer"
-    location = "Wien"
-    building_n50 = "Standard Neubau"
-    building_type = "Mehrfamilienhaus"
-    airing_type_room = "Querlüftung"
-    airing_type_home = "Querlüftung"
 
-    inputs = {}
-
-    NrAdu, ActAdu, NrKids, ActKid, AgeKid = params_lookups.occupancy_parameters(
-        room_type = room_type,
-        inputs = inputs,
-        size = size
-    )
-
-    CO2_Emi = ltool.co2_emission(NrAdu, ActAdu, NrKids, ActKid, AgeKid)
-
-    H_Rm, A_Rm, window_area, t_max = params_lookups.Raum(
-        room_type = room_type,
-        inputs = inputs,
-        quantiles = quantiles,
-        size = size
-    )
-
-    T_a, v_10m, rH_a = params_lookups.weather(location)
-    C, alfa, gama = params_lookups.calc_lage(
-        location = location,
-        inputs = inputs,
-        Shield = None,
-        Terr = None,
-        quantiles = quantiles,
-        size = size
-    )
-
-    H_wind, H_stack = params_lookups.calc_LBL_model_factors(
-        building_n50 = building_n50,
-        building_type = building_type,
-        size = size
-    )
-
-    n50,air_permeability = params_lookups.building_standard(
-        building_n50 = building_n50,
-        inputs = inputs,
-        window_class = None,
-        size = size
-    )
-
-    thermalbridges = params_lookups.building_standard2thermalbridges(
-        building_n50 = building_n50,
-        inputs = inputs,
-        thermalbridges = None,
-    )
-
-    Ti_avg, Ti_min, Ti_abs, fRSI = params_lookups.calc_temperatures(
-        thermalbridges = thermalbridges,
-        inputs = inputs,
-        Ti_avg = None,
-        Ti_min = None,
-        Ti_abs = None,
-        fRSI = None,
-        size = size
-    )
-
-    Fn50 = params_lookups.n50factor(size)
-
-    n50_room = ltool.n50room(
-        n50 = n50,
-        Fn50 = Fn50,
-        air_permeability = air_permeability,
-        window_area = window_area,
-        A_Rm = A_Rm,
-        H_Rm = H_Rm,
-    )
-
-    ACH_airing_room, airing_duration_room = params_lookups.airing_room(
-        airing_type_room = airing_type_room,
-        inputs = inputs,
-        airing_duration_room = None,
-        size = size
-    )
-
-    R, X = params_lookups.Undichtheiten(size)
-    fs = ltool.stack_effect_factor(Ti_avg,R,X,H_stack)
-    fw = ltool.wind_factor(C,alfa,gama,H_wind,R)
-
-    result = {
-        "inputs": inputs,
+    args = {
+        "room_type": "Schlafzimmer",
+        "location": "Wien",
+        "building_n50": "Standard Neubau",
+        "building_type": "Mehrfamilienhaus",
     }
-    result["ResCO2"] = ltool.co2_calculation(
-        n50_room = n50_room,
-        T_a = T_a,
-        v_10m = v_10m,
-        fs = fs,
-        fw = fw,
-        t_max = t_max,
-        volume_room = A_Rm*H_Rm,
-        ACH_airing_room = ACH_airing_room,
-        airing_duration_room = airing_duration_room,
-        Ti_avg = Ti_avg,
-        CO2_Emi = CO2_Emi,
-        quantiles = quantiles,
-        size = size
-    )
 
-    if building_type in params.WNF_list:
-        humcalc = True
-    else:
-        humcalc = False
-
-    if humcalc:
-        area_home, pers_home = params_lookups.H2Oonlyparams(
-            building_type = building_type,
-            inputs = inputs,
-            area_home = None,
-            pers_home = None,
-            size = size
-        )
-
-        H2Osource_area_abs, H2Osource_area, H2Osource_pers = params_lookups.H2O_sources(
-            H2Osource_category = None,
-            inputs = inputs,
-            H2Osource_area_abs = None,
-            H2Osource_area = None,
-            H2Osource_pers = None,
-            size = size,)
-        H2Oemi_abs, H2Oemi_pre = ltool.H2O_emission(H2Osource_area_abs, H2Osource_area, H2Osource_pers, area_home, pers_home)
-        inputs["H2Osource_category"] = helper.result_stats(H2Oemi_pre)
-
-        ACH_airing_home, airing_duration_home = params_lookups.airing_home(
-            airing_type_home = airing_type_home,
-            inputs = inputs,
-            airing_duration_home = None,
-            size = size
-        )
-
-        result["ResH2O"] = ltool.humidity_calculation(
-            Vol_Unit = H_Rm * area_home,
-            n50_Unit = n50_room,
-            fRSI = fRSI,
-            H2Oemi_abs = H2Oemi_abs,
-            H2Oemi_pre = H2Oemi_pre,
-            Ti_avg = Ti_avg,
-            Ti_abs = Ti_abs,
-            Ti_min = Ti_min,
-            T_a = T_a,
-            v_10m = v_10m,
-            rH_a = rH_a,
-            fs = fs,
-            fw = fw,
-            ACH_airing_home = ACH_airing_home,
-            airing_duration_home = airing_duration_home,
-        )
+    result = calc2.calc(args,size)
 
     print("#Eingaben Gebäude/Raum")
-    print("Standort:".ljust(75), "?")
-    print("Gebäudeart:".ljust(75), "?")
+    print("Standort:".ljust(75), result["inputs"]["location"])
+    print("Gebäudeart:".ljust(75), result["inputs"]["building_type"])
     print_row_mean("Luftdichtigkeit n50-Wert (Gebäude) [1/h]:".ljust(75), result["inputs"]["building_n50"])
-    print("Raumart (betrachteter Raum):".ljust(75), "?")
+    print("Raumart (betrachteter Raum):".ljust(75), result["inputs"]["room_type"])
     print_row_mean("Fläche (betrachteter Raum) [m²]:".ljust(75), result["inputs"]["A_Rm"])
     print_row_mean("Höhe (betrachteter Raum) [m]:".ljust(75), result["inputs"]["H_Rm"])
     print_row_mean("Fläche öffenbare Fenster (betrachteter Raum) [m²]:".ljust(75), result["inputs"]["window_area"])
     print_row_integer("Fensterklasse nach EN12207 (betrachteter Raum)".ljust(75), result["inputs"]["window_class"])
-    print("Lüftungsmöglichkeit (betrachteter Raum):".ljust(75), "?")
+    print("Lüftungsmöglichkeit (betrachteter Raum):".ljust(75), result["inputs"]["airing_type_room"])
     print_row_mean("Lüftungsdauer pro Lüftungsvorgang [min]:".ljust(75), result["inputs"]["airing_duration_room"])
     print_row_integer("Gelände-/Terrainklasse (Windeinfluss)".ljust(75), result["inputs"]["terrain_class"])
     print_row_integer("Abschirmung-/Shieldingklasse (Windeinfluss)".ljust(75), result["inputs"]["shielding_class"])
@@ -221,7 +75,7 @@ if __name__ == "__main__":
         print_row_mean("Feuchtequellstärke pro m² bei Abwesenheit [g/(hm²)]".ljust(75), result["inputs"]["H2Osource_area_abs"])
         print_row_mean("Fläche gesamte Wohneinheit [m²]:".ljust(75), result["inputs"]["area_home"])
         print_row_mean("Personenanzahl (gesamter Wohneinheit):".ljust(75), result["inputs"]["pers_home"])
-        print("Lüftungsmöglichkeit (gesamte Wohneinheit):".ljust(75), "?")
+        print("Lüftungsmöglichkeit (gesamte Wohneinheit):".ljust(75), result["inputs"]["airing_type_home"])
         print_row_mean("Lüftungsdauer gesamt, z.B. morgens und abends [min/Tag]:".ljust(75), result["inputs"]["airing_duration_home"])
         print_row_mean("Mittlere Raumtemperatur in gesamten Wohneinheit [°C]:".ljust(75), result["inputs"]["Ti_avg"])
         print_row_mean("Raumtemperatur im kühlsten Raum [°C]:".ljust(75), result["inputs"]["Ti_min"])
