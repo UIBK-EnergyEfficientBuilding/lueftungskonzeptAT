@@ -1,4 +1,4 @@
 numpy
-Flask
+Flask >=2, <3
 flask_restx
 scipy

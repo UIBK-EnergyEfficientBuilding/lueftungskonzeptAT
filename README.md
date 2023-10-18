@@ -10,7 +10,7 @@ pip install -r requirements.txt
 # setup dev env with conda
 
 ```
-conda install -c conda-forge flask
+conda install -c conda-forge flask >=2, <3
 conda install -c conda-forge numpy
 conda install -c conda-forge scipy
 conda install -c conda-forge flask-restx
