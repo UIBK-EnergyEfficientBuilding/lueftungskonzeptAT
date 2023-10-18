@@ -167,6 +167,17 @@ room_type2t_max = {
 }
 room_type_list = ["Schlafzimmer", "Wohnzimmer"]
 
+activity_level = {
+    "Ruhend": 0.8,
+    "Sitzend entspannt": 1,
+    "Sitzende Tätigkeit": 1.2,
+    "Stehend Entspannt": 1.2,
+    "Stehende Tätigkeit": 1.3,
+    "Mäßige körp. Tätikeit": 1.5,
+    "Workout": 3,
+}
+activity_level_list = list(activity_level.keys())
+
 luefungsart2WinACH = {
     "Querlüftung":[3,3,10,30],
     "Einseitige Fensterfront":[3,3,5,15],
@@ -285,5 +296,11 @@ params_mapping = {
     },
     "window_class":{
         "values":window_class_list,
+    },
+    "ActLevelAdu":{
+        "values":activity_level_list,
+    },
+    "ActLevelKid":{
+        "values":activity_level_list,
     },
 }

@@ -94,6 +94,11 @@ calculation_parameter_model = namespace.model('CalculationParameter', {
         required=False,
         description="Aktivität Erwachsene [met]",
     ),
+    'ActLevelAdu': fields.String(
+        required=False,
+        enum=params_mapping["ActLevelAdu"]["values"],
+        description="Aktivitäts Level Erwachsene [met]",
+    ),
     'NrKids': fields.Float(
         required=False,
         description="Anzahl Kinder",
@@ -101,6 +106,11 @@ calculation_parameter_model = namespace.model('CalculationParameter', {
     'ActKid': fields.Float(
         required=False,
         description="Aktivität Kinder [met]",
+    ),
+    'ActLevelKid': fields.String(
+        required=False,
+        enum=params_mapping["ActLevelKid"]["values"],
+        description="Aktivitäts Level Kinder [met]",
     ),
     'AgeKid': fields.Float(
         required=False,
@@ -338,8 +348,10 @@ inputs_result_model  = namespace.model('InputsResult', {
 
     'NrAdu': fields.Nested(result_stats_integer_model),
     'ActAdu': fields.Nested(result_stats_float_model),
+    'ActLevelAdu': fields.String(),
     'NrKids': fields.Nested(result_stats_integer_model),
     'ActKid': fields.Nested(result_stats_float_model),
+    'ActLevelKid': fields.String(),
     'AgeKid': fields.Nested(result_stats_float_model),
 
     'H2Osource_category': fields.Nested(result_stats_float_model),

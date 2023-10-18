@@ -146,6 +146,23 @@ def Raum(room_type, inputs, quantiles, H_Rm = None, A_Rm = None, window_area = N
 
     return H_Rm, A_Rm, window_area, t_max
 
+def activity_parameters(activity_level_adu, activity_level_kid, inputs, ActAdu = None, ActKid = None):
+
+    if activity_level_adu:
+        ActAdu = params.activity_level[activity_level_adu]
+    else:
+        activity_level_adu = "" # HACK
+
+    if activity_level_kid:
+        ActKid = params.activity_level[activity_level_kid]
+    else:
+        activity_level_kid = "" # HACK
+
+    inputs["ActLevelAdu"] = activity_level_adu
+    inputs["ActLevelKid"] = activity_level_kid
+
+    return ActAdu, ActKid
+
 def occupancy_parameters(room_type, inputs, NrAdu = None, ActAdu = None, NrKids = None, ActKid = None, AgeKid = None, size = 1000):
     AgeKid = fixed_or_beta_scaled(room_type, params.raumart2AgeKid, AgeKid, size)
 

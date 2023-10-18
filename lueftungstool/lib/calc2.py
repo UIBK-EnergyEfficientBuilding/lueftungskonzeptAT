@@ -21,13 +21,21 @@ def calc(args,size):
     for field in params_mapping:
         inputs[field] = args.get(field)
 
+    ActAdu, ActKid = params_lookups.activity_parameters(
+        activity_level_adu = args.get('ActLevelAdu'),
+        activity_level_kid = args.get('ActLevelKid'),
+        inputs = inputs,
+        ActAdu = args.get('ActAdu'),
+        ActKid = args.get('ActKid'),
+    )
+
     NrAdu, ActAdu, NrKids, ActKid, AgeKid = params_lookups.occupancy_parameters(
         room_type = args['room_type'],
         inputs = inputs,
         NrAdu = args.get('NrAdu'),
-        ActAdu = args.get('ActAdu'),
+        ActAdu = ActAdu,
         NrKids = args.get('NrKids'),
-        ActKid = args.get('ActKid'),
+        ActKid = ActKid,
         AgeKid = args.get('AgeKid'),
         size = size
     )
