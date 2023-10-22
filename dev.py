@@ -21,7 +21,6 @@ if __name__ == "__main__":
     signDig=2   #tbd add to a settings dict
 
     args = {
-        "room_type": "Schlafzimmer",
         "location": "Wien",
         "building_n50": "Standard Neubau",
         "building_type": "Mehrfamilienhaus",

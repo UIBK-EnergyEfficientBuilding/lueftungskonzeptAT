@@ -10,7 +10,7 @@ def calc(args,size):
     quantiles = [0.05, 0.25, 0.5, 0.75, 0.95]
 
     #add defaults to args
-    for arg in ["airing_type_room", "airing_type_home"]:
+    for arg in ["room_type", "airing_type_room", "airing_type_home"]:
         if arg not in args or args[arg] is None:
             args[arg] = params_mapping[arg]["default"]
 

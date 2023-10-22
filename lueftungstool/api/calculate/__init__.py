@@ -52,8 +52,8 @@ calculation_parameter_model = namespace.model('CalculationParameter', {
         required=False,
         description="Fläche (betrachteter Raum) [m²]:",
     ),
-    'room_type': fields.String(default=params_mapping["room_type"]["default"],
-        required=True,
+    'room_type': fields.String(
+        required=False,
         enum=params_mapping["room_type"]["values"],
         description="Raumart (betrachteter Raum):",
     ),
