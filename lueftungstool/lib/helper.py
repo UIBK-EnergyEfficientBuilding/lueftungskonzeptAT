@@ -15,6 +15,6 @@ def result_stats(value,precision=2):
     q = signif(q,precision)
     return {"mean": mean, "error": error, "median":q[2], "quantiles":q}
 
-def result_stats_integer(value,precision=2):
+def result_stats_integer(value):
     q = np.quantile(value,[0.05, 0.25, 0.5, 0.75, 0.95])
-    return {"min": np.min(value), "max": np.max(value), "quantiles":signif(q,precision)}
+    return {"min": np.min(value), "max": np.max(value), "quantiles":q.astype(int)}
