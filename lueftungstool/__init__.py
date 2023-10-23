@@ -1,9 +1,16 @@
-from flask import Flask
 from lueftungstool.api import blueprint as api
 
+from flask_openapi3 import OpenAPI, Info
+
 def create_app():
-    app = Flask(__name__)
-    app.register_blueprint(api)
+    info = Info(
+        title='Lüftungskonzept REST api',
+        version='0.1-dev',
+        description='Lüftungskonzept REST api',
+    )
+    app = OpenAPI(__name__, info=info)
+    app.register_api(api)
+    print(app.url_map)
     return app
 
 if __name__ == "__main__":

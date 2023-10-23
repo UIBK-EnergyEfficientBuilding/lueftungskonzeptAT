@@ -8,7 +8,7 @@ setup(
     install_requires=[
         'numpy',
         'Flask >=2, <3',
-        'flask_restx',
+        'flask-openapi3',
         'scipy',
     ],
 )
