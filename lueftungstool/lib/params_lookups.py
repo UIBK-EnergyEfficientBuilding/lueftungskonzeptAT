@@ -146,20 +146,13 @@ def Raum(room_type, inputs, quantiles, H_Rm = None, A_Rm = None, window_area = N
 
     return H_Rm, A_Rm, window_area, t_max
 
-def activity_parameters(activity_level_adu, activity_level_kid, inputs, ActAdu = None, ActKid = None):
+def activity_parameters(ActAdu, ActKid):
 
-    if activity_level_adu:
-        ActAdu = params.activity_level[activity_level_adu]
-    else:
-        activity_level_adu = "" # HACK
+    if ActAdu and not isinstance(ActAdu, float):
+        ActAdu = params.activity_level[ActAdu]
 
-    if activity_level_kid:
-        ActKid = params.activity_level[activity_level_kid]
-    else:
-        activity_level_kid = "" # HACK
-
-    inputs["ActLevelAdu"] = activity_level_adu
-    inputs["ActLevelKid"] = activity_level_kid
+    if ActKid and not isinstance(ActKid, float):
+        ActKid = params.activity_level[ActKid]
 
     return ActAdu, ActKid
 

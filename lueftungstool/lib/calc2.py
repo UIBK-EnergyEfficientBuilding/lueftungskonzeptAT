@@ -22,9 +22,6 @@ def calc(args,size):
         inputs[field] = args.get(field)
 
     ActAdu, ActKid = params_lookups.activity_parameters(
-        activity_level_adu = args.get('ActLevelAdu'),
-        activity_level_kid = args.get('ActLevelKid'),
-        inputs = inputs,
         ActAdu = args.get('ActAdu'),
         ActKid = args.get('ActKid'),
     )

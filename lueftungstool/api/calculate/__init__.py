@@ -2,6 +2,8 @@
 import lueftungstool.lib.calc2 as calc2
 from lueftungstool.lib.params import params_mapping
 
+from typing import Literal
+
 from http import HTTPStatus
 from pydantic import BaseModel, Field
 from flask import make_response
@@ -38,14 +40,9 @@ class CalculationParameter(BaseModel):
                                         description="Abschirmung-/Shieldingklasse (Windeinfluss)")
 
     NrAdu: float | None = Field(None, description="Anzahl Erwachsene")
-    ActAdu: float | None = Field(None, description="Aktivität Erwachsene [met]")
-    ActLevelAdu: str | None = Field(
-        None, enum=params_mapping["ActLevelAdu"]["values"], description="Aktivitäts Level Erwachsene [met]")
+    ActAdu: float | Literal[*params_mapping["ActAdu"]["values"]] | None = Field(None, description="Aktivität Erwachsene [met]")
     NrKids: float | None = Field(None, description="Anzahl Kinder")
-    ActKid: float | None = Field(None, description="Aktivität Kinder [met]",)
-    ActLevelKid: str | None = Field(
-        None, enum=params_mapping["ActLevelKid"]["values"], description="Aktivitäts Level Kinder [met]"
-    )
+    ActKid: float | Literal[*params_mapping["ActAdu"]["values"]] | None = Field(None, description="Aktivität Kinder [met]")
     AgeKid: float | None = Field(None, description="Mittleres Alter der Kinder [a]")
 
     H2Osource_category: str | None = Field(
@@ -165,10 +162,8 @@ class InputsResultModel(BaseModel):
 
     NrAdu: ResultStatsInteger
     ActAdu: ResultStatsFloat
-    ActLevelAdu: str
     NrKids: ResultStatsInteger
     ActKid: ResultStatsFloat
-    ActLevelKid: str
     AgeKid: ResultStatsFloat
 
     H2Osource_category: ResultStatsFloat | None = Field(None)
@@ -222,8 +217,8 @@ class ParameterResults(BaseModel):
     terrain_class: ParameterResult
     shielding_class: ParameterResult
     window_class: ParameterResult
-    ActLevelAdu: ParameterResult
-    ActLevelKid: ParameterResult
+    ActAdu: ParameterResult
+    ActKid: ParameterResult
 
 
 @namespace.get('/params',

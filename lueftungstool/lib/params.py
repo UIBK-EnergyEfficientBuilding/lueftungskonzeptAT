@@ -297,10 +297,10 @@ params_mapping = {
     "window_class":{
         "values":window_class_list,
     },
-    "ActLevelAdu":{
+    "ActAdu":{
         "values":activity_level_list,
     },
-    "ActLevelKid":{
+    "ActKid":{
         "values":activity_level_list,
     },
 }
