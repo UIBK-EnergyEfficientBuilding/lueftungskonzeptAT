@@ -1,22 +1,23 @@
 
-from flask_restx import fields
+import typing
 
-from lueftungstool.api.calculate import calculation_parameter_model, inputs_result_model
+from lueftungstool.api.calculate import CalculationParameter, InputsResultModel
 from tests.api_base import MyTestCase
 
 
 class ApiParams(MyTestCase):
+
     def test_verify_calculation_parameters_are_present_at_params_endpoint(self):
         with self.app.test_request_context(f'/api/calculate/params', method='GET'):
             res = self.app.full_dispatch_request()
             self.assertTrue(res.status_code == 200, res.json)
-            a = [field for field,item in calculation_parameter_model.items() if isinstance(item, fields.String)]
+            a = [field for field,item in CalculationParameter.model_fields.items() if str in typing.get_args(item.annotation) or item.annotation == str or field in ["ActAdu", "ActKid"]]
             print(a)
             self.assertCountEqual(a, res.json.keys())
 
 class ApiCalculation(MyTestCase):
     def test_verify_all_input_fields_are_present_in_results(self):
-        self.assertCountEqual(calculation_parameter_model.keys(), inputs_result_model.keys())
+        self.assertCountEqual(CalculationParameter.model_fields.keys(), InputsResultModel.model_fields.keys())
 
     def test_building_type_without_H2O_calculation(self):
         with self.app.test_request_context(

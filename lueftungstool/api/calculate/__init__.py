@@ -221,7 +221,7 @@ class ParameterResults(BaseModel):
     ActKid: ParameterResult
 
 
-@namespace.get('/params',
+@namespace.get('/calculate/params',
                responses={
                    HTTPStatus.OK: ParameterResults,
                })
