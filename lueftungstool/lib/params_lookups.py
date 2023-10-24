@@ -143,8 +143,9 @@ def Raum(room_type, inputs, quantiles, H_Rm = None, A_Rm = None, window_area = N
     inputs["window_area"] = helper.result_stats(window_area)
 
     t_max = params.room_type2t_max[room_type]
+    CO2_Grenzwert = params.room_type2CO2_Grenzwert[room_type]
 
-    return H_Rm, A_Rm, window_area, t_max
+    return H_Rm, A_Rm, window_area, t_max, CO2_Grenzwert
 
 def activity_parameters(ActAdu, ActKid):
 

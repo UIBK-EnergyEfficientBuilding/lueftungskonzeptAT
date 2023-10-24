@@ -211,7 +211,7 @@ def humidity_calculation(Vol_Unit, n50_Unit, fRSI, H2Oemi_abs, H2Oemi_pre, Ti_av
     return result
 
 def co2_calculation(
-        n50_room, T_a, v_10m, fs, fw, t_max, volume_room, ACH_airing_room, airing_duration_room, Ti_avg, CO2_Emi, quantiles, size = 1000
+        n50_room, T_a, v_10m, fs, fw, t_max, volume_room, ACH_airing_room, airing_duration_room, Ti_avg, CO2_Emi, CO2_Grenzwert, quantiles, size = 1000
     ):
 
     Vdot_const = 0  # allow for user entry
@@ -221,8 +221,7 @@ def co2_calculation(
     LWR = Vdot/volume_room
 
     CO2_aussen = 450
-    CO2_Grenzwert = 1000
-    CO2_Grenzwert2 = 1250 #? CA
+    CO2_Grenzwert2 = {1000:1250,1400:1745}[CO2_Grenzwert] #? MC2.CA4 1250 1745 #FIXME
 
     C_stat = (Vdot*CO2_aussen/1e6+CO2_Emi/1000)/Vdot*1e6
     C0, C0__GWfix = Lueften(

@@ -39,7 +39,7 @@ def calc(args,size):
 
     CO2_Emi = ltool.co2_emission(NrAdu, ActAdu, NrKids, ActKid, AgeKid)
 
-    H_Rm, A_Rm, window_area, t_max = params_lookups.Raum(
+    H_Rm, A_Rm, window_area, t_max, CO2_Grenzwert = params_lookups.Raum(
         room_type = args['room_type'],
         inputs = inputs,
         quantiles = quantiles,
@@ -125,6 +125,7 @@ def calc(args,size):
         airing_duration_room = airing_duration_room, 
         Ti_avg = Ti_avg,
         CO2_Emi = CO2_Emi,
+        CO2_Grenzwert = CO2_Grenzwert,
         quantiles = quantiles,
         size = size
     )

@@ -167,6 +167,11 @@ room_type2t_max = {
 }
 room_type_list = ["Schlafzimmer", "Wohnzimmer"]
 
+room_type2CO2_Grenzwert = {
+    "Schlafzimmer": 1000,
+    "Wohnzimmer": 1400,
+}
+
 activity_level = {
     "Ruhend": 0.8,
     "Sitzend entspannt": 1,
