@@ -253,10 +253,15 @@ def co2_calculation(
     log_arg = (CO2_Grenzwert-C_stat)/(C0-C_stat)
     t_gw_periodisch = np.where(log_arg > 0, -np.log(log_arg)/LWR, t_max)
 
+    n_i = np.array([np.arange(1, n_max+1)]*size).T
+    t_i = t_max*n_i/n_max
+    c_quantiles_gw_periodisch = np.quantile(t_c_inst(C0_avg2, C_stat, LWR, t_i),quantiles,axis=1).T
+    c_quantiles_t_gw_periodisch = np.arange(1, n_max+1)*t_max/n_max
+
     stats_data_gw_periodisch = calc_result(
         t_gw_periodisch,
-        c_quantiles_t_gw_erreicht, #todo
-        c_quantiles_gw_erreicht, #todo
+        c_quantiles_t_gw_periodisch,
+        c_quantiles_gw_periodisch,
         t_max,
     )
 
@@ -277,10 +282,15 @@ def co2_calculation(
     log_arg = (CO2_Grenzwert-C_stat)/(CO2_aussen-C_stat)
     t_gw_ideal = np.where(log_arg > 0, -np.log(log_arg)/LWR, t_max)
 
+    n_i = np.array([np.arange(1, n_max+1)]*size).T
+    t_i = t_max*n_i/n_max
+    c_quantiles_gw_ideal = np.quantile(t_c_inst(CO2_aussen, C_stat, LWR, t_i),quantiles,axis=1).T
+    c_quantiles_t_gw_ideal = np.arange(1, n_max+1)*t_max/n_max
+
     stats_data_gw_ideal = calc_result(
         t_gw_ideal,
-        c_quantiles_t_gw_erreicht, #todo
-        c_quantiles_gw_erreicht, #todo
+        c_quantiles_t_gw_ideal,
+        c_quantiles_gw_ideal,
         t_max,
     )
 

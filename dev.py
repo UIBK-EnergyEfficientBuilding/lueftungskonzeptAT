@@ -116,11 +116,14 @@ if __name__ == "__main__":
     for i in ["t_avgC_realC0", "t_instC_realC0", "t_avgC_idealC0", "t_instC_idealC0"]:
         plt.figure()
         plt.bar(result["ResCO2"]["plot"][i]["frequency"]["x"], result["ResCO2"]["plot"][i]["frequency"]["y"][0], width=60)
+        plt.grid(True)
         plt.savefig(f"ResCO2_frequency_{i}.png")
 
         plt.figure()
-        for j in range(0,len(quantiles)):
-            plt.plot(result["ResCO2"]["plot"][i]["timeseries"]["x"], result["ResCO2"]["plot"][i]["timeseries"]["y"][j])
+        for j,linestyle in zip(range(0,len(quantiles)),[":","--","-","--",":"]):
+            plt.plot(result["ResCO2"]["plot"][i]["timeseries"]["x"], result["ResCO2"]["plot"][i]["timeseries"]["y"][j], linestyle=linestyle, color="gray")
+        plt.ylim(0,3000)
+        plt.grid(True)
         plt.savefig(f"ResCO2_timeseries_{i}.png")
 
     if "ResH2O" in result:
@@ -129,6 +132,7 @@ if __name__ == "__main__":
             plt.bar(result["ResH2O"]["plot"][i]["x"], result["ResH2O"]["plot"][i]["y"][0],width=0.01)
             plt.ylabel(f"Häufigkeit (n={size})")
             plt.xlabel("aw Wert [-]")
+            plt.grid(True)
             plt.savefig(f"ResH2O_aw_{i}.png")
 
         for i,xlabel in zip(["Vdot", "ACR"],["Mittlerer Luftvolumenstrom [1/h]","Mittlere Luftwechselrate [1/h]"]):
@@ -138,6 +142,7 @@ if __name__ == "__main__":
             plt.legend()
             plt.ylabel(f"Häufigkeit (n={size})")
             plt.xlabel(xlabel)
+            plt.grid(True)
             plt.savefig(f"ResH2O_Airflows_{i}.png")
 
     if profile:
