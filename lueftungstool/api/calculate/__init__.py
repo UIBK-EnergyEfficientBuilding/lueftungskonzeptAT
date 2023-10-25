@@ -16,10 +16,10 @@ namespace = blueprint
 
 class CalculationParameter(BaseModel):
     location: str = Field(
-        params_mapping["location"]["default"], enum=params_mapping["location"]["values"], description="Standort")
+        example=params_mapping["location"]["default"], enum=params_mapping["location"]["values"], description="Standort")
     building_n50: str = Field(
-        params_mapping["building_n50"]["default"], enum=params_mapping["building_n50"]["values"], description="Luftdichtigkeit n50-Wert (Gebäude) [1/h]")
-    building_type: str = Field(params_mapping["building_type"]["default"],
+        example=params_mapping["building_n50"]["default"], enum=params_mapping["building_n50"]["values"], description="Luftdichtigkeit n50-Wert (Gebäude) [1/h]")
+    building_type: str = Field(example=params_mapping["building_type"]["default"],
                                enum=params_mapping["building_type"]["values"], description="Gebäudeart",)
     thermalbridges: str | None = Field(
         None, enum=params_mapping["thermalbridges"]["values"], description="Wärmebrücken")
