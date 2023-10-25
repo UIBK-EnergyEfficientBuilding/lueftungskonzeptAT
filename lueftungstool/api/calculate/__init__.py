@@ -40,9 +40,11 @@ class CalculationParameter(BaseModel):
                                         description="Abschirmung-/Shieldingklasse (Windeinfluss)")
 
     NrAdu: float | None = Field(None, description="Anzahl Erwachsene")
-    ActAdu: float | Literal[*params_mapping["ActAdu"]["values"]] | None = Field(None, description="Aktivität Erwachsene [met]")
+    ActAdu: float | Literal[*params_mapping["ActAdu"]["values"]
+                            ] | None = Field(None, description="Aktivität Erwachsene [met]")
     NrKids: float | None = Field(None, description="Anzahl Kinder")
-    ActKid: float | Literal[*params_mapping["ActAdu"]["values"]] | None = Field(None, description="Aktivität Kinder [met]")
+    ActKid: float | Literal[*params_mapping["ActAdu"]["values"]
+                            ] | None = Field(None, description="Aktivität Kinder [met]")
     AgeKid: float | None = Field(None, description="Mittleres Alter der Kinder [a]")
 
     H2Osource_category: str | None = Field(
