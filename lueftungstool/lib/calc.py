@@ -3,16 +3,21 @@ import numpy as np
 
 import lueftungstool.lib.helper as helper
 
+def t_c_cummean(C0,C_stat,LWR,t_i):
+    c_t=(C0-C_stat)/LWR/t_i*(1-np.exp(-LWR*t_i))+C_stat
+    return c_t
+
 def t_gw_calc(C0,C_stat,LWR,t_max,n_max,CO2_Grenzwert,quantiles,size):
     n_i = np.array([np.arange(1, n_max+1)]*size).T
-    c_t=(C0-C_stat)/LWR/(t_max*n_i/n_max)*(1-np.exp(-LWR*(t_max*n_i/n_max)))+C_stat
+    t_i = t_max*n_i/n_max
+    c_t=t_c_cummean(C0,C_stat,LWR,t_i)
     return np.argmax(c_t>CO2_Grenzwert,axis=0)*t_max/n_max, np.quantile(c_t,quantiles,axis=1).T
 
-def C0_calc(C0,C_stat,LWR,t):
-    return (C0-C_stat)*np.exp(-LWR*t/60)+C_stat
+def t_c_inst(C0,C_stat,LWR,t):
+    return (C0-C_stat)*np.exp(-LWR*t)+C_stat
 
 def C0_calc_clip(C0,C_stat,LWR,t):
-    return np.max([C0_calc(C0,C_stat,LWR,t),C_stat],axis=0)
+    return np.max([t_c_inst(C0,C_stat,LWR,t),C_stat],axis=0)
 
 def n50room(n50,Fn50,air_permeability,window_area,A_Rm,H_Rm):
     n50_window_room = air_permeability*(50/100)**(2/3)*window_area/(A_Rm*H_Rm)
@@ -225,7 +230,7 @@ def co2_calculation(
 
     C_stat = (Vdot*CO2_aussen/1e6+CO2_Emi/1000)/Vdot*1e6
     C0, C0__GWfix = Lueften(
-        ACH_airing_room,airing_duration_room,CO2_Emi,volume_room,CO2_aussen,CO2_Grenzwert,CO2_Grenzwert2,size
+        ACH_airing_room,airing_duration_room/60,CO2_Emi,volume_room,CO2_aussen,CO2_Grenzwert,CO2_Grenzwert2,size
     )
 
     n_max = 192
