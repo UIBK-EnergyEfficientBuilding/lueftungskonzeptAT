@@ -12,7 +12,8 @@ def t_gw_calc(C0,C_stat,LWR,t_max,n_max,CO2_Grenzwert,quantiles,size):
     n_i = np.array([np.arange(1, n_max+1)]*size).T
     t_i = t_max*n_i/n_max
     c_t=t_c_cummean(C0,C_stat,LWR,t_i)
-    return np.argmax(c_t>CO2_Grenzwert,axis=0)*t_max/n_max, np.quantile(c_t,quantiles,axis=1).T
+    a = c_t.shape[0] - np.argmin(c_t[::-1]>CO2_Grenzwert,axis=0)
+    return a*t_max/n_max, np.quantile(c_t,quantiles,axis=1).T
 
 def t_c_inst(C0,C_stat,LWR,t):
     return (C0-C_stat)*np.exp(-LWR*t)+C_stat
