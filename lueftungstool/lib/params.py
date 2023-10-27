@@ -139,7 +139,7 @@ raumart2H_Rm = {
 }
 raumart2Nr_Adu = {
     "Schlafzimmer":[2,2,1,2],
-    "Wohnzimmer":[2,3,1,2],
+    "Wohnzimmer":[2,3,1,4],
 }
 raumart2ActAdu = {
     "Schlafzimmer":[3,3,0.6,1],
@@ -147,7 +147,7 @@ raumart2ActAdu = {
 }
 raumart2Nr_Kid = {
     "Schlafzimmer":[1,10,0,3],
-    "Wohnzimmer":[1,5,1,4],
+    "Wohnzimmer":[2,3,1,4],
 }
 raumart2ActKid = {
     "Schlafzimmer":[3,3,0.6,1],
