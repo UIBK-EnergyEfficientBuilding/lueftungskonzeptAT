@@ -122,6 +122,11 @@ if __name__ == "__main__":
         plt.figure()
         for j,linestyle in zip(range(0,len(quantiles)),[":","--","-","--",":"]):
             plt.plot(result["ResCO2"]["plot"][i]["timeseries"]["x"], result["ResCO2"]["plot"][i]["timeseries"]["y"][j], linestyle=linestyle, color="gray")
+
+        x = result["ResCO2"]["plot"][i]["airing"]["x"]
+        y = result["ResCO2"]["plot"][i]["airing"]["y"][0]
+        plt.plot(x, y, color="green")
+
         plt.ylim(0,3000)
         plt.grid(True)
         plt.savefig(f"ResCO2_timeseries_{i}.png")

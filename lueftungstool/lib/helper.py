@@ -18,3 +18,8 @@ def result_stats(value,precision=2):
 def result_stats_integer(value):
     q = np.quantile(value,[0.05, 0.25, 0.5, 0.75, 0.95])
     return {"min": np.min(value), "max": np.max(value), "quantiles":q.astype(int)}
+
+def cum_mean(arr):
+    cum_sum = np.cumsum(arr, axis=0)
+    deno = np.arange(1,cum_sum.shape[0]+1)
+    return cum_sum/deno

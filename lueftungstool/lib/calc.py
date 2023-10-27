@@ -1,5 +1,6 @@
 
 import numpy as np
+from scipy.integrate import solve_ivp
 
 import lueftungstool.lib.helper as helper
 
@@ -15,6 +16,36 @@ def t_gw_calc(C0,C_stat,LWR,t_max,n_max,CO2_Grenzwert,quantiles,size):
 
 def t_c_inst(C0,C_stat,LWR,t):
     return (C0-C_stat)*np.exp(-LWR*t)+C_stat
+
+def t_c_inst_ode(t, c, c_a, Vdot1, Vdot2, V, ts, t1, t2, CO2_Emi):
+    Vdot = Vdot1
+
+    t0 = t-ts
+    if t0>0:
+        tt = t0 % (t1 + t2)
+        if tt>0:
+            Vdot = Vdot2
+        if tt-t1/t2 > 0:
+            Vdot = Vdot1
+
+    dcdt = ((c_a-c)/1e6*Vdot + CO2_Emi/1000)/V*1e6
+    return dcdt
+
+def t_c_inst_ode2(t, c, c_a, Vdot1, Vdot2, V, state, CO2_Emi, c_Grenzwert, epsilon_c):
+    if c[0] > c_Grenzwert:
+        state["lueften"] = True
+
+    Vdot = Vdot1
+    if state["lueften"]:
+        Vdot = Vdot2
+
+    dcdt = ((c_a-c)/1e6*Vdot + CO2_Emi/1000)/V*1e6
+
+    if state["lueften"] and abs(dcdt) < epsilon_c:
+        state["lueften"] = False
+
+    return dcdt
+
 
 def C0_calc_clip(C0,C_stat,LWR,t):
     return np.max([t_c_inst(C0,C_stat,LWR,t),C_stat],axis=0)
@@ -236,6 +267,14 @@ def co2_calculation(
     n_max = 192
     C0_avg2 = C0__GWfix #? CC #genähert
 
+    dt = t_max/n_max
+
+    volume_room_m = np.median(volume_room)
+    CO2_Emi_m = np.median(CO2_Emi)
+
+    Vdot1 = np.median(Vdot)
+    Vdot2 = np.median(ACH_airing_room)*volume_room_m
+
     #Stundenmittelwert - realistisches Lüften
     t_gw_erreicht, c_quantiles_gw_erreicht = t_gw_calc(
         C0_avg2,C_stat,LWR,t_max,n_max,CO2_Grenzwert,quantiles,size=size
@@ -248,6 +287,17 @@ def co2_calculation(
         c_quantiles_gw_erreicht,
         t_max,
     )
+
+    t1 = np.median(airing_duration_room)/60
+    t2 = np.median(t_gw_erreicht)
+    ts = t2
+
+    res = solve_ivp(t_c_inst_ode, [0,t_max], [np.median(C0_avg2)], args=(CO2_aussen, Vdot1, Vdot2, volume_room_m, ts, t1, t2, CO2_Emi_m), max_step=dt)
+
+    stats_data_gw_erreicht["airing"] = {
+            "x":res.t,
+            "y":[helper.cum_mean(res.y[0])]
+    }
 
     #Momentanwert - realistisches Lüften
     log_arg = (CO2_Grenzwert-C_stat)/(C0-C_stat)
@@ -265,6 +315,16 @@ def co2_calculation(
         t_max,
     )
 
+    t2 = np.median(t_gw_periodisch)
+    ts = t2
+    res = solve_ivp(t_c_inst_ode, [0,t_max], [np.median(C0_avg2)], args=(CO2_aussen, Vdot1, Vdot2, volume_room_m, ts, t1, t2, CO2_Emi_m), max_step=dt)
+
+    stats_data_gw_periodisch["airing"] = {
+            "x":res.t,
+            "y":[res.y[0]]
+    }
+
+
     #Stundenmittelwert - ideales Lüften
     t_gw_ueberschritten, c_quantiles_gw_ueberschritten = t_gw_calc(
         CO2_aussen,C_stat,LWR,t_max,n_max,CO2_Grenzwert,quantiles,size=size
@@ -277,6 +337,18 @@ def co2_calculation(
         c_quantiles_gw_ueberschritten,
         t_max,
     )
+
+
+    epsilon_c = 50
+    t2 = np.median(t_gw_ueberschritten)
+    ts = t2
+
+    res = solve_ivp(t_c_inst_ode2, [0,t_max], [CO2_aussen], args=(CO2_aussen, Vdot1, Vdot2, volume_room_m, {"lueften":False}, CO2_Emi_m, CO2_Grenzwert, epsilon_c), max_step=dt)
+
+    stats_data_gw_ueberschritten["airing"] = {
+            "x":res.t,
+            "y":[helper.cum_mean(res.y[0])]
+    }
 
     #Momentanwert - ideales Lüften
     log_arg = (CO2_Grenzwert-C_stat)/(CO2_aussen-C_stat)
@@ -293,6 +365,15 @@ def co2_calculation(
         c_quantiles_gw_ideal,
         t_max,
     )
+
+    t2 = np.median(t_gw_ideal)
+    ts = t2
+    res = solve_ivp(t_c_inst_ode2, [0,t_max], [CO2_aussen], args=(CO2_aussen, Vdot1, Vdot2, volume_room_m, {"lueften":False}, CO2_Emi_m, CO2_Grenzwert, epsilon_c), max_step=dt)
+
+    stats_data_gw_ideal["airing"] = {
+            "x":res.t,
+            "y":[res.y[0]]
+    }
 
     t_gw_erreicht_m = np.quantile(t_gw_erreicht,0.5)*60
     t_reasonable = t_max*60

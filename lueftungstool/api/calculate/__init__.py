@@ -71,6 +71,7 @@ class PlotData(BaseModel):
 class AiringResultData(BaseModel):
     frequency: PlotData = Field(description='Zeit bis Grenzwert erreicht - Häufigkeit')
     timeseries: PlotData = Field(description='CO2 Konzentration')
+    airing: PlotData = Field(description='CO2 Konzentration - Fenster offen')
 
 
 class MouldriskPlot(BaseModel):
