@@ -1,6 +1,7 @@
 
 import numpy as np
 from scipy.integrate import solve_ivp
+from scipy.interpolate import interp1d
 
 import lueftungstool.lib.helper as helper
 
@@ -295,9 +296,11 @@ def co2_calculation(
 
     res = solve_ivp(t_c_inst_ode, [0,t_max], [np.median(C0_avg2)], args=(CO2_aussen, Vdot1, Vdot2, volume_room_m, ts, t1, t2, CO2_Emi_m), max_step=dt)
 
+    lin = interp1d(res.t, helper.cum_mean(res.y[0]))
+
     stats_data_gw_erreicht["airing"] = {
-            "x":res.t,
-            "y":[helper.cum_mean(res.y[0])]
+            "x":c_quantiles_t_gw_erreicht,
+            "y":[lin(c_quantiles_t_gw_erreicht)]
     }
 
     #Momentanwert - realistisches Lüften
@@ -320,11 +323,12 @@ def co2_calculation(
     ts = t2
     res = solve_ivp(t_c_inst_ode, [0,t_max], [np.median(C0_avg2)], args=(CO2_aussen, Vdot1, Vdot2, volume_room_m, ts, t1, t2, CO2_Emi_m), max_step=dt)
 
-    stats_data_gw_periodisch["airing"] = {
-            "x":res.t,
-            "y":[res.y[0]]
-    }
+    lin = interp1d(res.t, res.y[0])
 
+    stats_data_gw_periodisch["airing"] = {
+            "x":c_quantiles_t_gw_periodisch,
+            "y":[lin(c_quantiles_t_gw_periodisch)]
+    }
 
     #Stundenmittelwert - ideales Lüften
     t_gw_ueberschritten, c_quantiles_gw_ueberschritten = t_gw_calc(
@@ -346,9 +350,11 @@ def co2_calculation(
 
     res = solve_ivp(t_c_inst_ode2, [0,t_max], [CO2_aussen], args=(CO2_aussen, Vdot1, Vdot2, volume_room_m, {"lueften":False}, CO2_Emi_m, CO2_Grenzwert, epsilon_c), max_step=dt)
 
+    lin = interp1d(res.t, helper.cum_mean(res.y[0]))
+
     stats_data_gw_ueberschritten["airing"] = {
-            "x":res.t,
-            "y":[helper.cum_mean(res.y[0])]
+            "x":c_quantiles_t_gw_ueberschritten,
+            "y":[lin(c_quantiles_t_gw_ueberschritten)]
     }
 
     #Momentanwert - ideales Lüften
@@ -371,9 +377,11 @@ def co2_calculation(
     ts = t2
     res = solve_ivp(t_c_inst_ode2, [0,t_max], [CO2_aussen], args=(CO2_aussen, Vdot1, Vdot2, volume_room_m, {"lueften":False}, CO2_Emi_m, CO2_Grenzwert, epsilon_c), max_step=dt)
 
+    lin = interp1d(res.t, res.y[0])
+
     stats_data_gw_ideal["airing"] = {
-            "x":res.t,
-            "y":[res.y[0]]
+            "x":c_quantiles_t_gw_ideal,
+            "y":[lin(c_quantiles_t_gw_ideal)]
     }
 
     t_gw_erreicht_m = np.quantile(t_gw_erreicht,0.5)*60
