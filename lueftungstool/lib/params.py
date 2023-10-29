@@ -157,18 +157,29 @@ location_list = [
 ]
 
 gebaeudeart2H_Bldg = {
+    "Bungalow (nur ebenerdig)": [2, 4, 3, 5],
     "Einfamilienhaus/Reihenhaus": [2, 4, 3, 12],
     "Mehrfamilienhaus": [2, 4, 3, 18],
     "Apartmentblock": [2, 4, 3, 60],
     "Schule/Kindergarten": [2, 4, 3, 15],
+    "Büro": [2, 4, 3, 60],
 }
 gebaeudeart2H_WindRel = {
+    "Bungalow (nur ebenerdig)": [1, 1, 1, 1],
     "Einfamilienhaus/Reihenhaus": [1, 1, 1, 1],
     "Mehrfamilienhaus": [1, 1, 0, 1],
     "Apartmentblock": [1, 1, 0, 1],
     "Schule/Kindergarten": [1, 1, 0, 1],
+    "Büro": [1, 1, 0, 1],
 }
-buiding_type_list = ["Einfamilienhaus/Reihenhaus", "Mehrfamilienhaus", "Apartmentblock", "Schule/Kindergarten"]
+buiding_type_list = [
+    "Bungalow (nur ebenerdig)",
+    "Einfamilienhaus/Reihenhaus",
+    "Mehrfamilienhaus",
+    "Apartmentblock",
+    "Schule/Kindergarten",
+    "Büro"
+]
 
 map_n502waermebruecken = {
     "Undichter Altbau": "Altbau mit durchbetonierten Bauteilen (Balkone, etc)",
@@ -304,17 +315,12 @@ n50_map_list = list(n50_map.keys())
 Fn50 = [4, 4, 0, 1]
 
 WNF = {
+    "Bungalow (nur ebenerdig)": [1, 1, 100, 250],
     "Einfamilienhaus/Reihenhaus": [1, 1, 100, 250],
     "Mehrfamilienhaus": [2, 6, 50, 200],
     "Apartmentblock": [2, 4, 40, 120],
 }
 WNF_list = list(WNF.keys())
-
-WNF = {
-    "Einfamilienhaus/Reihenhaus": [1, 1, 100, 250],
-    "Mehrfamilienhaus": [2, 6, 50, 200],
-    "Apartmentblock": [2, 4, 40, 120],
-}
 
 Feuchtelastkategorie = {
     "Niedrig": [0, 0.4],
@@ -337,6 +343,7 @@ m_H2Ok = {
 }
 
 OccDens = {
+    "Bungalow (nur ebenerdig)": [2, 4, 30, 120],
     "Einfamilienhaus/Reihenhaus": [2, 4, 30, 120],
     "Mehrfamilienhaus": [2, 4, 15, 100],
     "Apartmentblock": [2, 4, 15, 80],
