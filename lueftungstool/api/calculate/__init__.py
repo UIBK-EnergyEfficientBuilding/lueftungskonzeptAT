@@ -18,50 +18,74 @@ namespace = blueprint
 
 class CalculationParameter(BaseModel):
     location: Literal[*params_mapping["location"]["values"]] = Field(
-        example=params_mapping["location"]["default"], description="Standort"
+        enum=params_mapping["location"]["values"],
+        example=params_mapping["location"]["default"],
+        description="Standort"
     )
     building_n50: float | Literal[*params_mapping["building_n50"]["values"]] = Field(
-        example=params_mapping["building_n50"]["default"], description="Luftdichtigkeit n50-Wert (Gebäude) [1/h]"
+        enum=params_mapping["building_n50"]["values"],
+        example=params_mapping["building_n50"]["default"],
+        description="Luftdichtigkeit n50-Wert (Gebäude) [1/h]"
     )
     building_type: Literal[*params_mapping["building_type"]["values"]] = Field(
-        example=params_mapping["building_type"]["default"], description="Gebäudeart"
+        enum=params_mapping["building_type"]["values"],
+        example=params_mapping["building_type"]["default"],
+        description="Gebäudeart"
     )
     thermalbridges: Literal[*params_mapping["thermalbridges"]["values"]] | None = Field(
-        None, description="Wärmebrücken"
+        None,
+        enum=params_mapping["thermalbridges"]["values"],
+        description="Wärmebrücken"
     )
     fRSI: float | None = Field(None, description="fRSI-Wert")
     H_Rm: float | None = Field(None, description="Höhe (betrachteter Raum) [m]:")
     A_Rm: float | None = Field(None, description="Fläche (betrachteter Raum) [m²]:")
     room_type: Literal[*params_mapping["room_type"]["values"]] | None = Field(
-        None, description="Raumart (betrachteter Raum):"
+        None,
+        enmu=params_mapping["room_type"]["values"],
+        description="Raumart (betrachteter Raum):"
     )
     window_area: float | None = Field(None, description="Fläche öffenbare Fenster (betrachteter Raum) [m²]:")
     window_class: Literal[*params_mapping["window_class"]["values"]] | None = Field(
-        None, enum=params_mapping["window_class"]["values"], description="Fensterklasse nach EN12207 (betrachteter Raum)"
+        None,
+        enum=params_mapping["window_class"]["values"],
+        description="Fensterklasse nach EN12207 (betrachteter Raum)"
     )
     airing_type_room: Literal[*params_mapping["airing_type_room"]["values"]] | None = Field(
-        None, description="Lüftungsmöglichkeit (betrachteter Raum):"
+        None,
+        enum=params_mapping["airing_type_room"]["values"],
+        description="Lüftungsmöglichkeit (betrachteter Raum):"
     )
     airing_duration_room: float | None = Field(None, description="Lüftungsdauer pro Lüftungsvorgang [min]")
     terrain_class: Literal[*params_mapping["terrain_class"]["values"]] | None = Field(
-        None, description="Gelände-/Terrainklasse (Windeinfluss)"
+        None,
+        enum=params_mapping["terrain_class"]["values"],
+        description="Gelände-/Terrainklasse (Windeinfluss)"
     )
     shielding_class: Literal[*params_mapping["shielding_class"]["values"]] | None = Field(
-        None, description="Abschirmung-/Shieldingklasse (Windeinfluss)"
+        None,
+        enum=params_mapping["shielding_class"]["values"],
+        description="Abschirmung-/Shieldingklasse (Windeinfluss)"
     )
 
     NrAdu: float | None = Field(None, description="Anzahl Erwachsene")
     ActAdu: float | Literal[*params_mapping["ActAdu"]["values"]] | None = Field(
-        None, description="Aktivität Erwachsene [met]"
+        None,
+        enum=params_mapping["ActAdu"]["values"],
+        description="Aktivität Erwachsene [met]"
     )
     NrKids: float | None = Field(None, description="Anzahl Kinder")
     ActKid: float | Literal[*params_mapping["ActAdu"]["values"]] | None = Field(
-        None, description="Aktivität Kinder [met]"
+        None,
+        enum=params_mapping["ActAdu"]["values"],
+        description="Aktivität Kinder [met]"
     )
     AgeKid: float | None = Field(None, description="Mittleres Alter der Kinder [a]")
 
     H2Osource_category: Literal[*params_mapping["H2Osource_category"]["values"]] | None = Field(
-        None, description="Feuchtelast [l/d]:"
+        None,
+        enum=params_mapping["H2Osource_category"]["values"],
+        description="Feuchtelast [l/d]:"
     )
     H2Osource_area: float | None = Field(None, description="Feuchtequellstärke pro m² bei Anwesenheit [g/(hm²)]")
     H2Osource_pers: float | None = Field(None, description="Feuchtequellstärke pro Pers bei Anwesenheit [g/(hPers)]")
@@ -69,7 +93,9 @@ class CalculationParameter(BaseModel):
     area_home: float | None = Field(None, description="Fläche gesamte Wohneinheit [m²]:")
     pers_home: float | None = Field(None, description="Personenanzahl (gesamter Wohneinheit)")
     airing_type_home: Literal[*params_mapping["airing_type_home"]["values"]] | None = Field(
-        None, description="Lüftungsmöglichkeit (gesamte Wohneinheit)"
+        None,
+        enum=params_mapping["airing_type_home"]["values"],
+        description="Lüftungsmöglichkeit (gesamte Wohneinheit)"
     )
     airing_duration_home: float | None = Field(
         None, description="Lüftungsdauer gesamt, z.B. morgens und abends [min/Tag]"
