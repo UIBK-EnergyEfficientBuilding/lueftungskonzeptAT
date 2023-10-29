@@ -75,9 +75,9 @@ class CalculationParameter(BaseModel):
         description="Aktivität Erwachsene [met]"
     )
     NrKids: float | None = Field(None, description="Anzahl Kinder")
-    ActKid: float | Literal[*params_mapping["ActAdu"]["values"]] | None = Field(
+    ActKid: float | Literal[*params_mapping["ActKid"]["values"]] | None = Field(
         None,
-        enum=params_mapping["ActAdu"]["values"],
+        enum=params_mapping["ActKid"]["values"],
         description="Aktivität Kinder [met]"
     )
     AgeKid: float | None = Field(None, description="Mittleres Alter der Kinder [a]")
