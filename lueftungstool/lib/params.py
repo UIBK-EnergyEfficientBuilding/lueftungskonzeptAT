@@ -223,45 +223,125 @@ waermebruecken2fRSI = {
 
 raumart2A_Rm = {
     "Schlafzimmer": [2.5, 4, 6, 30],
+    "Kinderzimmer": [2, 6, 6, 30],
     "Wohnzimmer": [2, 3.6, 12, 60],
+    "Klassen-/Gruppenraum": [3, 3, 60, 80],
+    "Lehrerzimmer": [3, 3, 20, 80],
+    "Direktion/Büro": [3, 3, 20, 30],
+    "Büro klein": [2, 4, 10, 30],
+    "Großraumbüro": [3, 3, 50, 150],
+    "Besprechungsraum": [3, 3, 20, 60],
 }
 raumart2H_Rm = {
     "Schlafzimmer": [3, 3, 2.4, 2.6],
+    "Kinderzimmer": [3, 3, 2.4, 2.6],
     "Wohnzimmer": [3, 3, 2.4, 2.6],
+    "Klassen-/Gruppenraum": [3, 3, 3, 3.5],
+    "Lehrerzimmer": [3, 3, 3, 3.5],
+    "Direktion/Büro": [3, 3, 3, 3.5],
+    "Büro klein": [2, 6, 2.4, 3],
+    "Großraumbüro": [2, 6, 2.4, 3],
+    "Besprechungsraum": [2, 6, 2.4, 3],
 }
 raumart2Nr_Adu = {
     "Schlafzimmer": [2, 2, 1, 2],
+    "Kinderzimmer": [2, 2, 0, 0],
     "Wohnzimmer": [2, 3, 1, 4],
+    "Klassen-/Gruppenraum": [1, 4, 1, 2],
+    "Lehrerzimmer": [3, 3, 10, 20],
+    "Direktion/Büro": [1, 1, 1, 2],
+    "Büro klein": [1, 1, 1, 2],
+    "Großraumbüro": [1, 1, 8, 12],
+    "Besprechungsraum": [1, 1, 4, 10],
 }
 raumart2ActAdu = {
     "Schlafzimmer": [3, 3, 0.6, 1],
+    "Kinderzimmer": [3, 3, 0.8, 1.4],
     "Wohnzimmer": [3, 3, 1, 1.4],
+    "Klassen-/Gruppenraum": [3, 3, 1, 1.4],
+    "Lehrerzimmer": [3, 3, 1, 1.4],
+    "Direktion/Büro": [3, 3, 1, 1.4],
+    "Büro klein": [3, 3, 1, 1.4],
+    "Großraumbüro": [3, 3, 1, 1.4],
+    "Besprechungsraum": [3, 3, 1, 1.4],
 }
 raumart2Nr_Kid = {
     "Schlafzimmer": [1, 10, 0, 3],
+    "Kinderzimmer": [1, 5, 1, 4],
     "Wohnzimmer": [2, 3, 1, 4],
+    "Klassen-/Gruppenraum": [3, 3, 15, 25],
+    "Lehrerzimmer": [3, 3, 0, 0],
+    "Direktion/Büro": [1, 1, 0, 0],
+    "Büro klein": [1, 1, 0, 0],
+    "Großraumbüro": [1, 1, 0, 0],
+    "Besprechungsraum": [1, 1, 0, 0],
 }
 raumart2ActKid = {
     "Schlafzimmer": [3, 3, 0.6, 1],
+    "Kinderzimmer": [3, 3, 0.6, 1.4],
     "Wohnzimmer": [3, 3, 1, 1.4],
+    "Klassen-/Gruppenraum": [3, 3, 1, 1.4],
+    "Lehrerzimmer": [3, 3, 1, 1.4],
+    "Direktion/Büro": [3, 3, 1, 1.4],
+    "Büro klein": [3, 3, 1, 1.4],
+    "Großraumbüro": [3, 3, 1, 1.4],
+    "Besprechungsraum": [1, 1, 1, 1.4],
 }
 raumart2AgeKid = {
     "Schlafzimmer": [1, 3, 0, 4],
+    "Kinderzimmer": [1, 1, 3, 18],
     "Wohnzimmer": [1, 1, 1, 18],
+    "Klassen-/Gruppenraum": [1, 1, 6, 18],
+    "Lehrerzimmer": [1, 1, 6, 18],
+    "Direktion/Büro": [1, 1, 6, 18],
+    "Büro klein": [1, 1, 6, 18],
+    "Großraumbüro": [1, 1, 6, 18],
+    "Besprechungsraum": [1, 1, 6, 18],
 }
 raumart2WinRat_Rm = {
     "Schlafzimmer": [3, 3, 0.1, 0.5],
+    "Kinderzimmer": [3, 3, 0.1, 0.5],
     "Wohnzimmer": [3, 3, 0.1, 0.5],
+    "Klassen-/Gruppenraum": [3, 3, 0.1, 0.5],
+    "Lehrerzimmer": [3, 3, 0.1, 0.5],
+    "Direktion/Büro": [3, 3, 0.1, 0.5],
+    "Büro klein": [3, 3, 0.1, 0.5],
+    "Großraumbüro": [3, 3, 0.1, 0.5],
+    "Besprechungsraum": [3, 3, 0.1, 0.5],
 }
 room_type2t_max = {
     "Schlafzimmer": 8,
+    "Kinderzimmer": 8,
     "Wohnzimmer": 2,
+    "Klassen-/Gruppenraum": 0.75,
+    "Lehrerzimmer": 2,
+    "Direktion/Büro": 2,
+    "Büro klein": 2,
+    "Großraumbüro": 2,
+    "Besprechungsraum": 1,
 }
-room_type_list = ["Schlafzimmer", "Wohnzimmer"]
+room_type_list = [
+    "Schlafzimmer",
+    "Kinderzimmer",
+    "Wohnzimmer",
+    "Klassen-/Gruppenraum",
+    "Lehrerzimmer",
+    "Direktion/Büro",
+    "Büro klein",
+    "Großraumbüro",
+    "Besprechungsraum",
+]
 
 room_type2CO2_Grenzwert = {
     "Schlafzimmer": 1000,
+    "Kinderzimmer": 1000,
     "Wohnzimmer": 1400,
+    "Klassen-/Gruppenraum": 1000,
+    "Lehrerzimmer": 1000,
+    "Direktion/Büro": 1000,
+    "Büro klein": 1000,
+    "Großraumbüro": 1000,
+    "Besprechungsraum": 1000,
 }
 
 activity_level = {
