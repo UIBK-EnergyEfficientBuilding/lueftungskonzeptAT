@@ -36,7 +36,7 @@ class CalculationParameter(BaseModel):
     A_Rm: float | None = Field(None, description="Fläche (betrachteter Raum) [m²]:")
     room_type: Literal[*params_mapping["room_type"]["values"]] | None = Field(
         None,
-        enmu=params_mapping["room_type"]["values"],
+        enum=params_mapping["room_type"]["values"],
         description="Raumart (betrachteter Raum):"
     )
     window_area: float | None = Field(None, description="Fläche öffenbare Fenster (betrachteter Raum) [m²]:")
