@@ -80,6 +80,7 @@ class CalculationParameter(BaseModel):
 
     H_StackRel: float | None = Field(None, description="Kamineffekt wirksame Höhe relativ zur Gebäudehöhe")
 
+
 class PlotData(BaseModel):
     x: list[float]
     y: list[list[float]]
@@ -222,6 +223,7 @@ def validate_dependentRequired(query: CalculationParameter):
     except ValueError:
         pass
 
+
 @namespace.get("/calculate/validate_inputs")
 def validate_inputs(query: CalculationParameter):
     validate_dependentRequired(query)
@@ -229,6 +231,7 @@ def validate_inputs(query: CalculationParameter):
     response = make_response({}, HTTPStatus.OK)
     response.mimetype = "application/json"
     return response
+
 
 @namespace.get("/calculate",
                responses={
