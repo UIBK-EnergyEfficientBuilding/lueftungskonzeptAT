@@ -74,19 +74,13 @@ def calc(args,size):
         size = size
     )
 
-    thermalbridges = params_lookups.building_standard2thermalbridges(
-        building_n50 = building_n50,
-        inputs = inputs,
-        thermalbridges = args.get("thermalbridges"),
-    )
-
     Ti_avg, Ti_min, Ti_abs, fRSI = params_lookups.calc_temperatures(
-        thermalbridges = thermalbridges,
+        building_n50=building_n50,
         inputs = inputs,
         Ti_avg = args.get("Ti_avg"),
         Ti_min = args.get("Ti_min"),
         Ti_abs = args.get("Ti_abs"),
-        fRSI = args.get("fRSI"),
+        thermalbridges = args.get("thermalbridges"),
         size = size
     )
 

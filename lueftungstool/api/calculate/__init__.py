@@ -32,12 +32,11 @@ class CalculationParameter(BaseModel):
         example=params_mapping["building_type"]["default"],
         description="Gebäudeart"
     )
-    thermalbridges: Literal[*params_mapping["thermalbridges"]["values"]] | None = Field(
+    thermalbridges: float | Literal[*params_mapping["thermalbridges"]["values"]] | None = Field(
         None,
         enum=params_mapping["thermalbridges"]["values"],
-        description="Wärmebrücken"
+        description="Wärmebrücken / fRSI-Wert"
     )
-    fRSI: float | None = Field(None, description="fRSI-Wert")
     H_Rm: float | None = Field(None, description="Höhe (betrachteter Raum) [m]:")
     A_Rm: float | None = Field(None, description="Fläche (betrachteter Raum) [m²]:")
     room_type: Literal[*params_mapping["room_type"]["values"]] | None = Field(
@@ -195,8 +194,7 @@ class InputsResultModel(BaseModel):
     location: str
     building_n50: ResultStatsFloat
     building_type: str
-    thermalbridges: str
-    fRSI: ResultStatsFloat
+    thermalbridges: ResultStatsFloat
     H_Rm: ResultStatsFloat
     A_Rm: ResultStatsFloat
     room_type: str
@@ -239,7 +237,7 @@ def validate_dependentRequired(query: CalculationParameter):
         float(query.building_n50)
 
         missing = []
-        for a in ["window_class", "fRSI", "Ti_avg", "Ti_min", "Ti_abs", "thermalbridges", "H_StackRel"]:
+        for a in ["window_class", "thermalbridges", "Ti_avg", "Ti_min", "Ti_abs", "H_StackRel"]:
             if getattr(query, a) is None:
                 missing.append(InitErrorDetails(loc=[a], type="missing"))
         if missing:

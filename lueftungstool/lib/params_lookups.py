@@ -63,14 +63,6 @@ def calc_lage(location, inputs, Shield, Terr, quantiles, size):
 
     return C, alfa, gama
 
-def building_standard2thermalbridges(building_n50,inputs,thermalbridges):
-    if thermalbridges is None:
-        thermalbridges = params.map_n502waermebruecken[building_n50]
-        inputs["thermalbridges"] = thermalbridges
-    else:
-        inputs["thermalbridges"] = thermalbridges
-
-    return thermalbridges
 
 def building_standard(building_n50,inputs,window_class,size):
     n50 = float_or_beta_scaled(building_n50, params.n50_map, size=size)
@@ -83,16 +75,21 @@ def building_standard(building_n50,inputs,window_class,size):
 
     return n50,air_permeability
 
-def calc_temperatures(thermalbridges, inputs, Ti_avg, Ti_min, Ti_abs, fRSI, size):
-    Ti_avg = fixed_or_beta_scaled(thermalbridges, params.waermebruecken2Ti_avg, Ti_avg, size=size)
+def calc_temperatures(building_n50, inputs, Ti_avg, Ti_min, Ti_abs, thermalbridges, size):
+    thermalbridges_label = params.map_n502waermebruecken.get(building_n50)
+
+    if thermalbridges is None:
+        thermalbridges = thermalbridges_label
+
+    Ti_avg = fixed_or_beta_scaled(thermalbridges_label, params.waermebruecken2Ti_avg, Ti_avg, size=size)
     inputs["Ti_avg"] = helper.result_stats(Ti_avg)
 
-    Ti_min = fixed_or_beta_scaled(thermalbridges, params.waermebruecken2Ti_min, Ti_min, size=size)
-    Ti_abs = fixed_or_beta_scaled(thermalbridges, params.waermebruecken2Ti_abs, Ti_abs, size=size)
-    fRSI = fixed_or_beta_scaled(thermalbridges, params.waermebruecken2fRSI, fRSI,size=size)
+    Ti_min = fixed_or_beta_scaled(thermalbridges_label, params.waermebruecken2Ti_min, Ti_min, size=size)
+    Ti_abs = fixed_or_beta_scaled(thermalbridges_label, params.waermebruecken2Ti_abs, Ti_abs, size=size)
+    fRSI = float_or_beta_scaled(thermalbridges, params.waermebruecken2fRSI, size=size)
     inputs["Ti_min"] = helper.result_stats(Ti_min)
     inputs["Ti_abs"] = helper.result_stats(Ti_abs)
-    inputs["fRSI"] = helper.result_stats(fRSI)
+    inputs["thermalbridges"] = helper.result_stats(fRSI)
 
     return Ti_avg, Ti_min, Ti_abs, fRSI
 

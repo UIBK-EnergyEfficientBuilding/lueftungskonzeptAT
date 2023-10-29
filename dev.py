@@ -75,8 +75,7 @@ if __name__ == "__main__":
     if "ResH2O" in result:
         print("#Eingaben für Schimmelrisiko Bewertung (nur für Wohnbau)")
         print("Berechnung durchführen:".ljust(75), "Ja")
-        print("Wärmebrücken".ljust(75), result["inputs"]["thermalbridges"])
-        print_row_mean("fRSI-Wert".ljust(75), result["inputs"]["fRSI"])
+        print_row_mean("Wärmebrücken / fRSI-Wert".ljust(75), result["inputs"]["thermalbridges"])
         print_row_mean("Feuchtelast [l/d]:".ljust(75), result["inputs"]["H2Osource_category"])
         print_row_mean("Feuchtequellstärke pro m² bei Anwesenheit [g/(hm²)]".ljust(75), result["inputs"]["H2Osource_area"])
         print_row_mean("Feuchtequellstärke pro Pers bei Anwesenheit [g/(hPers)]".ljust(75), result["inputs"]["H2Osource_pers"])
