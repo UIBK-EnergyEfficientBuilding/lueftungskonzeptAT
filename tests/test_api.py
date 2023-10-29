@@ -4,6 +4,7 @@ import typing
 from lueftungstool.api.calculate import CalculationParameter, InputsResultModel
 from tests.api_base import MyTestCase
 
+from typing import _LiteralGenericAlias
 
 class ApiParams(MyTestCase):
 
@@ -11,8 +12,16 @@ class ApiParams(MyTestCase):
         with self.app.test_request_context(f'/api/calculate/params', method='GET'):
             res = self.app.full_dispatch_request()
             self.assertTrue(res.status_code == 200, res.json)
-            a = [field for field,item in CalculationParameter.model_fields.items() if str in typing.get_args(item.annotation) or item.annotation == str or field in ["ActAdu", "ActKid"]]
-            print(a)
+
+            a = []
+            for field,item in CalculationParameter.model_fields.items():
+                if type(item.annotation) == _LiteralGenericAlias:
+                    a.append(field)
+                else:
+                    for t in typing.get_args(item.annotation):
+                        if type(t) == _LiteralGenericAlias:
+                            a.append(field)
+
             self.assertCountEqual(a, res.json.keys())
 
 class ApiCalculation(MyTestCase):
