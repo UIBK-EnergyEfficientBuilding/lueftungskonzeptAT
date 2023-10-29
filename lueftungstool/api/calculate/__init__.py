@@ -103,8 +103,6 @@ class CalculationParameter(BaseModel):
     Ti_min: float | None = Field(None, description="Raumtemperatur im kühlsten Raum [°C]")
     Ti_abs: float | None = Field(None, description="Minimale Raumtemperatur bei längerer Abwesenheit [°C]")
 
-    H_StackRel: float | None = Field(None, description="Kamineffekt wirksame Höhe relativ zur Gebäudehöhe")
-
 
 class PlotData(BaseModel):
     x: list[float]
@@ -223,8 +221,6 @@ class InputsResultModel(BaseModel):
     Ti_min: ResultStatsFloat = Field(None)
     Ti_abs: ResultStatsFloat = Field(None)
 
-    H_StackRel: ResultStatsFloat = Field(None)
-
 
 class CalculationResult(BaseModel):
     ResCO2: ResCO2Model = Field(..., description='Ergebnis CO2 Bewertung')
@@ -237,7 +233,7 @@ def validate_dependentRequired(query: CalculationParameter):
         float(query.building_n50)
 
         missing = []
-        for a in ["window_class", "thermalbridges", "Ti_avg", "Ti_min", "Ti_abs", "H_StackRel"]:
+        for a in ["window_class", "thermalbridges", "Ti_avg", "Ti_min", "Ti_abs"]:
             if getattr(query, a) is None:
                 missing.append(InitErrorDetails(loc=[a], type="missing"))
         if missing:

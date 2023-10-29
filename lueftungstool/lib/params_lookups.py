@@ -97,7 +97,14 @@ def n50factor(size):
     Fn50 = beta_scaled(*params.Fn50, size=size)
     return Fn50
 
-def calc_LBL_model_factors(building_n50, building_type, inputs, H_StackRel, size):
+def castorfalse(value,t):
+    try:
+        t(value)
+        return True
+    except ValueError:
+        return False
+
+def calc_LBL_model_factors(building_n50, building_type, size):
     H_wind_min = 3
     H_stack = beta_scaled(*params.gebaeudeart2H_Bldg[building_type],size=size)
     H_wind = np.max(
@@ -105,8 +112,10 @@ def calc_LBL_model_factors(building_n50, building_type, inputs, H_StackRel, size
         axis=0
     )
 
-    H_StackRel = fixed_or_beta_scaled(building_n50, params.H_StackRel, H_StackRel, size)
-    inputs["H_StackRel"] = helper.result_stats(H_StackRel)
+    if not castorfalse(building_n50, float):
+        H_StackRel = beta_scaled(*params.H_StackRel[building_n50], size)
+    else:
+        H_StackRel = np.array([0]*size)
 
     H_stack_min = 3
     H_stack = np.max([[H_stack_min]*size, H_stack*H_StackRel], axis=0)
