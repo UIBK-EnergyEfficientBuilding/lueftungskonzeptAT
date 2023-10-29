@@ -207,13 +207,7 @@ class CalculationResult(BaseModel):
     inputs: InputsResultModel = Field(..., description='inputs')
 
 
-@namespace.get("/calculate",
-               responses={
-                   HTTPStatus.OK: CalculationResult,
-                   429: None
-               })
-def calculate(query: CalculationParameter):
-
+def validate_dependentRequired(query: CalculationParameter):
     try:
         float(query.building_n50)
 
@@ -227,6 +221,22 @@ def calculate(query: CalculationParameter):
             abort(validation_error_callback(e))
     except ValueError:
         pass
+
+@namespace.get("/calculate/validate_inputs")
+def validate_inputs(query: CalculationParameter):
+    validate_dependentRequired(query)
+
+    response = make_response({}, HTTPStatus.OK)
+    response.mimetype = "application/json"
+    return response
+
+@namespace.get("/calculate",
+               responses={
+                   HTTPStatus.OK: CalculationResult,
+                   429: None
+               })
+def calculate(query: CalculationParameter):
+    validate_dependentRequired(query)
 
     args = query.model_dump()
     size = 1000
