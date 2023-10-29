@@ -1,12 +1,14 @@
 
+
 import lueftungstool.lib.calc2 as calc2
 from lueftungstool.lib.params import params_mapping
 
 from typing import Literal
 
 from http import HTTPStatus
-from pydantic import BaseModel, Field
-from flask import make_response
+from pydantic import BaseModel, Field, ValidationError
+from pydantic_core import InitErrorDetails
+from flask import make_response, abort, current_app
 
 from flask_openapi3 import APIBlueprint
 
@@ -18,7 +20,7 @@ class CalculationParameter(BaseModel):
     location: Literal[*params_mapping["location"]["values"]] = Field(
         example=params_mapping["location"]["default"], description="Standort"
     )
-    building_n50: Literal[*params_mapping["building_n50"]["values"]] = Field(
+    building_n50: float | Literal[*params_mapping["building_n50"]["values"]] = Field(
         example=params_mapping["building_n50"]["default"], description="Luftdichtigkeit n50-Wert (Gebäude) [1/h]"
     )
     building_type: Literal[*params_mapping["building_type"]["values"]] = Field(
@@ -35,7 +37,7 @@ class CalculationParameter(BaseModel):
     )
     window_area: float | None = Field(None, description="Fläche öffenbare Fenster (betrachteter Raum) [m²]:")
     window_class: Literal[*params_mapping["window_class"]["values"]] | None = Field(
-        None, description="Fensterklasse nach EN12207 (betrachteter Raum)"
+        None, enum=params_mapping["window_class"]["values"], description="Fensterklasse nach EN12207 (betrachteter Raum)"
     )
     airing_type_room: Literal[*params_mapping["airing_type_room"]["values"]] | None = Field(
         None, description="Lüftungsmöglichkeit (betrachteter Raum):"
@@ -76,6 +78,7 @@ class CalculationParameter(BaseModel):
     Ti_min: float | None = Field(None, description="Raumtemperatur im kühlsten Raum [°C]")
     Ti_abs: float | None = Field(None, description="Minimale Raumtemperatur bei längerer Abwesenheit [°C]")
 
+    H_StackRel: float | None = Field(None, description="Kamineffekt wirksame Höhe relativ zur Gebäudehöhe")
 
 class PlotData(BaseModel):
     x: list[float]
@@ -195,6 +198,8 @@ class InputsResultModel(BaseModel):
     Ti_min: ResultStatsFloat = Field(None)
     Ti_abs: ResultStatsFloat = Field(None)
 
+    H_StackRel: ResultStatsFloat = Field(None)
+
 
 class CalculationResult(BaseModel):
     ResCO2: ResCO2Model = Field(..., description='Ergebnis CO2 Bewertung')
@@ -208,6 +213,21 @@ class CalculationResult(BaseModel):
                    429: None
                })
 def calculate(query: CalculationParameter):
+
+    try:
+        float(query.building_n50)
+
+        missing = []
+        for a in ["window_class", "fRSI", "Ti_avg", "Ti_min", "Ti_abs", "thermalbridges", "H_StackRel"]:
+            if getattr(query, a) is None:
+                missing.append(InitErrorDetails(loc=[a], type="missing"))
+        if missing:
+            e = ValidationError.from_exception_data(title="missing dependentRequired fields", line_errors=missing)
+            validation_error_callback = getattr(current_app, "validation_error_callback")
+            abort(validation_error_callback(e))
+    except ValueError:
+        pass
+
     args = query.model_dump()
     size = 1000
     message = CalculationResult(**calc2.calc(args, size))

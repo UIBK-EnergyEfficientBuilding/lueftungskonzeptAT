@@ -62,6 +62,8 @@ def calc(args,size):
     H_wind, H_stack = params_lookups.calc_LBL_model_factors(
         building_n50 = building_n50,
         building_type = building_type,
+        inputs = inputs,
+        H_StackRel = args.get("H_StackRel"),
         size = size
     )
 

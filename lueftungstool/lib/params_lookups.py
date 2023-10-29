@@ -15,6 +15,13 @@ def fixed_or_beta_scaled(key, param, field, size):
     else:
         return np.array([field]*size)
 
+def float_or_beta_scaled(field, param, size):
+    try:
+        float(field)
+        return np.array([field]*size)
+    except ValueError:
+        return beta_scaled(*param[field],size=size)
+
 def beta_scaled_range(alpha,beta,min_value,max_value,start,stop,size):
     x = np.linspace(start,stop,size)
     return scipy_beta.ppf(np.random.choice(x,size),alpha,beta)*(max_value-min_value)+min_value
@@ -66,7 +73,7 @@ def building_standard2thermalbridges(building_n50,inputs,thermalbridges):
     return thermalbridges
 
 def building_standard(building_n50,inputs,window_class,size):
-    n50 = beta_scaled(*params.n50_map[building_n50],size=size)
+    n50 = float_or_beta_scaled(building_n50, params.n50_map, size=size)
     inputs["building_n50"] = helper.result_stats(n50)
 
     window_class = params.name2window_class[window_class] if window_class is not None else None
@@ -93,7 +100,7 @@ def n50factor(size):
     Fn50 = beta_scaled(*params.Fn50, size=size)
     return Fn50
 
-def calc_LBL_model_factors(building_n50, building_type, size):
+def calc_LBL_model_factors(building_n50, building_type, inputs, H_StackRel, size):
     H_wind_min = 3
     H_stack = beta_scaled(*params.gebaeudeart2H_Bldg[building_type],size=size)
     H_wind = np.max(
@@ -101,8 +108,11 @@ def calc_LBL_model_factors(building_n50, building_type, size):
         axis=0
     )
 
+    H_StackRel = fixed_or_beta_scaled(building_n50, params.H_StackRel, H_StackRel, size)
+    inputs["H_StackRel"] = helper.result_stats(H_StackRel)
+
     H_stack_min = 3
-    H_stack = np.max([[H_stack_min]*size, H_stack*beta_scaled(*params.H_StackRel[building_n50],size=size)], axis=0)
+    H_stack = np.max([[H_stack_min]*size, H_stack*H_StackRel], axis=0)
 
     return H_wind, H_stack
 
