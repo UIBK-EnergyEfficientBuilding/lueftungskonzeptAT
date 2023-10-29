@@ -32,11 +32,6 @@ class CalculationParameter(BaseModel):
         example=params_mapping["building_type"]["default"],
         description="Gebäudeart"
     )
-    thermalbridges: float | Literal[*params_mapping["thermalbridges"]["values"]] | None = Field(
-        None,
-        enum=params_mapping["thermalbridges"]["values"],
-        description="Wärmebrücken / fRSI-Wert"
-    )
     H_Rm: float | None = Field(None, description="Höhe (betrachteter Raum) [m]:")
     A_Rm: float | None = Field(None, description="Fläche (betrachteter Raum) [m²]:")
     room_type: Literal[*params_mapping["room_type"]["values"]] | None = Field(
@@ -81,6 +76,11 @@ class CalculationParameter(BaseModel):
     )
     AgeKid: float | None = Field(None, description="Mittleres Alter der Kinder [a]")
 
+    thermalbridges: float | Literal[*params_mapping["thermalbridges"]["values"]] | None = Field(
+        None,
+        enum=params_mapping["thermalbridges"]["values"],
+        description="Wärmebrücken / fRSI-Wert"
+    )
     H2Osource_category: Literal[*params_mapping["H2Osource_category"]["values"]] | None = Field(
         None,
         enum=params_mapping["H2Osource_category"]["values"],
