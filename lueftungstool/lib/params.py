@@ -345,13 +345,13 @@ room_type2CO2_Grenzwert = {
 }
 
 activity_level = {
-    "Ruhend": 0.8,
-    "Sitzend entspannt": 1,
-    "Sitzende Tätigkeit": 1.2,
-    "Stehend Entspannt": 1.2,
-    "Stehende Tätigkeit": 1.3,
-    "Mäßige körp. Tätikeit": 1.5,
-    "Workout": 3,
+    "Ruhend (0,8 met)": 0.8,
+    "Sitzend entspannt (1,0 met)": 1,
+    "Sitzende Tätigkeit (1,2 met)": 1.2,
+    "Stehend Entspannt (1,2 met)": 1.2,
+    "Stehende Tätigkeit (1,3 met)": 1.3,
+    "Mäßige körp. Tätikeit (1,5 met)": 1.5,
+    "Workout (3,0 met)": 3,
 }
 activity_level_list = list(activity_level.keys())
 
