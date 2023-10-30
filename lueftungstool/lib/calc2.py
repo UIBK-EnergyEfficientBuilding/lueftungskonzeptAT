@@ -72,14 +72,21 @@ def calc(args,size):
         size = size
     )
 
-    Ti_avg, Ti_min, Ti_abs, fRSI = params_lookups.calc_temperatures(
-        building_n50=building_n50,
-        inputs = inputs,
-        Ti_avg = args.get("Ti_avg"),
-        Ti_min = args.get("Ti_min"),
-        Ti_abs = args.get("Ti_abs"),
-        thermalbridges = args.get("thermalbridges"),
-        size = size
+    thermalbridges_label = params_lookups.get_thermalbridges_label(building_n50=building_n50)
+    Ti_avg =  params_lookups.calc_avg_temperatures(
+        thermalbridges_label=thermalbridges_label,
+        inputs=inputs,
+        Ti_avg=args.get("Ti_avg"),
+        size=size
+    )
+
+    Ti_min, Ti_abs, fRSI = params_lookups.calc_temperatures(
+        thermalbridges_label=thermalbridges_label,
+        inputs=inputs,
+        thermalbridges=args.get("thermalbridges"),
+        Ti_min=args.get("Ti_min"),
+        Ti_abs=args.get("Ti_abs"),
+        size=size,
     )
 
     Fn50 = params_lookups.n50factor(size)

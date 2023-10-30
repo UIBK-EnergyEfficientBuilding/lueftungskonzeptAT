@@ -75,23 +75,29 @@ def building_standard(building_n50,inputs,window_class,size):
 
     return n50,air_permeability
 
-def calc_temperatures(building_n50, inputs, Ti_avg, Ti_min, Ti_abs, thermalbridges, size):
+def get_thermalbridges_label(building_n50):
     thermalbridges_label = params.map_n502waermebruecken.get(building_n50)
+    return thermalbridges_label
+
+def calc_avg_temperatures(thermalbridges_label, inputs, Ti_avg, size):
+    Ti_avg = fixed_or_beta_scaled(thermalbridges_label, params.waermebruecken2Ti_avg, Ti_avg, size=size)
+    inputs["Ti_avg"] = helper.result_stats(Ti_avg)
+    return Ti_avg
+
+def calc_temperatures(thermalbridges_label, inputs, thermalbridges, Ti_min, Ti_abs, size):
 
     if thermalbridges is None:
         thermalbridges = thermalbridges_label
 
-    Ti_avg = fixed_or_beta_scaled(thermalbridges_label, params.waermebruecken2Ti_avg, Ti_avg, size=size)
-    inputs["Ti_avg"] = helper.result_stats(Ti_avg)
-
     Ti_min = fixed_or_beta_scaled(thermalbridges_label, params.waermebruecken2Ti_min, Ti_min, size=size)
     Ti_abs = fixed_or_beta_scaled(thermalbridges_label, params.waermebruecken2Ti_abs, Ti_abs, size=size)
-    fRSI = float_or_beta_scaled(thermalbridges, params.waermebruecken2fRSI, size=size)
     inputs["Ti_min"] = helper.result_stats(Ti_min)
     inputs["Ti_abs"] = helper.result_stats(Ti_abs)
+
+    fRSI = float_or_beta_scaled(thermalbridges, params.waermebruecken2fRSI, size=size)
     inputs["thermalbridges"] = helper.result_stats(fRSI)
 
-    return Ti_avg, Ti_min, Ti_abs, fRSI
+    return Ti_min, Ti_abs, fRSI
 
 def n50factor(size):
     Fn50 = beta_scaled(*params.Fn50, size=size)
