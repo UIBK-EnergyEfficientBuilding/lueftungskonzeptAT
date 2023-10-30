@@ -21,20 +21,20 @@ Terr_class2gama = {
 }
 
 name2Terr_class = {
-    "Freistehend": 1,
-    "Lockere Siedlungsstruktur": 2,
-    "Dorfstruktur": 3,
-    "Städtische Struktur": 4,
-    "Innerstädtisch": 5,
+    "1: Freistehend": 1,
+    "2: Lockere Siedlungsstruktur": 2,
+    "3: Dorfstruktur": 3,
+    "4: Städtische Struktur": 4,
+    "5: Innerstädtisch": 5,
 }
 Terr_class_list = list(name2Terr_class.keys())
 
 name2Shield_class = {
-    "Sehr windausgesetzt": 1,
-    "Leicht windgeschützt": 2,
-    "Moderat windgeschützt": 3,
-    "Sehr windgeschützt": 4,
-    "Extem windgeschützt": 5,
+    "1: Sehr windausgesetzt": 1,
+    "2: Leicht windgeschützt": 2,
+    "3: Moderat windgeschützt": 3,
+    "4: Sehr windgeschützt": 4,
+    "5: Extem windgeschützt": 5,
 }
 Shield_class_list = list(name2Shield_class.keys())
 
