@@ -23,3 +23,12 @@ def cum_mean(arr):
     cum_sum = np.cumsum(arr, axis=0)
     deno = np.arange(1,cum_sum.shape[0]+1)
     return cum_sum/deno
+
+def castorfalse(value,t):
+    if value is None:
+        return True
+    try:
+        t(value)
+        return True
+    except ValueError:
+        return False
