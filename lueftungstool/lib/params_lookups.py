@@ -10,7 +10,7 @@ def beta_scaled(alpha,beta,min_value,max_value,size):
     return np.random.default_rng().beta(a=alpha, b=beta, size=size)*(max_value-min_value)+min_value
 
 def fixed_or_beta_scaled(key, param, field, size):
-    if not field:
+    if field is None:
         return beta_scaled(*param[key],size=size)
     else:
         return np.array([field]*size)

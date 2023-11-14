@@ -28,6 +28,23 @@ class ApiCalculation(MyTestCase):
     def test_verify_all_input_fields_are_present_in_results(self):
         self.assertCountEqual(CalculationParameter.model_fields.keys(), InputsResultModel.model_fields.keys())
 
+    def test_zero_as_value_for_NrAdu(self):
+        with self.app.test_request_context(
+                '/api/calculate',
+                query_string={
+                    "location": "Wien",
+                    "building_n50": "Standard Neubau",
+                    "building_type": "Mehrfamilienhaus",
+                    "NrAdu": "0",
+                },
+                method='GET'
+            ):
+            res = self.app.full_dispatch_request()
+            self.assertTrue(res.status_code == 200, res.json)
+            self.assertTrue(res.json["inputs"]["NrAdu"]["min"] == 0, res.json["inputs"]["NrAdu"])
+            self.assertTrue(res.json["inputs"]["NrAdu"]["max"] == 0, res.json["inputs"]["NrAdu"])
+
+
     def test_building_type_without_H2O_calculation(self):
         with self.app.test_request_context(
                 '/api/calculate',
