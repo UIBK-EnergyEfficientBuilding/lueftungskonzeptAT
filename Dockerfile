@@ -12,5 +12,9 @@ RUN useradd -r -U app
 COPY --from=builder /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV GUNICORN_CMD_ARGS="--access-logfile - --error-logfile -"
+
 USER app
 CMD ["gunicorn", "-b", "0.0.0.0:8000", "lueftungstool:create_app()"]
