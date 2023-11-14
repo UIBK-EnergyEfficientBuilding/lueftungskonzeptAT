@@ -430,37 +430,21 @@ OccDens = {
 }
 OccDens_list = list(OccDens.keys())
 
-params_mapping = {
+
+params_mapping_general = {
     "location": {
         "values": location_list,
         "default": "Wien",
-    },
-    "building_type": {
-        "values": buiding_type_list,
-        "default": "Mehrfamilienhaus",
     },
     "room_type": {
         "values": room_type_list,
         "default": "Schlafzimmer",
     },
-    "airing_type_room": {
-        "values": airing_type_list,
-        "default": "Querlüftung",
-    },
-    "airing_type_home": {
-        "values": airing_type_list,
-        "default": "Querlüftung",
-    },
     "building_n50": {
         "values": n50_map_list,
         "default": "Standard Neubau",
     },
-    "thermalbridges": {
-        "values": waermebruecken_list,
-    },
-    "H2Osource_category": {
-        "values": Feuchtelastkategorie_list,
-    },
+
     "terrain_class": {
         "values": Terr_class_list,
     },
@@ -470,6 +454,17 @@ params_mapping = {
     "window_class": {
         "values": window_class_list,
     },
+}
+
+params_mapping_co2 = params_mapping_general | {
+    "building_type": {
+        "values": buiding_type_list,
+        "default": "Mehrfamilienhaus",
+    },
+    "airing_type_room": {
+        "values": airing_type_list,
+        "default": "Querlüftung",
+    },
     "ActAdu": {
         "values": activity_level_list,
     },
@@ -477,3 +472,23 @@ params_mapping = {
         "values": activity_level_list,
     },
 }
+
+params_mapping_h2o = params_mapping_general | {
+    "building_type": {
+        "values": WNF_list,
+        "default": "Mehrfamilienhaus",
+    },
+    "airing_type_home": {
+        "values": airing_type_list,
+        "default": "Querlüftung",
+    },
+    "H2Osource_category": {
+        "values": Feuchtelastkategorie_list,
+    },
+    "thermalbridges": {
+        "values": waermebruecken_list,
+    },
+}
+
+params_mapping = params_mapping_h2o | params_mapping_co2
+params_mapping["building_type"] = params_mapping_co2["building_type"]

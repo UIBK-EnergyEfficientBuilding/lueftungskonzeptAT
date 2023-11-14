@@ -1,7 +1,8 @@
 
 
 import lueftungstool.lib.calc2 as calc2
-from lueftungstool.lib.params import params_mapping
+from lueftungstool.lib.params import params_mapping, params_mapping_co2, params_mapping_h2o
+import lueftungstool.lib.helper as helper
 
 from typing import Literal
 
@@ -16,7 +17,7 @@ blueprint = APIBlueprint("api", __name__, url_prefix='/api')
 namespace = blueprint
 
 
-class CalculationParameter(BaseModel):
+class CalculationParameterGeneral(BaseModel):
     location: Literal[*params_mapping["location"]["values"]] = Field(
         enum=params_mapping["location"]["values"],
         example=params_mapping["location"]["default"],
@@ -26,11 +27,6 @@ class CalculationParameter(BaseModel):
         enum=params_mapping["building_n50"]["values"],
         example=params_mapping["building_n50"]["default"],
         description="Luftdichtigkeit n50-Wert (Gebäude) [1/h]"
-    )
-    building_type: Literal[*params_mapping["building_type"]["values"]] = Field(
-        enum=params_mapping["building_type"]["values"],
-        example=params_mapping["building_type"]["default"],
-        description="Gebäudeart"
     )
     H_Rm: float | None = Field(None, description="Höhe (betrachteter Raum) [m]:")
     A_Rm: float | None = Field(None, description="Fläche (betrachteter Raum) [m²]:")
@@ -45,12 +41,6 @@ class CalculationParameter(BaseModel):
         enum=params_mapping["window_class"]["values"],
         description="Fensterklasse nach EN12207 (betrachteter Raum)"
     )
-    airing_type_room: Literal[*params_mapping["airing_type_room"]["values"]] | None = Field(
-        None,
-        enum=params_mapping["airing_type_room"]["values"],
-        description="Lüftungsmöglichkeit (betrachteter Raum):"
-    )
-    airing_duration_room: float | None = Field(None, description="Lüftungsdauer pro Lüftungsvorgang [min]")
     terrain_class: Literal[*params_mapping["terrain_class"]["values"]] | None = Field(
         None,
         enum=params_mapping["terrain_class"]["values"],
@@ -61,6 +51,23 @@ class CalculationParameter(BaseModel):
         enum=params_mapping["shielding_class"]["values"],
         description="Abschirmung-/Shieldingklasse (Windeinfluss)"
     )
+
+    Ti_avg: float | None = Field(None, description="Mittlere Raumtemperatur in gesamten Wohneinheit [°C]")
+
+
+class CalculationParameterCO2(CalculationParameterGeneral):
+    building_type: Literal[*params_mapping["building_type"]["values"]] = Field(
+        enum=params_mapping["building_type"]["values"],
+        example=params_mapping["building_type"]["default"],
+        description="Gebäudeart"
+    )
+
+    airing_type_room: Literal[*params_mapping["airing_type_room"]["values"]] | None = Field(
+        None,
+        enum=params_mapping["airing_type_room"]["values"],
+        description="Lüftungsmöglichkeit (betrachteter Raum):"
+    )
+    airing_duration_room: float | None = Field(None, description="Lüftungsdauer pro Lüftungsvorgang [min]")
 
     NrAdu: float | None = Field(None, description="Anzahl Erwachsene")
     ActAdu: float | Literal[*params_mapping["ActAdu"]["values"]] | None = Field(
@@ -76,11 +83,14 @@ class CalculationParameter(BaseModel):
     )
     AgeKid: float | None = Field(None, description="Mittleres Alter der Kinder [a]")
 
-    thermalbridges: float | Literal[*params_mapping["thermalbridges"]["values"]] | None = Field(
-        None,
-        enum=params_mapping["thermalbridges"]["values"],
-        description="Wärmebrücken / fRSI-Wert"
+
+class CalculationParameterH2O(CalculationParameterGeneral):
+    building_type: Literal[*params_mapping_h2o["building_type"]["values"]] = Field(
+        enum=params_mapping_h2o["building_type"]["values"],
+        example=params_mapping_h2o["building_type"]["default"],
+        description="Gebäudeart"
     )
+
     H2Osource_category: Literal[*params_mapping["H2Osource_category"]["values"]] | None = Field(
         None,
         enum=params_mapping["H2Osource_category"]["values"],
@@ -99,9 +109,17 @@ class CalculationParameter(BaseModel):
     airing_duration_home: float | None = Field(
         None, description="Lüftungsdauer gesamt, z.B. morgens und abends [min/Tag]"
     )
-    Ti_avg: float | None = Field(None, description="Mittlere Raumtemperatur in gesamten Wohneinheit [°C]")
+    thermalbridges: float | Literal[*params_mapping["thermalbridges"]["values"]] | None = Field(
+        None,
+        enum=params_mapping["thermalbridges"]["values"],
+        description="Wärmebrücken / fRSI-Wert"
+    )
     Ti_min: float | None = Field(None, description="Raumtemperatur im kühlsten Raum [°C]")
     Ti_abs: float | None = Field(None, description="Minimale Raumtemperatur bei längerer Abwesenheit [°C]")
+
+
+class CalculationParameter(CalculationParameterCO2, CalculationParameterH2O):
+    humcalc: bool = Field(True)
 
 
 class PlotData(BaseModel):
@@ -188,28 +206,38 @@ class ResH2OModel(BaseModel):
     plot: MouldriskPlot = Field(description='Feuchtebewertung (Nur Wohnen) - Plot data')
 
 
-class InputsResultModel(BaseModel):
+class InputsResultModelGeneral(BaseModel):
     location: str
     building_n50: ResultStatsFloat
     building_type: str
-    thermalbridges: ResultStatsFloat
     H_Rm: ResultStatsFloat
     A_Rm: ResultStatsFloat
     room_type: str
     window_area: ResultStatsFloat
     window_class: ResultStatsInteger
-    airing_type_room: str
-    airing_duration_room: ResultStatsFloat
     terrain_class: ResultStatsInteger
     shielding_class: ResultStatsInteger
 
-    NrAdu: ResultStatsInteger
-    ActAdu: ResultStatsFloat
-    NrKids: ResultStatsInteger
-    ActKid: ResultStatsFloat
-    AgeKid: ResultStatsFloat
+    Ti_avg: ResultStatsFloat = Field(None)
 
-    H2Osource_category: ResultStatsFloat | None = Field(None)
+
+class InputsResultModelCO2(InputsResultModelGeneral):
+    airing_type_room: str = Field(None)
+    airing_duration_room: ResultStatsFloat = Field(None)
+    terrain_class: ResultStatsInteger
+    shielding_class: ResultStatsInteger
+
+    NrAdu: ResultStatsInteger = Field(None)
+    ActAdu: ResultStatsFloat = Field(None)
+    NrKids: ResultStatsInteger = Field(None)
+    ActKid: ResultStatsFloat = Field(None)
+    AgeKid: ResultStatsFloat = Field(None)
+
+    Ti_avg: ResultStatsFloat = Field(None)
+
+
+class InputsResultModelH2O(InputsResultModelGeneral):
+    H2Osource_category: ResultStatsFloat = Field(None)
     H2Osource_area: ResultStatsFloat = Field(None)
     H2Osource_pers: ResultStatsFloat = Field(None)
     H2Osource_area_abs: ResultStatsFloat = Field(None)
@@ -217,36 +245,55 @@ class InputsResultModel(BaseModel):
     pers_home: ResultStatsFloat = Field(None)
     airing_type_home: str = Field(None)
     airing_duration_home: ResultStatsFloat = Field(None)
-    Ti_avg: ResultStatsFloat = Field(None)
+    thermalbridges: ResultStatsFloat = Field(None)
     Ti_min: ResultStatsFloat = Field(None)
     Ti_abs: ResultStatsFloat = Field(None)
 
 
+class InputsResultModel(InputsResultModelH2O, InputsResultModelCO2):
+    humcalc: bool
+
+
 class CalculationResult(BaseModel):
-    ResCO2: ResCO2Model = Field(..., description='Ergebnis CO2 Bewertung')
+    ResCO2: ResCO2Model = Field(None, description='Ergebnis CO2 Bewertung')
     ResH2O: ResH2OModel = Field(None, description='Ergebnis Schimmelrisiko Bewertung (nur für Wohnbau)')
     inputs: InputsResultModel = Field(..., description='inputs')
 
 
-def validate_dependentRequired(query: CalculationParameter):
-    try:
-        float(query.building_n50)
+class CalculationResultCO2(BaseModel):
+    ResCO2: ResCO2Model = Field(None, description='Ergebnis CO2 Bewertung')
+    inputs: InputsResultModelCO2 = Field(..., description='inputs')
 
-        missing = []
-        for a in ["window_class", "thermalbridges", "Ti_avg", "Ti_min", "Ti_abs"]:
-            if getattr(query, a) is None:
-                missing.append(InitErrorDetails(loc=[a], type="missing"))
-        if missing:
-            e = ValidationError.from_exception_data(title="missing dependentRequired fields", line_errors=missing)
-            validation_error_callback = getattr(current_app, "validation_error_callback")
-            abort(validation_error_callback(e))
-    except ValueError:
-        pass
+
+class CalculationResultH2O(BaseModel):
+    ResH2O: ResH2OModel = Field(None, description='Ergebnis Schimmelrisiko Bewertung (nur für Wohnbau)')
+    inputs: InputsResultModelH2O = Field(..., description='inputs')
+
+
+def validate_dependentRequired(query: CalculationParameter, humcalc):
+    needed = {"building_n50": ["window_class", "Ti_avg"]}
+    if humcalc:
+        needed["building_n50"] += ["thermalbridges", "Ti_min", "Ti_abs"]
+
+    missing = []
+
+    for k1, v1 in needed.items():
+        if helper.castorfalse(getattr(query, k1), float):
+            for v2 in v1:
+                if getattr(query, v2) is None:
+                    missing.append(InitErrorDetails(loc=[v2], type="missing"))
+
+    if missing:
+        e = ValidationError.from_exception_data(title="missing dependentRequired fields", line_errors=missing)
+        validation_error_callback = getattr(current_app, "validation_error_callback")
+        abort(validation_error_callback(e))
 
 
 @namespace.get("/calculate/validate_inputs")
 def validate_inputs(query: CalculationParameter):
-    validate_dependentRequired(query)
+    if query.humcalc:
+        query.humcalc = calc2.humcalc(query.building_type)
+    validate_dependentRequired(query, query.humcalc)
 
     response = make_response({}, HTTPStatus.OK)
     response.mimetype = "application/json"
@@ -259,11 +306,65 @@ def validate_inputs(query: CalculationParameter):
                    429: None
                })
 def calculate(query: CalculationParameter):
-    validate_dependentRequired(query)
+    if query.humcalc:
+        query.humcalc = calc2.humcalc(query.building_type)
+    validate_dependentRequired(query, query.humcalc)
 
     args = query.model_dump()
     size = 1000
     message = CalculationResult(**calc2.calc(args, size))
+
+    response = make_response(message.model_dump_json(), HTTPStatus.OK)
+    response.mimetype = "application/json"
+    return response
+
+
+@namespace.get("/calculate/CO2/validate_inputs")
+def validate_inputs_co2(query: CalculationParameterCO2):
+    validate_dependentRequired(query, False)
+
+    response = make_response({}, HTTPStatus.OK)
+    response.mimetype = "application/json"
+    return response
+
+
+@namespace.get("/calculate/CO2",
+               responses={
+                   HTTPStatus.OK: CalculationResultCO2,
+                   429: None
+               })
+def calculate_co2(query: CalculationParameterCO2):
+    validate_dependentRequired(query, False)
+
+    args = query.model_dump()
+    size = 1000
+    message = CalculationResultCO2(**calc2.calc_co2(args, size))
+
+    response = make_response(message.model_dump_json(), HTTPStatus.OK)
+    response.mimetype = "application/json"
+    return response
+
+
+@namespace.get("/calculate/H2O/validate_inputs")
+def validate_inputs_h2o(query: CalculationParameterH2O):
+    validate_dependentRequired(query, True)
+
+    response = make_response({}, HTTPStatus.OK)
+    response.mimetype = "application/json"
+    return response
+
+
+@namespace.get("/calculate/H2O",
+               responses={
+                   HTTPStatus.OK: CalculationResultH2O,
+                   429: None
+               })
+def calculate_h2o(query: CalculationParameterH2O):
+    validate_dependentRequired(query, True)
+
+    args = query.model_dump()
+    size = 1000
+    message = CalculationResultH2O(**calc2.calc_h2o(args, size))
 
     response = make_response(message.model_dump_json(), HTTPStatus.OK)
     response.mimetype = "application/json"
@@ -275,20 +376,30 @@ class ParameterResult(BaseModel):
     default: str | None = Field(None)
 
 
-class ParameterResults(BaseModel):
+class ParameterResultsGeneral(BaseModel):
     location: ParameterResult
     building_type: ParameterResult
     room_type: ParameterResult
-    airing_type_room: ParameterResult
-    airing_type_home: ParameterResult
     building_n50: ParameterResult
-    thermalbridges: ParameterResult
-    H2Osource_category: ParameterResult
     terrain_class: ParameterResult
     shielding_class: ParameterResult
     window_class: ParameterResult
+
+
+class ParameterResultsCO2(ParameterResultsGeneral):
+    airing_type_room: ParameterResult
     ActAdu: ParameterResult
     ActKid: ParameterResult
+
+
+class ParameterResultsH2O(ParameterResultsGeneral):
+    airing_type_home: ParameterResult
+    thermalbridges: ParameterResult
+    H2Osource_category: ParameterResult
+
+
+class ParameterResults(ParameterResultsCO2, ParameterResultsH2O):
+    pass
 
 
 @namespace.get('/calculate/params',
@@ -297,6 +408,30 @@ class ParameterResults(BaseModel):
                })
 def params():
     message = ParameterResults(**params_mapping)
+
+    response = make_response(message.model_dump_json(), HTTPStatus.OK)
+    response.mimetype = "application/json"
+    return response
+
+
+@namespace.get('/calculate/CO2/params',
+               responses={
+                   HTTPStatus.OK: ParameterResultsCO2,
+               })
+def params_co2():
+    message = ParameterResultsCO2(**params_mapping_co2)
+
+    response = make_response(message.model_dump_json(), HTTPStatus.OK)
+    response.mimetype = "application/json"
+    return response
+
+
+@namespace.get('/calculate/H2O/params',
+               responses={
+                   HTTPStatus.OK: ParameterResultsH2O,
+               })
+def params_h2o():
+    message = ParameterResultsH2O(**params_mapping_h2o)
 
     response = make_response(message.model_dump_json(), HTTPStatus.OK)
     response.mimetype = "application/json"
