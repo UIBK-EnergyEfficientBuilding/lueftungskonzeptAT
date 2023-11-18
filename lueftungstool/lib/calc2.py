@@ -314,7 +314,7 @@ def calc(args,size):
     )
 
 
-    if args["humcalc"]:
+    if args.get("humcalc", True):
         prep_calc_h2o(
             args=args,
             result=result,
@@ -332,6 +332,6 @@ def calc(args,size):
             size=size
         )
 
-    inputs["humcalc"] = args["humcalc"]
+    inputs["humcalc"] = args.get("humcalc", True)
 
     return result
