@@ -305,7 +305,7 @@ def co2_calculation(
 
     #Momentanwert - realistisches Lüften
     log_arg = (CO2_Grenzwert-C_stat)/(C0-C_stat)
-    t_gw_periodisch = np.where(log_arg > 0, -np.log(log_arg)/LWR, t_max)
+    t_gw_periodisch = np.where(log_arg > 0, -np.ma.log(np.ma.array(log_arg, mask=(log_arg<=0)))/LWR, t_max)
 
     n_i = np.array([np.arange(1, n_max+1)]*size).T
     t_i = t_max*n_i/n_max
@@ -359,7 +359,7 @@ def co2_calculation(
 
     #Momentanwert - ideales Lüften
     log_arg = (CO2_Grenzwert-C_stat)/(CO2_aussen-C_stat)
-    t_gw_ideal = np.where(log_arg > 0, -np.log(log_arg)/LWR, t_max)
+    t_gw_ideal = np.where(log_arg > 0, -np.ma.log(np.ma.array(log_arg, mask=(log_arg<=0)))/LWR, t_max)
 
     n_i = np.array([np.arange(1, n_max+1)]*size).T
     t_i = t_max*n_i/n_max
