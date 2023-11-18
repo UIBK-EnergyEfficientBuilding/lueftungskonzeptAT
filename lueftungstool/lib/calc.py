@@ -71,7 +71,7 @@ def Infiltration(Ti_avg,T_a,fs,fw,n50,Vol,v_10m):
     roh = 1.247
 
     ELA_tot = (n50/3600*Vol*(4/50)**n)/np.sqrt(2*4/roh)
-    Vdot = ELA_tot*3600*np.sqrt(fs**2*(Ti_avg-T_a)+fw**2*v_10m**2)
+    Vdot = ELA_tot*3600*np.sqrt(fs**2*np.abs(Ti_avg-T_a)+fw**2*v_10m**2)
 
     return Vdot
 
@@ -150,7 +150,7 @@ def ReqAirFlow(H2OEmi,aw_limit,Ti,Tsi,Ta,rH_a):
     return Vdot_req
 
 def ReqELA(Vdot_req,Ti,Ta,v_10m,fs,fw):
-    ELA=Vdot_req/3600/np.sqrt(fs**2*(Ti-Ta)+fw**2*v_10m**2)*10000
+    ELA=Vdot_req/3600/np.sqrt(fs**2*np.abs(Ti-Ta)+fw**2*v_10m**2)*10000
     return ELA
 
 def MouldRisk(fRSI,H2Oemi,Vdot_tot,Vdot_inf,Ti,Ti_min,Ta,Ta_damped,rH_a,v_10m,fs,fw,aw_limit,Perc_accept):
