@@ -384,8 +384,8 @@ H_StackRel = {
     "Neubau - sehr dicht": [1, 1, 0, 0.1],
 }
 n50_map = {
-    "Altbau": [3, 3, 3, 4],
     "Undichter Altbau": [3, 3, 3, 7],
+    "Altbau": [3, 3, 3, 4],
     "Standard Neubau": [3, 3, 1, 2],
     "Neubau - eher dicht": [3, 3, 0.6, 1],
     "Neubau - sehr dicht": [3, 3, 0.2, 0.6],
