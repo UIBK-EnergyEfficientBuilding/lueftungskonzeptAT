@@ -183,6 +183,8 @@ class ResH2OModel(BaseModel):
     MouldRisk: float = Field(..., example=0.219, description='Schimmelrisiko als Wahrscheinlichkeit')
     Vdot_acc: float = Field(
         ..., example=29.0, description='Erforderliche zusätzliche Luftmenge damit Wahrscheinlichkeit<1% [m³/h]')
+    ELA_acc: float = Field(
+        ..., example=120, description='dafür erforderlicher zusätzlicher freier Querschnitt [cm²]')
 
     Vdot_Inf: ResultStatsFloat = Field(description='Luftmenge durch Fugenlüftung [m³/h]')
     Vdot_Tot: ResultStatsFloat = Field(description='Luftmenge durch Fugenlüftung + Fensterlüftung [m³/h]')

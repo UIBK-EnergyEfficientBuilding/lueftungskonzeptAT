@@ -245,6 +245,7 @@ def humidity_calculation(Vol_Unit, n50_Unit, fRSI, H2Oemi_abs, H2Oemi_pre, Ti_av
 
     result["MouldRisk"] = np.max([MouldRisk_abs,MouldRisk_pre])
     result["Vdot_acc"] = helper.signif(np.max([Vdot_acc_abs,Vdot_acc_pre]),2)
+    result["ELA_acc"] = helper.signif(np.max([ELA_acc_abs,ELA_acc_pre]),2)
 
     return result
 
