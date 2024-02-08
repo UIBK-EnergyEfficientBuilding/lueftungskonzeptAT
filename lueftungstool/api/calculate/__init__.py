@@ -22,6 +22,10 @@ class CalculationParameterGeneral(BaseModel):
         enum=params_mapping["location"]["values"],
         example=params_mapping["location"]["default"],
         description="Standort"
+    #location: Literal[*["Wien", "St. Pölten", "Eisenstadt", "Graz", "Klagenfurt", "Linz", "Salzburg", "Innsbruck", "Bregenz", "St. Anton", "Lienz", "Zell am See", "Schladming", "Leoben", "Gmünd"]] = Field(
+    #    enum=params_mapping["location"]["values"],
+    #    example=params_mapping["location"]["default"],
+    #    description="Standort"
     )
     building_n50: float | Literal[*params_mapping["building_n50"]["values"]] = Field(
         enum=params_mapping["building_n50"]["values"],

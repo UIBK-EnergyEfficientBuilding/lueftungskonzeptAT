@@ -8,7 +8,7 @@ def signif(x, p):
     mags = 10 ** (p - 1 - np.floor(np.log10(x_positive)))
     return np.round(x * mags) / mags
 
-def result_stats(value,precision=2):
+def result_stats(value,precision=5):
     mean = signif(np.mean(value),precision)
     q = np.quantile(value,[0.05, 0.25, 0.5, 0.75, 0.95])
     error = signif((q[-1] - q[0])/2,precision)
@@ -32,3 +32,23 @@ def castorfalse(value,t):
         return True
     except ValueError:
         return False
+    
+def find_nearest(array, value):     #from chatGPT, not tested
+    """
+    Find the elements in the array nearest to the given value.
+
+    Parameters:
+        array (numpy.ndarray): Input array.
+        value (float or int): Target value.
+
+    Returns:
+        nearest_elements (numpy.ndarray): Array elements nearest to the target value.
+    """
+    # Calculate absolute differences between array elements and the target value
+    absolute_differences = np.abs(array - value)
+    
+    # Find the index of the minimum absolute difference
+    index_min = np.argmin(absolute_differences)
+    
+    # Return the array element(s) nearest to the target value
+    return array[index_min]
