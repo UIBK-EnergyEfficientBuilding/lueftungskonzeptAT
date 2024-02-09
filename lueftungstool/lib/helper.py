@@ -29,6 +29,11 @@ def movavg(arr):
     deno = np.tile(np.arange(1,arr.shape[1]+1),(arr.shape[0],1))
     return cum_sum/deno
 
+def quantile_pos(arr,q):
+    arr_q = np.quantile(arr, q, axis=0)
+    q_idx=abs(arr[:,-1].reshape(-1,1)-arr_q[:,-1].reshape(1,-1)).argmin(axis=0)
+    return arr_q, q_idx
+
 def castorfalse(value,t):
     if value is None:
         return True

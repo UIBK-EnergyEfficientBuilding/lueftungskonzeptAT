@@ -57,28 +57,11 @@ def t_until_th_anaSol(c_threshold,c0,c_stat,ACH,t_obs):
 
 def t_until_th_numSol(c_threshold,c_t,t_i):
     dt = 0.1 # xxx arbitrary to make time until threshold is reached larger than observation time 
-    
-    ## other calculation methods tested 
-    #n_t_until_th1 = c_t.shape[1] - np.argmin(c_t[:,::-1]>c_threshold,axis=1) # no difference between t=threshold and t>threshold
-    #n_t_until_th2 = np.argmax(c_t>c_threshold,axis=1) # doesn't work if c_threshcold isn't reached
-
-    # n_t_until_th3 = np.argmin(c_t<=c_threshold,axis=1)    # would work if assured that first c_t value (at first t_i) is < c_threshold this should be the case 
-    # n_t_until_th3[n_t_until_th3==0] = 191
-    # test3 = t_i[0,n_t_until_th3]
-
-    # n_t_until_th = np.ones(len(c_t),dtype=int)*191        # another try that doesn't work (with adaptions could work)
-    # aa=np.where(c_t>c_threshold)
-    # if len(aa[0])>0:
-    #     n_t_until_th[aa[0]] = aa[1]
-    # test= t_i[0,n_t_until_th]
-    
+       
     n_t_until_th = np.argmin(c_t<=c_threshold,axis=1,keepdims=True)      #this method should be more robst, even when first c_t value is > threshold 
-    #cases_th_not_reached2=~np.any(c_t>c_threshold,axis=1,keepdims=True)    #instead of "~" it might be better to use np.logical_not or np.invert
     cases_th_not_reached=np.invert(np.any(c_t>c_threshold,axis=1,keepdims=True))
-
     t_until_th = t_i[0,n_t_until_th]
     t_until_th[cases_th_not_reached] = np.max(t_i,axis=1) + dt
-    #n_t_until_th[cases_th_not_reached] = t_i.size     #the index is out of bounds and indicates that c_th is reached after t_obs
     
     return t_until_th #, n_t_until_th 	# xxx todo: calculate also for cases where c_th isn't reached within t_obs
 
@@ -86,9 +69,7 @@ def c_airing_cycle_prep(t_start, t_duration,t_i):      #xxx change names "air": 
     t_air_end=t_start+t_duration
     t_i_array=np.tile(t_i,(t_start.shape[0],1))
     idx_air = (t_i>=t_start) & (t_i<=t_air_end)     #could be moved out of loop for better performance
-    #idx_air_st2 = (t_i==t_air_start)     #exact could lead to problems
-    #t_i_air=t_i_array-t_i_array[idx_air_st].reshape(-1,1)
-    idx_air_st=np.minimum(np.searchsorted(t_i.flatten(),t_start.flatten()),t_i.shape[1]-1)      #minimum, because searchsorted will output index max +1, e.g. 1920
+    idx_air_st=np.minimum(np.searchsorted(t_i.flatten(),t_start.flatten()),t_i.shape[1]-1)      #xxx minimum, because searchsorted will output index max +1, e.g. 1920; exact comp could lead to problems
     t_i_air=t_i_array-t_i_array[list(range(idx_air_st.shape[0])),idx_air_st].reshape(-1,1)
     t_i_air[t_i_air<0]=0        # too avoid very large numbers for t<0
     return t_i_air, idx_air, idx_air_st
@@ -142,7 +123,6 @@ def c_airing_cycle(c_i,ACH,t_betw_air,c_stat,c_amb,ACH_airing,t_airing,c_stat_ai
             case "idealC":
                 c_start_noAir=np.tile(c_amb,t_start_noAir.shape)
             case "realC":
-                print("realC calc")
                 c_start_noAir=c_i_air[list(range(idx_noAir_st.shape[0])),idx_noAir_st-1].reshape(-1,1)
             case _:
                 print("Warning: airing method not clear: use ideal airing")
@@ -192,26 +172,26 @@ def co2_calculation(
     t_instC_idealC0_a=t_until_th_anaSol(c_threshold,c_amb,c_stat,ACH,t_obs)
 
     c_instC_idealC0 = c_inst(c_amb,c_stat,ACH,t_i)
-    c_instC_idealC0_qua = np.quantile(c_instC_idealC0, quantiles, axis=0)
+    c_instC_idealC0_qua, c_instC_idealC0_qidx = helper.quantile_pos(c_instC_idealC0, quantiles)
     t_instC_idealC0=t_until_th_numSol(c_threshold,c_instC_idealC0,t_i)
 
-    c_instC_idealC0_air=c_airing_cycle(c_instC_idealC0,ACH,t_instC_idealC0,c_stat,c_amb,ACH_airing,t_airing,c_stat_air,t_i,"instC","idealC")
+    c_instC_idealC0_air=c_airing_cycle(c_instC_idealC0,ACH,t_instC_idealC0,c_stat,c_amb,ACH_airing,t_airing,c_stat_air,t_i,"instC","idealC")[c_instC_idealC0_qidx,:]
 
     ## average concentration and ideal airing 222222222222222222222222222
     c_avgC_idealC0 = c_avg(c_amb,c_stat,ACH,t_i)
-    c_avgC_idealC0_qua = np.quantile(c_avgC_idealC0, quantiles, axis=0)
+    c_avgC_idealC0_qua, c_avgC_idealC0_qidx = helper.quantile_pos(c_avgC_idealC0, quantiles)
     t_avgC_idealC0=t_until_th_numSol(c_threshold,c_avgC_idealC0,t_i)
 
-    c_avgC_idealC0_air=c_airing_cycle(c_instC_idealC0,ACH,t_avgC_idealC0,c_stat,c_amb,ACH_airing,t_airing,c_stat_air,t_i,"avgC","idealC")
+    c_avgC_idealC0_air=c_airing_cycle(c_instC_idealC0,ACH,t_avgC_idealC0,c_stat,c_amb,ACH_airing,t_airing,c_stat_air,t_i,"avgC","idealC")[c_avgC_idealC0_qidx,:]
 
     ## instant concentration and real airing 3333333333333333333333333333
     c0_instC = airing(ACH_airing,t_airing,CO2_emi,volume,c_amb,c_threshold,size)
     c_instC_realC0 = c_inst(c0_instC,c_stat,ACH,t_i)
-    c_instC_realC0_qua = np.quantile(c_instC_realC0, quantiles, axis=0)
+    c_instC_realC0_qua, c_instC_realC0_qidx = helper.quantile_pos(c_instC_realC0, quantiles)
     t_instC_realC0=t_until_th_numSol(c_threshold,c_instC_realC0,t_i)
     t_instC_realC0_a=t_until_th_anaSol(c_threshold,c0_instC,c_stat,ACH,t_obs)
 
-    c_instC_realC0_air=c_airing_cycle(c_instC_realC0,ACH,t_instC_realC0,c_stat,c_amb,ACH_airing,t_airing,c_stat_air,t_i,"instC","realC")
+    c_instC_realC0_air=c_airing_cycle(c_instC_realC0,ACH,t_instC_realC0,c_stat,c_amb,ACH_airing,t_airing,c_stat_air,t_i,"instC","realC")[c_instC_realC0_qidx,:]
 
     ## average concentration and real airing 4444444444444444444444444444
     c0_avgC = c0_instC                  #initial guess: use c0 based on c_inst, i.e. c0 calculated when c_inst hits c_threshold  
@@ -235,8 +215,8 @@ def co2_calculation(
     else:
         print(f"Maximum number of iterations ({ii}) reached without convergence.")      #xxx message for frontend?
 
-    c_avgC_realC0_qua = np.quantile(c_avgC_realC0, quantiles, axis=0)
-    c_avgC_realC0_air=c_airing_cycle(c_instC_realC0,ACH,t_avgC_realC0,c_stat,c_amb,ACH_airing,t_airing,c_stat_air,t_i,"avgC","realC")
+    c_avgC_realC0_qua, c_avgC_realC0_qidx = helper.quantile_pos(c_avgC_realC0, quantiles)
+    c_avgC_realC0_air=c_airing_cycle(c_instC_realC0,ACH,t_avgC_realC0,c_stat,c_amb,ACH_airing,t_airing,c_stat_air,t_i,"avgC","realC")[c_avgC_realC0_qidx,:]
 
     # definition which evaluation and which quantile is used for evaluation if ventilation is sufficient
     # average concentration (because Austria's guideline value is defined this way) and realstic airing is applied
@@ -288,7 +268,7 @@ def format_quantile(quantile):
     
 
 if __name__ == "__main__":
-    size=10
+    size=1000
     n50_room=np.linspace(3,5,size).reshape(-1,1)
     #n50_room=3.5
     T_a = 0

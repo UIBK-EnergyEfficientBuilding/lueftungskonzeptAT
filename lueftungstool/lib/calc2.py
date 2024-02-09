@@ -11,7 +11,7 @@ def humcalc(building_type):
     else:
         return False
 
-def perp_calc_co2(
+def prep_calc_co2(
         args,
         result,
         inputs,
@@ -241,7 +241,7 @@ def calc_co2(args,size):
         "inputs": inputs,
     }
 
-    perp_calc_co2(
+    prep_calc_co2(
         args=args,
         result=result,
         inputs=inputs,
@@ -296,7 +296,7 @@ def calc(args,size):
         "inputs": inputs,
     }
 
-    perp_calc_co2(
+    prep_calc_co2(
         args=args,
         result=result,
         inputs=inputs,

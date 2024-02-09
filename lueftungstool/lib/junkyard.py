@@ -144,3 +144,31 @@ def c_airing_cycle(c_i,ACH,t_betw_air,c_stat,c_amb,ACH_airing,t_airing,c_stat_ai
             print(f"Warning: stopped calculation after {jj} airing events")       #xxx message for frontend?
             break
     return c_i_air
+
+
+def t_until_th_numSol(c_threshold,c_t,t_i):
+    dt = 0.1 # xxx arbitrary to make time until threshold is reached larger than observation time 
+    
+    ## other calculation methods tested 
+    #n_t_until_th1 = c_t.shape[1] - np.argmin(c_t[:,::-1]>c_threshold,axis=1) # no difference between t=threshold and t>threshold
+    #n_t_until_th2 = np.argmax(c_t>c_threshold,axis=1) # doesn't work if c_threshcold isn't reached
+
+    # n_t_until_th3 = np.argmin(c_t<=c_threshold,axis=1)    # would work if assured that first c_t value (at first t_i) is < c_threshold this should be the case 
+    # n_t_until_th3[n_t_until_th3==0] = 191
+    # test3 = t_i[0,n_t_until_th3]
+
+    # n_t_until_th = np.ones(len(c_t),dtype=int)*191        # another try that doesn't work (with adaptions could work)
+    # aa=np.where(c_t>c_threshold)
+    # if len(aa[0])>0:
+    #     n_t_until_th[aa[0]] = aa[1]
+    # test= t_i[0,n_t_until_th]
+    
+    n_t_until_th = np.argmin(c_t<=c_threshold,axis=1,keepdims=True)      #this method should be more robst, even when first c_t value is > threshold 
+    #cases_th_not_reached2=~np.any(c_t>c_threshold,axis=1,keepdims=True)    #instead of "~" it might be better to use np.logical_not or np.invert
+    cases_th_not_reached=np.invert(np.any(c_t>c_threshold,axis=1,keepdims=True))
+
+    t_until_th = t_i[0,n_t_until_th]
+    t_until_th[cases_th_not_reached] = np.max(t_i,axis=1) + dt
+    #n_t_until_th[cases_th_not_reached] = t_i.size     #the index is out of bounds and indicates that c_th is reached after t_obs
+    
+    return t_until_th #, n_t_until_th 	# xxx todo: calculate also for cases where c_th isn't reached within t_obs
