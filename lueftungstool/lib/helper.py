@@ -24,6 +24,11 @@ def cum_mean(arr):
     deno = np.arange(1,cum_sum.shape[0]+1)
     return cum_sum/deno
 
+def movavg(arr):
+    cum_sum = np.cumsum(arr, axis=1)
+    deno = np.tile(np.arange(1,arr.shape[1]+1),(arr.shape[0],1))
+    return cum_sum/deno
+
 def castorfalse(value,t):
     if value is None:
         return True

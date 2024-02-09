@@ -45,6 +45,9 @@ def c_inst(c0,c_stat,ACH,t):
 def c_avg(c0,c_stat,ACH,t):
     return (c0-c_stat)/ACH/t*(1-np.exp(-ACH*t))+c_stat
 
+def c_avg_online(c0_avg,c_i,t_i):
+    return ()
+
 def t_until_th_anaSol(c_threshold,c0,c_stat,ACH,t_obs):
     dt = 0.1 # xxx arbitrary to make time until threshold is reached larger than observation time 
     log_arg = (c_threshold-c_stat)/(c0-c_stat)
@@ -79,7 +82,7 @@ def t_until_th_numSol(c_threshold,c_t,t_i):
     
     return t_until_th #, n_t_until_th 	# xxx todo: calculate also for cases where c_th isn't reached within t_obs
 
-def c_curve_prep(t_start, t_duration,t_i):      #xxx change names
+def c_airing_cycle_prep(t_start, t_duration,t_i):      #xxx change names "air": is for both cycles
     t_air_end=t_start+t_duration
     t_i_array=np.tile(t_i,(t_start.shape[0],1))
     idx_air = (t_i>=t_start) & (t_i<=t_air_end)     #could be moved out of loop for better performance
@@ -89,6 +92,75 @@ def c_curve_prep(t_start, t_duration,t_i):      #xxx change names
     t_i_air=t_i_array-t_i_array[list(range(idx_air_st.shape[0])),idx_air_st].reshape(-1,1)
     t_i_air[t_i_air<0]=0        # too avoid very large numbers for t<0
     return t_i_air, idx_air, idx_air_st
+
+def c_airing_cycle2(c_instC_idealC0,ACH,t_instC_idealC0,c_stat,c_amb,ACH_airing,t_airing,c_stat_air,t_i):
+    t_start_air=t_instC_idealC0
+    c_instC_idealC0_air = c_instC_idealC0
+    jj=1
+    while np.any(t_start_air<t_obs):
+
+        # airing period**********************
+        t_i_air, idx_air, idx_air_st=c_airing_cycle_prep(t_start_air,t_airing,t_i)
+        c_start_air=c_instC_idealC0_air[list(range(idx_air_st.shape[0])),idx_air_st-1].reshape(-1,1)
+        #c_air = c_inst(c_instC_idealC0[t_i==t_air_start].reshape(-1,1),c_stat_air,ACH_airing,t_i_air)
+        c_air = c_inst(c_start_air,c_stat_air,ACH_airing,t_i_air)
+        c_instC_idealC0_air[idx_air]=c_air[idx_air]
+
+        # no-airing period*******************
+        t_start_noAir=t_start_air + t_airing
+        t_i_noAir, idx_noAir, idx_noAir_st=c_airing_cycle_prep(t_start_noAir,t_instC_idealC0,t_i)
+        #c_start_noAir=c_instC_idealC0_air[list(range(idx_noAir_st.shape[0])),idx_noAir_st-1].reshape(-1,1)
+        c_start_noAir=np.tile(c_amb,t_start_noAir.shape)
+        c_noAir = c_inst(c_start_noAir,c_stat,ACH,t_i_noAir)
+        c_instC_idealC0_air[idx_noAir]=c_noAir[idx_noAir]
+
+        # next cycle
+        t_start_air=t_start_noAir + t_instC_idealC0
+        jj +=1
+        if jj>100:
+            print(f"Warning: stopped calculation after {jj} airing events")       #xxx message for frontend?
+            break
+    return c_instC_idealC0_air
+
+
+def c_airing_cycle(c_i,ACH,t_betw_air,c_stat,c_amb,ACH_airing,t_airing,c_stat_air,t_i,calc_method,air_method):
+    t_start_air=t_betw_air
+    c_i_air = np.copy(c_i)      #regular "=" doesn't copy nested arrays, alternatively use copy.deepcopy 
+    jj=1
+    while np.any(t_start_air<t_obs):
+
+        # airing period**********************
+        t_i_air, idx_air, idx_air_st=c_airing_cycle_prep(t_start_air,t_airing,t_i)
+        c_start_air=c_i_air[list(range(idx_air_st.shape[0])),idx_air_st-1].reshape(-1,1)
+        c_air = c_inst(c_start_air,c_stat_air,ACH_airing,t_i_air)
+        c_i_air[idx_air]=c_air[idx_air]
+
+        # no-airing period*******************
+        t_start_noAir=t_start_air + t_airing
+        t_i_noAir, idx_noAir, idx_noAir_st=c_airing_cycle_prep(t_start_noAir,t_betw_air,t_i)
+        match air_method:
+            case "idealC":
+                c_start_noAir=np.tile(c_amb,t_start_noAir.shape)
+            case "realC":
+                print("realC calc")
+                c_start_noAir=c_i_air[list(range(idx_noAir_st.shape[0])),idx_noAir_st-1].reshape(-1,1)
+            case _:
+                print("Warning: airing method not clear: use ideal airing")
+                c_start_noAir=np.tile(c_amb,t_start_noAir.shape)
+
+        c_noAir = c_inst(c_start_noAir,c_stat,ACH,t_i_noAir)
+        c_i_air[idx_noAir]=c_noAir[idx_noAir]
+
+        # next cycle
+        t_start_air=t_start_noAir + t_betw_air
+        jj +=1
+        if jj>100:
+            print(f"Warning: stopped calculation after {jj} airing events")       #xxx message for frontend?
+            break
+    
+    if calc_method=="avgC":
+        return helper.movavg(c_i_air)
+    return c_i_air
 
 def co2_calculation(
         n50, T_a, v_10m, fs, fw, t_obs, volume, ACH_airing, t_airing, Ti_avg, CO2_emi, c_threshold, quantiles, size = 1000
@@ -116,54 +188,32 @@ def co2_calculation(
     #eval_qua=0.5    #xxx tbd better defintion
     #c_instC_idealC0_med=np.quantile(c_instC_idealC0,eval_qua,axis=0)
     
-    # instant concentration and ideal airing
+    ## instant concentration and ideal airing 11111111111111111111111111111
     t_instC_idealC0_a=t_until_th_anaSol(c_threshold,c_amb,c_stat,ACH,t_obs)
 
     c_instC_idealC0 = c_inst(c_amb,c_stat,ACH,t_i)
     c_instC_idealC0_qua = np.quantile(c_instC_idealC0, quantiles, axis=0)
     t_instC_idealC0=t_until_th_numSol(c_threshold,c_instC_idealC0,t_i)
 
-    
-    t_start_air=t_instC_idealC0
-    c_instC_idealC0_air = c_instC_idealC0
-    jj=1
-    while np.any(t_start_air<t_obs):
+    c_instC_idealC0_air=c_airing_cycle(c_instC_idealC0,ACH,t_instC_idealC0,c_stat,c_amb,ACH_airing,t_airing,c_stat_air,t_i,"instC","idealC")
 
-        t_i_air, idx_air, idx_air_st=c_curve_prep(t_start_air,t_airing,t_i)
-        c_start_air=c_instC_idealC0_air[list(range(idx_air_st.shape[0])),idx_air_st-1].reshape(-1,1)
-        #c_air = c_inst(c_instC_idealC0[t_i==t_air_start].reshape(-1,1),c_stat_air,ACH_airing,t_i_air)
-        c_air = c_inst(c_start_air,c_stat_air,ACH_airing,t_i_air)
-        c_instC_idealC0_air[idx_air]=c_air[idx_air]
-
-        
-        t_start_noAir=t_start_air + t_airing
-        t_i_noAir, idx_noAir, idx_noAir_st=c_curve_prep(t_start_noAir,t_instC_idealC0,t_i)
-        #c_start_noAir=c_instC_idealC0_air[list(range(idx_noAir_st.shape[0])),idx_noAir_st-1].reshape(-1,1)
-        c_start_noAir=np.tile(c_amb,t_start_noAir.shape)
-
-        c_noAir = c_inst(c_start_noAir,c_stat,ACH,t_i_noAir)
-        c_instC_idealC0_air[idx_noAir]=c_noAir[idx_noAir]
-
-        t_start_air=t_start_noAir + t_instC_idealC0
-        jj +=1
-        if jj>100:
-            print(f"Warning: stopped calculation after {jj} airing events")       #xxx message for frontend?
-            break
-
-
-    # average concentration and ideal airing
+    ## average concentration and ideal airing 222222222222222222222222222
     c_avgC_idealC0 = c_avg(c_amb,c_stat,ACH,t_i)
     c_avgC_idealC0_qua = np.quantile(c_avgC_idealC0, quantiles, axis=0)
     t_avgC_idealC0=t_until_th_numSol(c_threshold,c_avgC_idealC0,t_i)
 
-    # instant concentration and real airing
+    c_avgC_idealC0_air=c_airing_cycle(c_instC_idealC0,ACH,t_avgC_idealC0,c_stat,c_amb,ACH_airing,t_airing,c_stat_air,t_i,"avgC","idealC")
+
+    ## instant concentration and real airing 3333333333333333333333333333
     c0_instC = airing(ACH_airing,t_airing,CO2_emi,volume,c_amb,c_threshold,size)
     c_instC_realC0 = c_inst(c0_instC,c_stat,ACH,t_i)
     c_instC_realC0_qua = np.quantile(c_instC_realC0, quantiles, axis=0)
     t_instC_realC0=t_until_th_numSol(c_threshold,c_instC_realC0,t_i)
     t_instC_realC0_a=t_until_th_anaSol(c_threshold,c0_instC,c_stat,ACH,t_obs)
 
-    # average concentration and real airing
+    c_instC_realC0_air=c_airing_cycle(c_instC_realC0,ACH,t_instC_realC0,c_stat,c_amb,ACH_airing,t_airing,c_stat_air,t_i,"instC","realC")
+
+    ## average concentration and real airing 4444444444444444444444444444
     c0_avgC = c0_instC                  #initial guess: use c0 based on c_inst, i.e. c0 calculated when c_inst hits c_threshold  
     t_avgC_realC0 = t_avgC_idealC0       #initial guess: use time until threshold from ideal airing
     ii=0
@@ -186,6 +236,7 @@ def co2_calculation(
         print(f"Maximum number of iterations ({ii}) reached without convergence.")      #xxx message for frontend?
 
     c_avgC_realC0_qua = np.quantile(c_avgC_realC0, quantiles, axis=0)
+    c_avgC_realC0_air=c_airing_cycle(c_instC_realC0,ACH,t_avgC_realC0,c_stat,c_amb,ACH_airing,t_airing,c_stat_air,t_i,"avgC","realC")
 
     # definition which evaluation and which quantile is used for evaluation if ventilation is sufficient
     # average concentration (because Austria's guideline value is defined this way) and realstic airing is applied
@@ -213,11 +264,16 @@ def co2_calculation(
         "c0_avgC": helper.result_stats(c0_avgC),
         "c_instC_avgC4thresh": helper.result_stats(c_instC_avgC4thresh),
         "plot": {
-            "c_avgC_realC0_qua": c_avgC_realC0_qua,
-            "c_instC_realC0_qua": c_instC_realC0_qua,
-            "c_avgC_idealC0_qua": c_avgC_idealC0_qua,
             "c_instC_idealC0_qua": c_instC_idealC0_qua,
+            "c_avgC_idealC0_qua": c_avgC_idealC0_qua,
+            "c_instC_realC0_qua": c_instC_realC0_qua,
+            "c_avgC_realC0_qua": c_avgC_realC0_qua,
+            
             "c_instC_idealC0_air": c_instC_idealC0_air,
+            "c_avgC_idealC0_air": c_avgC_idealC0_air,
+            "c_instC_realC0_air": c_instC_realC0_air,
+            "c_avgC_realC0_air": c_avgC_realC0_air,
+
             "t_i": t_i,
         },
     }
@@ -243,7 +299,7 @@ if __name__ == "__main__":
     volume = 45
     #ACH_airing =20 
     ACH_airing=np.linspace(10,20,size).reshape(-1,1)
-    #t_airing_min = 5
+    #t_airing_min = 10
     t_airing_min=np.linspace(3,7,size).reshape(-1,1)
     Ti_avg = 20
     CO2_emi =21.6
@@ -277,7 +333,8 @@ if __name__ == "__main__":
     #print(result["plot"]["c_instC_idealC0_qua"][0:1,:])
     print()
 
-    for i in ["c_instC_idealC0_qua","c_avgC_idealC0_qua","c_instC_realC0_qua","c_avgC_realC0_qua"]:
+    for i in ["c_instC_idealC0","c_avgC_idealC0","c_instC_realC0","c_avgC_realC0"]:
+    #for i in ["c_instC_idealC0","c_avgC_idealC0"]:
         # plt.figure()
         # plt.bar(result["ResCO2"]["plot"][i]["frequency"]["x"], result["ResCO2"]["plot"][i]["frequency"]["y"][0], width=60)
         # plt.grid(True)
@@ -289,15 +346,15 @@ if __name__ == "__main__":
             # x=result["plot"]["t_i"].T
             # y=result["plot"][i].T
             # plt.plot(x, y, linestyle=("-","--"),color="green")
-            plt.plot(result["plot"]["t_i"].T, result["plot"][i][j,:].T, linestyle=linestyle, color="gray")
+            plt.plot(result["plot"]["t_i"].T, result["plot"][i+"_qua"][j,:].T, linestyle=linestyle, color="gray")
             
         
         # x = result["ResCO2"]["plot"][i]["airing"]["x"]
         # y = result["ResCO2"]["plot"][i]["airing"]["y"][0]
-        plt.plot(result["plot"]["t_i"].T, result["plot"]["c_instC_idealC0_air"][0:10,:].T, color="green")
+        plt.plot(result["plot"]["t_i"].T, result["plot"][i+"_air"][0:10,:].T, color="green")
 
         #plt.ylim(0,3000)
         plt.grid(True)
         #plt.savefig(f"ResCO2_timeseries_{i}.png")
         plt.show()
-
+        print()

@@ -66,3 +66,81 @@
     tt=(t_air_end<t_obs)
     tt2=np.any(t_air_end<t_obs)
 
+def c_airing_cycle(c_instC_idealC0,ACH,t_instC_idealC0,c_stat,c_amb,ACH_airing,t_airing,c_stat_air,t_i):
+    t_start_air=t_instC_idealC0
+    c_instC_idealC0_air = c_instC_idealC0
+    jj=1
+    while np.any(t_start_air<t_obs):
+
+        # airing period**********************
+        t_i_air, idx_air, idx_air_st=c_airing_cycle_prep(t_start_air,t_airing,t_i)
+        c_start_air=c_instC_idealC0_air[list(range(idx_air_st.shape[0])),idx_air_st-1].reshape(-1,1)
+        #c_air = c_inst(c_instC_idealC0[t_i==t_air_start].reshape(-1,1),c_stat_air,ACH_airing,t_i_air)
+        c_air = c_inst(c_start_air,c_stat_air,ACH_airing,t_i_air)
+        c_instC_idealC0_air[idx_air]=c_air[idx_air]
+
+        # no-airing period*******************
+        t_start_noAir=t_start_air + t_airing
+        t_i_noAir, idx_noAir, idx_noAir_st=c_airing_cycle_prep(t_start_noAir,t_instC_idealC0,t_i)
+        #c_start_noAir=c_instC_idealC0_air[list(range(idx_noAir_st.shape[0])),idx_noAir_st-1].reshape(-1,1)
+        c_start_noAir=np.tile(c_amb,t_start_noAir.shape)
+        c_noAir = c_inst(c_start_noAir,c_stat,ACH,t_i_noAir)
+        c_instC_idealC0_air[idx_noAir]=c_noAir[idx_noAir]
+
+        # next cycle
+        t_start_air=t_start_noAir + t_instC_idealC0
+        jj +=1
+        if jj>100:
+            print(f"Warning: stopped calculation after {jj} airing events")       #xxx message for frontend?
+            break
+    return c_instC_idealC0_air
+
+def c_airing_cycle(c_i,ACH,t_betw_air,c_stat,c_amb,ACH_airing,t_airing,c_stat_air,t_i,calc_method,air_method):
+    t_start_air=t_betw_air
+    c_i_air = c_i
+    jj=1
+    while np.any(t_start_air<t_obs):
+
+        # airing period**********************
+        t_i_air, idx_air, idx_air_st=c_airing_cycle_prep(t_start_air,t_airing,t_i)
+        c_start_air=c_i_air[list(range(idx_air_st.shape[0])),idx_air_st-1].reshape(-1,1)
+        match calc_method:      # tbd: more elegant and shorter way instead of match case
+            case "instC":
+                c_air = c_inst(c_start_air,c_stat_air,ACH_airing,t_i_air)
+            case "avgC":
+                c_air = c_avg(c_start_air,c_stat_air,ACH_airing,t_i_air)
+            case _:
+                print("Warning: calculation method not clear: use instant concentration")
+                c_air = c_inst(c_start_air,c_stat_air,ACH_airing,t_i_air)   
+        c_i_air[idx_air]=c_air[idx_air]
+
+        # no-airing period*******************
+        t_start_noAir=t_start_air + t_airing
+        t_i_noAir, idx_noAir, idx_noAir_st=c_airing_cycle_prep(t_start_noAir,t_betw_air,t_i)
+        match air_method:
+            case "idealC":
+                c_start_noAir=np.tile(c_amb,t_start_noAir.shape)
+            case "realC":
+                print("realC calc")
+                c_start_noAir=c_i_air[list(range(idx_noAir_st.shape[0])),idx_noAir_st-1].reshape(-1,1)
+            case _:
+                print("Warning: airing method not clear: use ideal airing")
+                c_start_noAir=np.tile(c_amb,t_start_noAir.shape)
+
+        match calc_method:
+            case "instC":
+                c_noAir = c_inst(c_start_noAir,c_stat,ACH,t_i_noAir)
+            case "avgC":
+                c_noAir = c_avg(c_start_noAir,c_stat,ACH,t_i_noAir)
+            case _:
+                print("Warning: calculation method not clear: use instant concentration")
+                c_noAir = c_inst(c_start_noAir,c_stat,ACH,t_i_noAir) 
+        c_i_air[idx_noAir]=c_noAir[idx_noAir]
+
+        # next cycle
+        t_start_air=t_start_noAir + t_betw_air
+        jj +=1
+        if jj>100:
+            print(f"Warning: stopped calculation after {jj} airing events")       #xxx message for frontend?
+            break
+    return c_i_air
