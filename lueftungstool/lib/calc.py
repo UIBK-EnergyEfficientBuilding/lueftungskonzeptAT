@@ -66,15 +66,6 @@ def wind_factor(C,alfa,gama,H_wind,R):
     fw = C*(1-R)**(1/3)*alfa*(H_wind/10)**gama
     return fw
 
-def Infiltration(Ti_avg,T_a,fs,fw,n50,Vol,v_10m):
-    n = 0.66
-    roh = 1.247
-
-    ELA_tot = (n50/3600*Vol*(4/50)**n)/np.sqrt(2*4/roh)
-    Vdot = ELA_tot*3600*np.sqrt(fs**2*np.abs(Ti_avg-T_a)+fw**2*v_10m**2)
-
-    return Vdot
-
 def co2_emission(NrAdu, ActAdu, NrKids, ActKid, AgeKid):
     CO2_Emi_rate_Erw = 18
     CO2_Emi_rate_Kid = 10
@@ -92,6 +83,67 @@ def Lueften(LWR_lueften,t_lueften,CO2_Emi,volume,CO2_aussen,CO2_Grenzwert,CO2_Gr
 
     return C0, C0__GWfix
 
+def Infiltration(Ti_avg,T_a,fs,fw,n50,Vol,v_10m):
+    # xxx temp find better position for def
+    n = 0.66
+    roh = 1.247
+
+    ELA = (n50/3600*Vol*(4/50)**n)/np.sqrt(2*4/roh)
+    Vdot = ELA*3600*np.sqrt(fs**2*np.abs(Ti_avg-T_a)+fw**2*v_10m**2)
+    return Vdot, ELA
+
+def airing(ACH_airing,t_airing,CO2_emi,volume,c_amb,c_start,size):
+    c_stat_airing = (ACH_airing*volume*c_amb/1e6+CO2_emi/1000)/(ACH_airing*volume)*1e6
+    c_end = c_inst(c_start,c_stat_airing,ACH_airing,t_airing)
+    
+    #xxx tbd if needed: long if else only for making sure np.max works in any case depending if variables come as array or single value (maybe not even relevant or more elegant solution possible)
+    if isinstance(c_end,np.ndarray) and isinstance(c_stat_airing,np.ndarray):  
+        if c_end.shape[0] == c_stat_airing.shape[0]:
+            c0_rightdim=c_end
+            c_stat_airing_rightdim=c_stat_airing
+        else:
+            print("array dim doesn't fit :check")       #xxx warning /error message are ignored in frontend? can stay or??
+    elif isinstance(c_end,np.ndarray) and ~isinstance(c_stat_airing,np.ndarray):
+        c0_rightdim=c_end
+        c_stat_airing_rightdim=np.ones(c_end.shape[0]).reshape(-1,1)*c_stat_airing
+    elif ~isinstance(c_end,np.ndarray) and isinstance(c_stat_airing,np.ndarray):
+        c0_rightdim=np.ones(c_stat_airing.shape[0]).reshape(-1,1)*c_end
+        c_stat_airing_rightdim=c_stat_airing
+    else:
+        c_end = np.max([c_end,c_stat_airing])
+        return c_end
+        
+    #c0 = np.max([c_inst(c_start,c_stat_airing,ACH_airing,t_airing),c_stat_airing],axis=1) # max function to make sure that c0 >= c_stat even for strange inputs (had it in xls for some reason)
+    c_end = np.max(np.hstack((c0_rightdim,c_stat_airing_rightdim)),axis=1,keepdims=True)
+    return c_end
+
+def c_stationary(c_amb,Vdot,CO2_emi):
+    return c_amb+CO2_emi/Vdot*1e3
+
+def c_inst(c0,c_stat,ACH,t):
+    return (c0-c_stat)*np.exp(-ACH*t)+c_stat
+
+def c_avg(c0,c_stat,ACH,t):
+    return (c0-c_stat)/ACH/t*(1-np.exp(-ACH*t))+c_stat
+
+
+def t_until_th_anaSol(c_threshold,c0,c_stat,ACH,t_obs):
+    dt = 0.1 # xxx arbitrary to make time until threshold is reached larger than observation time 
+    log_arg = (c_threshold-c_stat)/(c0-c_stat)
+    t_until_threshold =  np.where(log_arg > 0, -np.ma.log(np.ma.array(log_arg, mask=(log_arg<=0)))/ACH, t_obs+dt) # mask array needed with where?
+    #t_until_threshold2 =  np.where(log_arg > 0, -np.log(log_arg)/ACH, t_obs+dt)
+    return t_until_threshold
+
+def t_until_th_numSol(c_threshold,c_t,t_i):
+    dt = 0.1 # xxx arbitrary to make time until threshold is reached larger than observation time 
+       
+    n_t_until_th = np.argmin(c_t<=c_threshold,axis=1,keepdims=True)      #this method should be more robst, even when first c_t value is > threshold 
+    cases_th_not_reached=np.invert(np.any(c_t>c_threshold,axis=1,keepdims=True))
+    t_until_th = t_i[0,n_t_until_th]
+    t_until_th[cases_th_not_reached] = np.max(t_i,axis=1) + dt
+    
+    return t_until_th #, n_t_until_th 	# xxx todo: calculate also for cases where c_th isn't reached within t_obs
+
 def calc_result(t_gw,t,c_gw,t_max):
     n_bins = 50
     bins=np.arange(0,n_bins)*t_max/n_bins
@@ -107,6 +159,77 @@ def calc_result(t_gw,t,c_gw,t_max):
             "y":c_gw.T
         }
     }
+
+def prep_result(t_until_th,t_i,c_i,c_air,t_obs):
+    n_bins = 50     ##xxx tbd define centrally
+    bins=np.arange(0,n_bins)*t_obs/n_bins
+    hist,_ = np.histogram(t_until_th, bins)
+
+    return {
+        "frequency": {
+            "x":bins[:-1]*60,
+            "y":[hist]
+        },
+        "timeseries":{
+            "x":t_i,
+            "y1":c_i,
+            "y2":c_air
+        }
+    }
+    # xxx restructure to meet front end here?
+    # stats_data_gw_ideal["airing"] = {
+    #     "x":c_quantiles_t_gw_ideal,
+    #     "y":[lin(c_quantiles_t_gw_ideal)]
+    # }
+
+
+def c_airing_cycle_prep(t_start, t_duration,t_i):      #xxx change names "air": is for both cycles
+    t_air_end=t_start+t_duration
+    t_i_array=np.tile(t_i,(t_start.shape[0],1))
+    idx_air = (t_i>=t_start) & (t_i<=t_air_end)     #could be moved out of loop for better performance
+    idx_air_st=np.minimum(np.searchsorted(t_i.flatten(),t_start.flatten()),t_i.shape[1]-1)      #xxx minimum, because searchsorted will output index max +1, e.g. 1920; exact comp could lead to problems
+    t_i_air=t_i_array-t_i_array[list(range(idx_air_st.shape[0])),idx_air_st].reshape(-1,1)
+    t_i_air[t_i_air<0]=0        # too avoid very large numbers for t<0
+    return t_i_air, idx_air, idx_air_st
+
+def c_airing_cycle(c_i,ACH,t_betw_air,c_stat,c_amb,ACH_airing,t_airing,c_stat_air,t_i,t_obs,calc_method,air_method):
+    t_start_air=t_betw_air
+    c_i_air = np.copy(c_i)      #regular "=" doesn't copy nested arrays, alternatively use copy.deepcopy 
+    jj=1
+    while np.any(t_start_air<t_obs):
+
+        # airing period**********************
+        t_i_air, idx_air, idx_air_st=c_airing_cycle_prep(t_start_air,t_airing,t_i)
+        c_start_air=c_i_air[list(range(idx_air_st.shape[0])),idx_air_st-1].reshape(-1,1)
+        c_air = c_inst(c_start_air,c_stat_air,ACH_airing,t_i_air)
+        c_i_air[idx_air]=c_air[idx_air]
+
+        # no-airing period*******************
+        t_start_noAir=t_start_air + t_airing
+        t_i_noAir, idx_noAir, idx_noAir_st=c_airing_cycle_prep(t_start_noAir,t_betw_air,t_i)
+        match air_method:
+            case "idealC":
+                c_start_noAir=np.tile(c_amb,t_start_noAir.shape)
+            case "realC":
+                c_start_noAir=c_i_air[list(range(idx_noAir_st.shape[0])),idx_noAir_st-1].reshape(-1,1)
+            case _:
+                print("Warning: airing method not clear: use ideal airing")
+                c_start_noAir=np.tile(c_amb,t_start_noAir.shape)
+
+        c_noAir = c_inst(c_start_noAir,c_stat,ACH,t_i_noAir)
+        c_i_air[idx_noAir]=c_noAir[idx_noAir]
+
+        # next cycle
+        t_start_air=t_start_noAir + t_betw_air
+        jj +=1
+        if jj>100:
+            print(f"Warning: stopped calculation after {jj} airing events")       #xxx message for frontend?
+            break
+    
+    if calc_method=="avgC":
+        return helper.movavg(c_i_air)
+    return c_i_air
+
 
 # Functions needed for humidity calculation
 #note for formulas: reference temperature for all roh's (vapor density) and all Vdot's (air flows) is Ti, no matter of actual air temperature
@@ -250,160 +373,133 @@ def humidity_calculation(Vol_Unit, n50_Unit, fRSI, H2Oemi_abs, H2Oemi_pre, Ti_av
     return result
 
 def co2_calculation(
-        n50_room, T_a, v_10m, fs, fw, t_max, volume_room, ACH_airing_room, airing_duration_room, Ti_avg, CO2_Emi, CO2_Grenzwert, quantiles, size = 1000
+        n50, T_a, v_10m, fs, fw, t_obs, volume, ACH_airing, t_airing, Ti_avg, CO2_emi, c_threshold, quantiles, size = 1000
     ):
+    
+    # allow for user entry
+    Vdot_const = 0  # xxx interface to be implemented
+    #define ambient CO2 conc xxx check for better location
+    c_amb = 450
 
-    Vdot_const = 0  # allow for user entry
-
-    Vdot = Infiltration(Ti_avg,T_a,fs,fw,n50_room,volume_room,v_10m)
+    # determine infiltration air flow
+    Vdot, ELA = Infiltration(Ti_avg,T_a,fs,fw,n50,volume,v_10m)
     Vdot += Vdot_const
-    LWR = Vdot/volume_room
+    Vdot = Vdot.reshape(-1,1)
+    volume= volume.reshape(-1,1)
+    ACH = Vdot/volume
+    ACH_airing = ACH_airing.reshape(-1,1)
+    Vdot_airing = ACH_airing*volume
+    ACH_airing = ACH_airing.reshape(-1,1)
+    CO2_emi=CO2_emi.reshape(-1,1)
+    t_airing = t_airing.reshape(-1,1)
 
-    CO2_aussen = 450
-    CO2_Grenzwert2 = {1000:1250,1400:1745}[CO2_Grenzwert] #? MC2.CA4 1250 1745 #FIXME
+    c_stat = c_stationary(c_amb,Vdot,CO2_emi)
+    c_stat_air = c_stationary(c_amb,Vdot_airing,CO2_emi)
+      
+    n_max=192*10   #tbd xxx define differently
+    n_i = np.arange(1, n_max+1)
+    #t_i = t_obs*n_i/n_max
+    t_i = np.linspace(0,t_obs,n_max+1)[1:].reshape(1,-1)
 
-    C_stat = (Vdot*CO2_aussen/1e6+CO2_Emi/1000)/Vdot*1e6
-    C0, C0__GWfix = Lueften(
-        ACH_airing_room,airing_duration_room/60,CO2_Emi,volume_room,CO2_aussen,CO2_Grenzwert,CO2_Grenzwert2,size
-    )
+    #eval_qua=0.5    #xxx tbd better defintion
+    #c_instC_idealC0_med=np.quantile(c_instC_idealC0,eval_qua,axis=0)
+    
+    ## instant concentration and ideal airing 11111111111111111111111111111
+    # calculate time between airing (analytically, not further used)
+    t_instC_idealC0_a=t_until_th_anaSol(c_threshold,c_amb,c_stat,ACH,t_obs)
 
-    n_max = 192
-    C0_avg2 = C0__GWfix #? CC #genähert
+    # calculate evolution of concentration
+    c_instC_idealC0 = c_inst(c_amb,c_stat,ACH,t_i)
+    # select (5) quantiles of the time evolution curves
+    c_instC_idealC0_qua, c_instC_idealC0_qidx = helper.quantile_pos(c_instC_idealC0, quantiles)
+    # calculate time between airing (numerically)
+    t_instC_idealC0=t_until_th_numSol(c_threshold,c_instC_idealC0,t_i)
+    # calculate evolution of concentration accounting for airing events (for all cases)
+    c_instC_idealC0_air=c_airing_cycle(c_instC_idealC0,ACH,t_instC_idealC0,c_stat,c_amb,ACH_airing,t_airing,c_stat_air,t_i,t_obs,"instC","idealC")
+    # select (5) quantiles for airing evolution
+    c_instC_idealC0_air_qua=c_instC_idealC0_air[c_instC_idealC0_qidx,:]
+    # prepare histogramm and other plot data
+    res_instC_idealC0=prep_result(t_instC_idealC0,t_i,c_instC_idealC0_qua,c_instC_idealC0_air_qua,t_obs)
 
-    dt = t_max/n_max
+    ## average concentration and ideal airing 222222222222222222222222222
+    c_avgC_idealC0 = c_avg(c_amb,c_stat,ACH,t_i)
+    c_avgC_idealC0_qua, c_avgC_idealC0_qidx = helper.quantile_pos(c_avgC_idealC0, quantiles)
+    t_avgC_idealC0=t_until_th_numSol(c_threshold,c_avgC_idealC0,t_i)
 
-    volume_room_m = np.median(volume_room)
-    CO2_Emi_m = np.median(CO2_Emi)
+    c_avgC_idealC0_air=c_airing_cycle(c_instC_idealC0,ACH,t_avgC_idealC0,c_stat,c_amb,ACH_airing,t_airing,c_stat_air,t_i,t_obs,"avgC","idealC")
+    c_avgC_idealC0_air_qua=c_avgC_idealC0_air[c_avgC_idealC0_qidx,:]
+    res_avgC_idealC0=prep_result(t_avgC_idealC0,t_i,c_avgC_idealC0_qua,c_avgC_idealC0_air_qua,t_obs)
 
-    Vdot1 = np.median(Vdot)
-    Vdot2 = np.median(ACH_airing_room)*volume_room_m
+    ## instant concentration and real airing 3333333333333333333333333333
+    c0_instC = airing(ACH_airing,t_airing,CO2_emi,volume,c_amb,c_threshold,size)
+    c_instC_realC0 = c_inst(c0_instC,c_stat,ACH,t_i)
+    c_instC_realC0_qua, c_instC_realC0_qidx = helper.quantile_pos(c_instC_realC0, quantiles)
+    t_instC_realC0=t_until_th_numSol(c_threshold,c_instC_realC0,t_i)
+    t_instC_realC0_a=t_until_th_anaSol(c_threshold,c0_instC,c_stat,ACH,t_obs)
 
-    #Stundenmittelwert - realistisches Lüften
-    t_gw_erreicht, c_quantiles_gw_erreicht = t_gw_calc(
-        C0_avg2,C_stat,LWR,t_max,n_max,CO2_Grenzwert,quantiles,size=size
-    )
-    c_quantiles_t_gw_erreicht = np.arange(1, n_max+1)*t_max/n_max
+    c_instC_realC0_air=c_airing_cycle(c_instC_realC0,ACH,t_instC_realC0,c_stat,c_amb,ACH_airing,t_airing,c_stat_air,t_i,t_obs,"instC","realC")
+    c_instC_realC0_air_qua=c_instC_realC0_air[c_instC_realC0_qidx,:]
+    res_instC_realC0=prep_result(t_instC_realC0,t_i,c_instC_realC0_qua,c_instC_realC0_air_qua,t_obs)
 
-    stats_data_gw_erreicht = calc_result(
-        t_gw_erreicht,
-        c_quantiles_t_gw_erreicht,
-        c_quantiles_gw_erreicht,
-        t_max,
-    )
+    ## average concentration and real airing 4444444444444444444444444444
+    c0_avgC = c0_instC                  #initial guess: use c0 based on c_inst, i.e. c0 calculated when c_inst hits c_threshold  
+    t_avgC_realC0 = t_avgC_idealC0       #initial guess: use time until threshold from ideal airing
+    ii=0
+    ii_max=100          # xxx tbd move to diff loc 
+    c0_convCrit_Lim=5   # xxx tbd move to diff loc
+    while ii < ii_max:
+        c_instC_avgC4thresh = c_inst(c0_avgC,c_stat,ACH,t_avgC_realC0)
+        c0_avgC_new = airing(ACH_airing,t_airing,CO2_emi,volume,c_amb,c_instC_avgC4thresh,size)
+        c_avgC_realC0 = c_avg(c0_avgC_new,c_stat,ACH,t_i)
+        t_avgC_realC0=t_until_th_numSol(c_threshold,c_avgC_realC0,t_i)
+        
+        c0_convCrit=abs(c0_avgC_new-c0_avgC) < c0_convCrit_Lim
+        if all(c0_convCrit):
+            print(f"Convergence achieved after {ii} iterations.")       #xxx message for frontend?
+            break
 
-    t1 = np.median(airing_duration_room)/60
-    t2 = np.median(t_gw_erreicht)
-    ts = t2
+        c0_avgC=c0_avgC_new
+        ii +=1
+    else:
+        print(f"Maximum number of iterations ({ii}) reached without convergence.")      #xxx message for frontend?
 
-    res = solve_ivp(t_c_inst_ode, [0,t_max], [np.median(C0_avg2)], args=(CO2_aussen, Vdot1, Vdot2, volume_room_m, ts, t1, t2, CO2_Emi_m), max_step=dt)
-
-    lin = interp1d(res.t, helper.cum_mean(res.y[0]))
-
-    stats_data_gw_erreicht["airing"] = {
-            "x":c_quantiles_t_gw_erreicht,
-            "y":[lin(c_quantiles_t_gw_erreicht)]
-    }
-
-    #Momentanwert - realistisches Lüften
-    log_arg = (CO2_Grenzwert-C_stat)/(C0-C_stat)
-    t_gw_periodisch = np.where(log_arg > 0, -np.ma.log(np.ma.array(log_arg, mask=(log_arg<=0)))/LWR, t_max)
-
-    n_i = np.array([np.arange(1, n_max+1)]*size).T
-    t_i = t_max*n_i/n_max
-    c_quantiles_gw_periodisch = np.quantile(t_c_inst(C0_avg2, C_stat, LWR, t_i),quantiles,axis=1).T
-    c_quantiles_t_gw_periodisch = np.arange(1, n_max+1)*t_max/n_max
-
-    stats_data_gw_periodisch = calc_result(
-        t_gw_periodisch,
-        c_quantiles_t_gw_periodisch,
-        c_quantiles_gw_periodisch,
-        t_max,
-    )
-
-    t2 = np.median(t_gw_periodisch)
-    ts = t2
-    res = solve_ivp(t_c_inst_ode, [0,t_max], [np.median(C0_avg2)], args=(CO2_aussen, Vdot1, Vdot2, volume_room_m, ts, t1, t2, CO2_Emi_m), max_step=dt)
-
-    lin = interp1d(res.t, res.y[0])
-
-    stats_data_gw_periodisch["airing"] = {
-            "x":c_quantiles_t_gw_periodisch,
-            "y":[lin(c_quantiles_t_gw_periodisch)]
-    }
-
-    #Stundenmittelwert - ideales Lüften
-    t_gw_ueberschritten, c_quantiles_gw_ueberschritten = t_gw_calc(
-        CO2_aussen,C_stat,LWR,t_max,n_max,CO2_Grenzwert,quantiles,size=size
-    )
-    c_quantiles_t_gw_ueberschritten = np.arange(1, n_max+1)*t_max/n_max
-
-    stats_data_gw_ueberschritten = calc_result(
-        t_gw_ueberschritten,
-        c_quantiles_t_gw_ueberschritten,
-        c_quantiles_gw_ueberschritten,
-        t_max,
-    )
-
-
-    epsilon_c = 50
-    t2 = np.median(t_gw_ueberschritten)
-    ts = t2
-
-    res = solve_ivp(t_c_inst_ode2, [0,t_max], [CO2_aussen], args=(CO2_aussen, Vdot1, Vdot2, volume_room_m, {"lueften":False}, CO2_Emi_m, CO2_Grenzwert, epsilon_c), max_step=dt)
-
-    lin = interp1d(res.t, helper.cum_mean(res.y[0]))
-
-    stats_data_gw_ueberschritten["airing"] = {
-            "x":c_quantiles_t_gw_ueberschritten,
-            "y":[lin(c_quantiles_t_gw_ueberschritten)]
-    }
-
-    #Momentanwert - ideales Lüften
-    log_arg = (CO2_Grenzwert-C_stat)/(CO2_aussen-C_stat)
-    t_gw_ideal = np.where(log_arg > 0, -np.ma.log(np.ma.array(log_arg, mask=(log_arg<=0)))/LWR, t_max)
-
-    n_i = np.array([np.arange(1, n_max+1)]*size).T
-    t_i = t_max*n_i/n_max
-    c_quantiles_gw_ideal = np.quantile(t_c_inst(CO2_aussen, C_stat, LWR, t_i),quantiles,axis=1).T
-    c_quantiles_t_gw_ideal = np.arange(1, n_max+1)*t_max/n_max
-
-    stats_data_gw_ideal = calc_result(
-        t_gw_ideal,
-        c_quantiles_t_gw_ideal,
-        c_quantiles_gw_ideal,
-        t_max,
-    )
-
-    t2 = np.median(t_gw_ideal)
-    ts = t2
-    res = solve_ivp(t_c_inst_ode2, [0,t_max], [CO2_aussen], args=(CO2_aussen, Vdot1, Vdot2, volume_room_m, {"lueften":False}, CO2_Emi_m, CO2_Grenzwert, epsilon_c), max_step=dt)
-
-    lin = interp1d(res.t, res.y[0])
-
-    stats_data_gw_ideal["airing"] = {
-            "x":c_quantiles_t_gw_ideal,
-            "y":[lin(c_quantiles_t_gw_ideal)]
-    }
-
-    t_gw_erreicht_m = np.quantile(t_gw_erreicht,0.5)*60
-    t_reasonable = t_max*60
-    Fensterlueftung = t_gw_erreicht_m>t_reasonable
-
+    c_avgC_realC0_qua, c_avgC_realC0_qidx = helper.quantile_pos(c_avgC_realC0, quantiles)
+    c_avgC_realC0_air=c_airing_cycle(c_instC_realC0,ACH,t_avgC_realC0,c_stat,c_amb,ACH_airing,t_airing,c_stat_air,t_i,t_obs,"avgC","realC")
+    c_avgC_realC0_air_qua=c_avgC_realC0_air[c_avgC_realC0_qidx,:]
+    res_avgC_realC0=prep_result(t_avgC_realC0,t_i,c_avgC_realC0_qua,c_avgC_realC0_air_qua,t_obs)
+    
+    ## final evaluation**************************
+    # definition which evaluation and which quantile is used for evaluation if ventilation is sufficient
+    # average concentration (because Austria's guideline value is defined this way) and realstic airing is applied
+    # the median (50th quantile) is used a decision criteria, i.e. up to 50% of the cases might not meet the IAQ guidelinne with reasonable airing intervall
+    t_qua4eval=0.5      # xxx parameter, tbd define somewhere else
+    t_until_th_eval = np.quantile(t_avgC_realC0,t_qua4eval)*60
+    t_reasonable = t_obs*60
+    airing_acceptable = t_until_th_eval >= t_reasonable #>= used instead of > in xls version
+    
     result = {
-        "airing_acceptable": Fensterlueftung,
+        "airing_acceptable": airing_acceptable,
         "t_reasonable": t_reasonable,
-        "t_avgC_realC0": helper.result_stats(t_gw_erreicht*60),
-        "t_instC_realC0": helper.result_stats(t_gw_periodisch*60),
-        "t_avgC_idealC0": helper.result_stats(t_gw_ueberschritten*60),
-        "t_instC_idealC0": helper.result_stats(t_gw_ideal*60),
+        "t_avgC_realC0": helper.result_stats(t_avgC_realC0*60),
+        "t_instC_realC0": helper.result_stats(t_instC_realC0*60),
+        "t_avgC_idealC0": helper.result_stats(t_avgC_idealC0*60),
+        "t_instC_idealC0": helper.result_stats(t_instC_idealC0*60),
+        "ELA": helper.result_stats(ELA),
         "Vdot": helper.result_stats(Vdot),
-        "ACR": helper.result_stats(LWR),
-        "CO2_stat": helper.result_stats(C_stat),
+        "ACR": helper.result_stats(ACH),
+        "CO2_stat": helper.result_stats(c_stat),
+        
+        "t_instC_idealC0_a": helper.result_stats(t_instC_idealC0_a*60),
+        "t_instC_realC0_a": helper.result_stats(t_instC_realC0_a*60),
+        "c0_instC": helper.result_stats(c0_instC),
+        "c0_avgC": helper.result_stats(c0_avgC),
+        "c_instC_avgC4thresh": helper.result_stats(c_instC_avgC4thresh),
         "plot": {
-            "t_avgC_realC0": stats_data_gw_erreicht,
-            "t_instC_realC0": stats_data_gw_periodisch,
-            "t_avgC_idealC0": stats_data_gw_ueberschritten,
-            "t_instC_idealC0": stats_data_gw_ideal,
+            "instC_idealC0": res_instC_idealC0,
+            "avgC_idealC0": res_avgC_idealC0,
+            "instC_realC0": res_instC_realC0,
+            "avgC_realC0": res_avgC_realC0,            
+            "t_i": t_i,     #leave or take out depending on frontend req
         },
     }
 

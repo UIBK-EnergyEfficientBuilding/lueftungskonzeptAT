@@ -112,7 +112,7 @@ if __name__ == "__main__":
 
     import matplotlib.pyplot as plt
 
-    for i in ["t_avgC_realC0", "t_instC_realC0", "t_avgC_idealC0", "t_instC_idealC0"]:
+    for i in ["avgC_realC0", "instC_realC0", "avgC_idealC0", "instC_idealC0"]:
         plt.figure()
         plt.bar(result["ResCO2"]["plot"][i]["frequency"]["x"], result["ResCO2"]["plot"][i]["frequency"]["y"][0], width=60)
         plt.grid(True)
@@ -120,15 +120,21 @@ if __name__ == "__main__":
 
         plt.figure()
         for j,linestyle in zip(range(0,len(quantiles)),[":","--","-","--",":"]):
-            plt.plot(result["ResCO2"]["plot"][i]["timeseries"]["x"], result["ResCO2"]["plot"][i]["timeseries"]["y"][j], linestyle=linestyle, color="gray")
-
-        x = result["ResCO2"]["plot"][i]["airing"]["x"]
-        y = result["ResCO2"]["plot"][i]["airing"]["y"][0]
-        plt.plot(x, y, color="green")
+            x = result["ResCO2"]["plot"][i]["timeseries"]["x"].T
+            y1 = result["ResCO2"]["plot"][i]["timeseries"]["y1"][j,:].T
+            y2 = result["ResCO2"]["plot"][i]["timeseries"]["y2"][j,:].T
+            plt.plot(x, y1, linestyle=linestyle, color="gray")
+            plt.plot(x, y2, linestyle=linestyle, color="green")
+            #plt.plot(result["ResCO2"]["plot"][i]["timeseries"]["x"].T, result["ResCO2"]["plot"][i]["timeseries"]["y2"][j,:].T, linestyle=linestyle, color="green")
+        
+        # x = result["ResCO2"]["plot"][i]["timeseries"]["x"].T
+        # y = result["ResCO2"]["plot"][i]["timeseries"]["y2"][3,:].T
+        # plt.plot(x, y, color="green")
 
         plt.ylim(0,3000)
         plt.grid(True)
         plt.savefig(f"ResCO2_timeseries_{i}.png")
+        plt.show()
 
     if "ResH2O" in result:
         for i in ["abs", "pre"]:

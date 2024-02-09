@@ -63,18 +63,18 @@ def prep_calc_co2(
 
 
     result["ResCO2"] = ltool.co2_calculation(
-        n50_room = n50_room,
+        n50 = n50_room,
         T_a = T_a,
         v_10m = v_10m,
         fs = fs,
         fw = fw,
-        t_max = t_max,
-        volume_room = volume_room,
-        ACH_airing_room = ACH_airing_room,
-        airing_duration_room = airing_duration_room,
+        t_obs = t_max,
+        volume = volume_room,
+        ACH_airing = ACH_airing_room,
+        t_airing = airing_duration_room,
         Ti_avg = Ti_avg,
-        CO2_Emi = CO2_Emi,
-        CO2_Grenzwert = CO2_Grenzwert,
+        CO2_emi = CO2_Emi,
+        c_threshold = CO2_Grenzwert,
         quantiles = quantiles,
         size = size
     )

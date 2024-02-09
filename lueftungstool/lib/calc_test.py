@@ -45,9 +45,6 @@ def c_inst(c0,c_stat,ACH,t):
 def c_avg(c0,c_stat,ACH,t):
     return (c0-c_stat)/ACH/t*(1-np.exp(-ACH*t))+c_stat
 
-def c_avg_online(c0_avg,c_i,t_i):
-    return ()
-
 def t_until_th_anaSol(c_threshold,c0,c_stat,ACH,t_obs):
     dt = 0.1 # xxx arbitrary to make time until threshold is reached larger than observation time 
     log_arg = (c_threshold-c_stat)/(c0-c_stat)
@@ -73,36 +70,6 @@ def c_airing_cycle_prep(t_start, t_duration,t_i):      #xxx change names "air": 
     t_i_air=t_i_array-t_i_array[list(range(idx_air_st.shape[0])),idx_air_st].reshape(-1,1)
     t_i_air[t_i_air<0]=0        # too avoid very large numbers for t<0
     return t_i_air, idx_air, idx_air_st
-
-def c_airing_cycle2(c_instC_idealC0,ACH,t_instC_idealC0,c_stat,c_amb,ACH_airing,t_airing,c_stat_air,t_i):
-    t_start_air=t_instC_idealC0
-    c_instC_idealC0_air = c_instC_idealC0
-    jj=1
-    while np.any(t_start_air<t_obs):
-
-        # airing period**********************
-        t_i_air, idx_air, idx_air_st=c_airing_cycle_prep(t_start_air,t_airing,t_i)
-        c_start_air=c_instC_idealC0_air[list(range(idx_air_st.shape[0])),idx_air_st-1].reshape(-1,1)
-        #c_air = c_inst(c_instC_idealC0[t_i==t_air_start].reshape(-1,1),c_stat_air,ACH_airing,t_i_air)
-        c_air = c_inst(c_start_air,c_stat_air,ACH_airing,t_i_air)
-        c_instC_idealC0_air[idx_air]=c_air[idx_air]
-
-        # no-airing period*******************
-        t_start_noAir=t_start_air + t_airing
-        t_i_noAir, idx_noAir, idx_noAir_st=c_airing_cycle_prep(t_start_noAir,t_instC_idealC0,t_i)
-        #c_start_noAir=c_instC_idealC0_air[list(range(idx_noAir_st.shape[0])),idx_noAir_st-1].reshape(-1,1)
-        c_start_noAir=np.tile(c_amb,t_start_noAir.shape)
-        c_noAir = c_inst(c_start_noAir,c_stat,ACH,t_i_noAir)
-        c_instC_idealC0_air[idx_noAir]=c_noAir[idx_noAir]
-
-        # next cycle
-        t_start_air=t_start_noAir + t_instC_idealC0
-        jj +=1
-        if jj>100:
-            print(f"Warning: stopped calculation after {jj} airing events")       #xxx message for frontend?
-            break
-    return c_instC_idealC0_air
-
 
 def c_airing_cycle(c_i,ACH,t_betw_air,c_stat,c_amb,ACH_airing,t_airing,c_stat_air,t_i,calc_method,air_method):
     t_start_air=t_betw_air
