@@ -1,4 +1,7 @@
 
+import json
+import os.path
+
 import numpy as np
 from scipy.stats import beta as scipy_beta
 
@@ -38,14 +41,14 @@ def map_values(a, d):
         b[a==k] = v
     return b
 
-import json
 
 weather_data = None
-with open("weather_data.json", "r") as inp:
-    weather_data = json.load(inp)
-    for k1 in weather_data:
-        for k2 in weather_data[k1]:
-            weather_data[k1][k2] = np.array(weather_data[k1][k2])
+if os.path.exists("weather_data.json"):
+    with open("weather_data.json", "r") as inp:
+        weather_data = json.load(inp)
+        for k1 in weather_data:
+            for k2 in weather_data[k1]:
+                weather_data[k1][k2] = np.array(weather_data[k1][k2])
 
 def weather(location, size):
     if weather_data:
