@@ -192,7 +192,7 @@ def prep_general(args, size):
         size = size
     )
 
-    T_a, v_10m, rH_a = params_lookups.weather(location = args['location'],)
+    T_a, v_10m, rH_a = params_lookups.weather(location = args['location'], size=size)
     C, alfa, gama = params_lookups.calc_lage(
         location = args['location'],
         inputs = inputs,

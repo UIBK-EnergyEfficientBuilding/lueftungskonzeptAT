@@ -38,12 +38,27 @@ def map_values(a, d):
         b[a==k] = v
     return b
 
+import json
 
+weather_data = None
+with open("weather_data.json", "r") as inp:
+    weather_data = json.load(inp)
+    for k1 in weather_data:
+        for k2 in weather_data[k1]:
+            weather_data[k1][k2] = np.array(weather_data[k1][k2])
 
-def weather(location):
-    T_a = params.location2T_a[location]
-    v_10m = params.location2v_10m[location]
-    rH = params.location2rH[location]
+def weather(location, size):
+    if weather_data:
+        d = weather_data[location]
+        choice = np.random.choice(np.arange(0,len(d["T_a"]),1), size)
+
+        T_a = d["T_a"][choice]
+        v_10m = d["v_10m"][choice]
+        rH = d["rH"][choice]
+    else:
+        T_a = params.location2T_a[location]
+        v_10m = params.location2v_10m[location]
+        rH = params.location2rH[location]
     return T_a, v_10m, rH
 
 def calc_lage(location, inputs, Shield, Terr, quantiles, size):
