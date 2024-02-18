@@ -346,7 +346,7 @@ def humidity_calculation(Vol_Unit, n50_Unit, fRSI, H2Oemi_abs, H2Oemi_pre, Ti_av
     for i, (tot,inf,req), xmax in zip(
             ["Vdot", "ACR"],
             [[Vdot_Tot, Vdot_Inf, Vdot_req], [LWR_Tot, LWR_Inf, LWR_req]],
-            [Vdot_req.mean(), LWR_Tot.mean()]
+            [Vdot_Tot.mean(), LWR_Tot.mean()]
         ):
         bins=np.arange(0,n_bins)/n_bins*xmax*3
         hist_tot,_ = np.histogram(np.clip(tot,bins[0],bins[-1]), bins)
