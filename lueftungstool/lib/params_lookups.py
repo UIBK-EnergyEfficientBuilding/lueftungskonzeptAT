@@ -58,11 +58,16 @@ def weather(location, size):
         T_a = d["T_a"][choice]
         v_10m = d["v_10m"][choice]
         rH = d["rH"][choice]
-    else:
+        MvgAvgWin=24            #xxx move to config: moving average window to calculate damped T_a for fRSI calculation 
+        T_a_damped = d["T_a"][choice-MvgAvgWin]
+
+    else:                       #xxx only to avoid errors when executing without weatherfile
         T_a = params.location2T_a[location]
         v_10m = params.location2v_10m[location]
         rH = params.location2rH[location]
-    return T_a, v_10m, rH
+        T_a_damped = T_a          #not correct, just to allow calculation 
+
+    return T_a, T_a_damped, v_10m, rH 
 
 def calc_lage(location, inputs, Shield, Terr, quantiles, size):
     Shield = params.name2Shield_class[Shield] if Shield is not None else None

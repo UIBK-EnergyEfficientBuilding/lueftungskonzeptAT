@@ -299,14 +299,13 @@ def H2O_emission(H2Osource_area_abs, H2Osource_area, H2Osource_pers, area_home, 
 
     return H2Oemi_abs, H2Oemi_pre
 
-def humidity_calculation(Vol_Unit, n50_Unit, fRSI, H2Oemi_abs, H2Oemi_pre, Ti_avg, Ti_abs, Ti_min, T_a, v_10m, rH_a, fs, fw, ACH_airing_home, airing_duration_home):
+def humidity_calculation(Vol_Unit, n50_Unit, fRSI, H2Oemi_abs, H2Oemi_pre, Ti_avg, Ti_abs, Ti_min, T_a, T_a_damped, v_10m, rH_a, fs, fw, ACH_airing_home, airing_duration_home):
     result = {}
 
     #tbd: through interface
     Vdot_add = 0 #additional ventilation air flow (for expert use/interface) tbd:add text in output when active
 
-    #tbd: through functions
-    Ta_damped= 1.7
+    #T_a_damped now defined concurrently with T_a and passed through
 
     #tbd:in code
     aw_limit=0.8
@@ -320,7 +319,7 @@ def humidity_calculation(Vol_Unit, n50_Unit, fRSI, H2Oemi_abs, H2Oemi_pre, Ti_av
     result["Vdot_Tot"] = helper.result_stats(Vdot_Tot)
 
     #mould risk calculation: absence
-    MouldRisk_abs,ELA_acc_abs,Vdot_acc_abs,Frac_Inf_insuff_abs,Vdot_req_abs,aw_abs=MouldRisk(fRSI,H2Oemi_abs,Vdot_Tot-Vdot_Win,Vdot_Inf,Ti_avg,Ti_abs,T_a,Ta_damped,rH_a,v_10m,fs,fw,aw_limit,Perc_accept)
+    MouldRisk_abs,ELA_acc_abs,Vdot_acc_abs,Frac_Inf_insuff_abs,Vdot_req_abs,aw_abs=MouldRisk(fRSI,H2Oemi_abs,Vdot_Tot-Vdot_Win,Vdot_Inf,Ti_avg,Ti_abs,T_a,T_a_damped,rH_a,v_10m,fs,fw,aw_limit,Perc_accept)
     result["MouldRisk_abs"] = MouldRisk_abs
     result["Vdot_req_abs"] = helper.result_stats(Vdot_req_abs)
     result["Frac_Inf_insuff_abs"] = Frac_Inf_insuff_abs
@@ -328,7 +327,7 @@ def humidity_calculation(Vol_Unit, n50_Unit, fRSI, H2Oemi_abs, H2Oemi_pre, Ti_av
     result["ELA_acc_abs"] = helper.signif(ELA_acc_abs,2)
 
     #mould risk calculation: presence
-    MouldRisk_pre,ELA_acc_pre,Vdot_acc_pre,Frac_Inf_insuff_pre,Vdot_req_pre,aw_pre=MouldRisk(fRSI,H2Oemi_pre,Vdot_Tot,Vdot_Inf,Ti_avg,Ti_min,T_a,Ta_damped,rH_a,v_10m,fs,fw,aw_limit,Perc_accept)
+    MouldRisk_pre,ELA_acc_pre,Vdot_acc_pre,Frac_Inf_insuff_pre,Vdot_req_pre,aw_pre=MouldRisk(fRSI,H2Oemi_pre,Vdot_Tot,Vdot_Inf,Ti_avg,Ti_min,T_a,T_a_damped,rH_a,v_10m,fs,fw,aw_limit,Perc_accept)
     result["MouldRisk_pre"] = MouldRisk_pre
     result["Vdot_req_pre"] = helper.result_stats(Vdot_req_pre)
     result["Frac_Inf_insuff_pre"] = Frac_Inf_insuff_pre
