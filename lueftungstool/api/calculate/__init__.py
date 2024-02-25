@@ -145,10 +145,10 @@ class MouldriskPlot(BaseModel):
 
 
 class ResCo2Plot(BaseModel):
-    t_avgC_realC0: AiringResultData = Field(description='Gleitender Mittelwert - Realistisches Lüftungsverhalten')
-    t_instC_realC0: AiringResultData = Field(description='Momentanwert - Realistisches Lüftungsverhalten')
-    t_avgC_idealC0: AiringResultData = Field(description='Gleitender Mittelwert - Ideale Lüftung')
-    t_instC_idealC0: AiringResultData = Field(description='Momentanwert - Ideale Lüftung')
+    avgC_realC0: AiringResultData = Field(description='Gleitender Mittelwert - Realistisches Lüftungsverhalten')
+    instC_realC0: AiringResultData = Field(description='Momentanwert - Realistisches Lüftungsverhalten')
+    avgC_idealC0: AiringResultData = Field(description='Gleitender Mittelwert - Ideale Lüftung')
+    instC_idealC0: AiringResultData = Field(description='Momentanwert - Ideale Lüftung')
 
 
 class ResultStatsFloat(BaseModel):
@@ -180,6 +180,12 @@ class ResCO2Model(BaseModel):
     CO2_stat: ResultStatsFloat = Field(description='CO2 Konzentration im stationären Fall')
     Vdot: ResultStatsFloat = Field(description='errechnete Luftmenge aufgrund natürlicher Lüftung [m³/h]')
     ACR: ResultStatsFloat = Field(description='errechneter natürlicher Luftwechsel [1/h]')
+
+    t_instC_idealC0_a: ResultStatsFloat = Field(description='xxx tbd')
+    t_instC_realC0_a: ResultStatsFloat = Field(description='xxx tbd')
+    c0_instC: ResultStatsFloat = Field(description='xxx tbd')
+    c0_avgC: ResultStatsFloat = Field(description='xxx tbd')
+    c_instC_avgC4thresh: ResultStatsFloat = Field(description='')
     plot: ResCo2Plot = Field(description='Lüftungsverhalten - Plot data')
 
 

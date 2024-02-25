@@ -171,16 +171,14 @@ def prep_result(t_until_th,t_i,c_i,c_air,t_obs):
             "y":[hist]
         },
         "timeseries":{
-            "x":t_i,
-            "y1":c_i,
-            "y2":c_air
+            "x":t_i[0],
+            "y":c_i,
+        },
+        "airing":{
+            "x":t_i[0],
+            "y":c_air
         }
     }
-    # xxx restructure to meet front end here?
-    # stats_data_gw_ideal["airing"] = {
-    #     "x":c_quantiles_t_gw_ideal,
-    #     "y":[lin(c_quantiles_t_gw_ideal)]
-    # }
 
 
 def c_airing_cycle_prep(t_start, t_duration,t_i):      #xxx change names "air": is for both cycles
@@ -498,7 +496,6 @@ def co2_calculation(
             "avgC_idealC0": res_avgC_idealC0,
             "instC_realC0": res_instC_realC0,
             "avgC_realC0": res_avgC_realC0,            
-            "t_i": t_i,     #leave or take out depending on frontend req
         },
     }
 
