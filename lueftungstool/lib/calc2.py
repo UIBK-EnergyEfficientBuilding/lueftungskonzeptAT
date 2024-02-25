@@ -71,7 +71,7 @@ def prep_calc_co2(
         t_obs = t_max,
         volume = volume_room,
         ACH_airing = ACH_airing_room,
-        t_airing = airing_duration_room,
+        t_airing = airing_duration_room/60,
         Ti_avg = Ti_avg,
         CO2_emi = CO2_Emi,
         c_threshold = CO2_Grenzwert,
