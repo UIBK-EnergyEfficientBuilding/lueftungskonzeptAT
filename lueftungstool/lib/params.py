@@ -383,6 +383,20 @@ H_StackRel = {
     "Neubau - eher dicht": [1, 1, 0, 0.1],
     "Neubau - sehr dicht": [1, 1, 0, 0.1],
 }
+H_unit = {
+    "Undichter Altbau": [3, 3, 2.8, 4],
+    "Altbau": [3, 3, 2.8, 4],
+    "Standard Neubau": [3, 3, 2.4, 2.6],
+    "Neubau - eher dicht": [3, 3, 2.4, 2.6],
+    "Neubau - sehr dicht": [3, 3, 2.4, 2.6],
+}
+WinRat_unit = {                             # window ratio of unit -> calc window area unit -> calc n50_unit (with function n50room)
+    "Undichter Altbau": [3, 3, 0.1, 0.5],
+    "Altbau": [3, 3, 0.1, 0.5],
+    "Standard Neubau": [3, 3, 0.1, 0.5],
+    "Neubau - eher dicht": [3, 3, 0.1, 0.5],
+    "Neubau - sehr dicht": [3, 3, 0.1, 0.5],
+}
 n50_map = {
     "Undichter Altbau": [3, 3, 3, 7],
     "Altbau": [3, 3, 3, 4],
