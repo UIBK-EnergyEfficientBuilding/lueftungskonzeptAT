@@ -120,6 +120,7 @@ class ApiCalculation(MyTestCase):
                     "Ti_avg": "21",
                     "Ti_min": "18",
                     "Ti_abs": "17",
+                    "H_unit": "2.5",
                 },
                 method='GET'
             ):
@@ -138,6 +139,7 @@ class ApiDependentRequired(MyTestCase):
                 "Ti_avg": "21",
                 "Ti_min": "18",
                 "Ti_abs": "17",
+                "H_unit": "2.5",
             }
         ]:
 

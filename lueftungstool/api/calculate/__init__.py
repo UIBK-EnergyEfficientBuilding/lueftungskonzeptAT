@@ -105,6 +105,7 @@ class CalculationParameterH2O(CalculationParameterGeneral):
     H2Osource_area_abs: float | None = Field(None, description="Feuchtequellstärke pro m² bei Abwesenheit [g/(hm²)]")
     area_home: float | None = Field(None, description="Fläche gesamte Wohneinheit [m²]:")
     pers_home: float | None = Field(None, description="Personenanzahl (gesamter Wohneinheit)")
+    H_unit: float | None = Field(None, description="Wohnungshöhe")
     airing_type_home: Literal[*params_mapping["airing_type_home"]["values"]] | None = Field(
         None,
         enum=params_mapping["airing_type_home"]["values"],
@@ -253,6 +254,7 @@ class InputsResultModelH2O(InputsResultModelGeneral):
     H2Osource_area: ResultStatsFloat = Field(None)
     H2Osource_pers: ResultStatsFloat = Field(None)
     H2Osource_area_abs: ResultStatsFloat = Field(None)
+    H_unit: ResultStatsFloat = Field(None)
     area_home: ResultStatsFloat = Field(None)
     pers_home: ResultStatsFloat = Field(None)
     airing_type_home: str = Field(None)
@@ -285,7 +287,7 @@ class CalculationResultH2O(BaseModel):
 def validate_dependentRequired(query: CalculationParameter, humcalc):
     needed = {"building_n50": ["window_class", "Ti_avg"]}
     if humcalc:
-        needed["building_n50"] += ["thermalbridges", "Ti_min", "Ti_abs"]
+        needed["building_n50"] += ["thermalbridges", "Ti_min", "Ti_abs", "H_unit"]
 
     missing = []
 

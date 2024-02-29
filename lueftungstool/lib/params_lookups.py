@@ -144,6 +144,12 @@ def calc_LBL_model_factors(building_n50, building_type, size):
 
     return H_wind, H_stack
 
+def H2Oonly_building_standard(building_n50,inputs,H_unit,size):
+    H_unit = fixed_or_beta_scaled(building_n50, params.H_unit, H_unit, size)
+    inputs["H_unit"] = helper.result_stats(H_unit)
+
+    return H_unit
+
 def H2Oonlyparams(building_type, inputs, area_home, pers_home, size):
     area_home = fixed_or_beta_scaled(building_type, params.WNF, area_home, size)
     inputs["area_home"] = helper.result_stats(area_home)
