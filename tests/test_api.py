@@ -160,20 +160,20 @@ class ApiDependentRequired(MyTestCase):
                 "window_class": "2: eher undicht",
                 "thermalbridges": "0.7",
                 "Ti_avg": "21",
-            }, ["Ti_min", "Ti_abs"]],[{
+            }, ["H_unit","Ti_min", "Ti_abs"]],[{
                 "location": "Wien",
                 "building_type": "Mehrfamilienhaus",
                 "building_n50": "1.5",
                 "window_class": "2: eher undicht",
                 "Ti_min": "18",
                 "Ti_abs": "17",
-            }, ["thermalbridges","Ti_avg"]],[{
+            }, ["H_unit","thermalbridges","Ti_avg"]],[{
                 "location": "Wien",
                 "building_type": "Mehrfamilienhaus",
                 "building_n50": "1.5",
                 "window_class": "2: eher undicht",
                 "thermalbridges": "0.7",
-            }, ["Ti_avg","Ti_min","Ti_abs"]]
+            }, ["H_unit","Ti_avg","Ti_min","Ti_abs"]]
         ]:
 
             with self.app.test_request_context(
