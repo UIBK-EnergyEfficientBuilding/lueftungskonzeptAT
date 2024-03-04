@@ -8,7 +8,7 @@ def signif(x, p):
     mags = 10 ** (p - 1 - np.floor(np.log10(x_positive)))
     return np.round(x * mags) / mags
 
-def result_stats(value,precision=5):
+def result_stats(value,precision=2):
     mean = signif(np.mean(value),precision)
     q = np.quantile(value,[0.05, 0.25, 0.5, 0.75, 0.95])
     error = signif((q[-1] - q[0])/2,precision)
