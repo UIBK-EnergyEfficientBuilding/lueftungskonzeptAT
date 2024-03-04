@@ -296,11 +296,8 @@ def H2O_emission(H2Osource_area_abs, H2Osource_area, H2Osource_pers, area_home, 
 
     return H2Oemi_abs, H2Oemi_pre
 
-def humidity_calculation(Vol_Unit, n50_Unit, fRSI, H2Oemi_abs, H2Oemi_pre, Ti_avg, Ti_abs, Ti_min, T_a, T_a_damped, v_10m, rH_a, fs, fw, ACH_airing_home, airing_duration_home):
+def humidity_calculation(Vol_Unit, n50_Unit, fRSI, H2Oemi_abs, H2Oemi_pre, Ti_avg, Ti_abs, Ti_min, T_a, T_a_damped, v_10m, rH_a, fs, fw, ACH_airing_home, airing_duration_home, Vdot_add):
     result = {}
-
-    #tbd: through interface
-    Vdot_add = 0 #additional ventilation air flow (for expert use/interface) tbd:add text in output when active
 
     #T_a_damped now defined concurrently with T_a and passed through
 

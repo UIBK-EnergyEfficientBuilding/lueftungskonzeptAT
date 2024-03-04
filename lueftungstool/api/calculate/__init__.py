@@ -122,6 +122,7 @@ class CalculationParameterH2O(CalculationParameterGeneral):
     )
     Ti_min: float | None = Field(None, description="Raumtemperatur im kühlsten Raum [°C]")
     Ti_abs: float | None = Field(None, description="Minimale Raumtemperatur bei längerer Abwesenheit [°C]")
+    Vdot_add: float = Field(0, description="zusätzlicher Volumenstrom [m³/h]")
 
 
 class CalculationParameter(CalculationParameterCO2, CalculationParameterH2O):
@@ -265,6 +266,7 @@ class InputsResultModelH2O(InputsResultModelGeneral):
     thermalbridges: ResultStatsFloat = Field(None)
     Ti_min: ResultStatsFloat = Field(None)
     Ti_abs: ResultStatsFloat = Field(None)
+    Vdot_add: float = Field(None)
 
 
 class InputsResultModel(InputsResultModelH2O, InputsResultModelCO2):

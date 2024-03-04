@@ -194,6 +194,9 @@ def prep_calc_h2o(
         size=size,
     )
 
+    Vdot_add = args.get("Vdot_add")
+    inputs["Vdot_add"] = Vdot_add
+
     result["ResH2O"] = ltool.humidity_calculation(
         Vol_Unit = H_unit * area_home,
         n50_Unit = n50_unit,
@@ -211,6 +214,7 @@ def prep_calc_h2o(
         fw = fw,
         ACH_airing_home = ACH_airing_home,
         airing_duration_home = airing_duration_home,
+        Vdot_add = Vdot_add,
     )
 
 def prep_general(args, size):
