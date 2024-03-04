@@ -52,11 +52,10 @@ def t_c_inst_ode2(t, c, c_a, Vdot1, Vdot2, V, state, CO2_Emi, c_Grenzwert, epsil
 def C0_calc_clip(C0,C_stat,LWR,t):
     return np.max([t_c_inst(C0,C_stat,LWR,t),C_stat],axis=0)
 
-def n50room(n50,Fn50,air_permeability,window_area,A_Rm,H_Rm):
-    n50_window_room = air_permeability*(50/100)**(2/3)*window_area/(A_Rm*H_Rm)
+def n50room(n50,Fn50,air_permeability,window_area,volume):
+    n50_window = air_permeability*(50/100)**(2/3)*window_area/volume
     n50Max = 2
-    n50_room =  Fn50*(n50Max*n50-n50_window_room)+n50_window_room
-    return n50_room
+    return Fn50*(n50Max*n50-n50_window)+n50_window
 
 def stack_effect_factor(Ti_avg,R,X,H_stack):
     fs =((1+R/2)/3)*(1-X**2/(2-R)**2)**(3/2)*(9.81*H_stack/(Ti_avg+273))

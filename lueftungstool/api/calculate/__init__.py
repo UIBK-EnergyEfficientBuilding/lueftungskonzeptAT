@@ -32,14 +32,6 @@ class CalculationParameterGeneral(BaseModel):
         example=params_mapping["building_n50"]["default"],
         description="Luftdichtigkeit n50-Wert (Gebäude) [1/h]"
     )
-    H_Rm: float | None = Field(None, description="Höhe (betrachteter Raum) [m]:")
-    A_Rm: float | None = Field(None, description="Fläche (betrachteter Raum) [m²]:")
-    room_type: Literal[*params_mapping["room_type"]["values"]] | None = Field(
-        None,
-        enum=params_mapping["room_type"]["values"],
-        description="Raumart (betrachteter Raum):"
-    )
-    window_area: float | None = Field(None, description="Fläche öffenbare Fenster (betrachteter Raum) [m²]:")
     window_class: Literal[*params_mapping["window_class"]["values"]] | None = Field(
         None,
         enum=params_mapping["window_class"]["values"],
@@ -66,6 +58,14 @@ class CalculationParameterCO2(CalculationParameterGeneral):
         description="Gebäudeart"
     )
 
+    H_Rm: float | None = Field(None, description="Höhe (betrachteter Raum) [m]:")
+    A_Rm: float | None = Field(None, description="Fläche (betrachteter Raum) [m²]:")
+    room_type: Literal[*params_mapping["room_type"]["values"]] | None = Field(
+        None,
+        enum=params_mapping["room_type"]["values"],
+        description="Raumart (betrachteter Raum):"
+    )
+    window_area_room: float | None = Field(None, description="Fläche öffenbare Fenster (betrachteter Raum) [m²]:")
     airing_type_room: Literal[*params_mapping["airing_type_room"]["values"]] | None = Field(
         None,
         enum=params_mapping["airing_type_room"]["values"],
@@ -106,6 +106,7 @@ class CalculationParameterH2O(CalculationParameterGeneral):
     area_home: float | None = Field(None, description="Fläche gesamte Wohneinheit [m²]:")
     pers_home: float | None = Field(None, description="Personenanzahl (gesamter Wohneinheit)")
     H_unit: float | None = Field(None, description="Wohnungshöhe")
+    window_area_unit: float | None = Field(None, description="Fläche öffenbare Fenster (gesamter Wohneinheit) [m²]:")
     airing_type_home: Literal[*params_mapping["airing_type_home"]["values"]] | None = Field(
         None,
         enum=params_mapping["airing_type_home"]["values"],
@@ -223,10 +224,6 @@ class InputsResultModelGeneral(BaseModel):
     location: str
     building_n50: ResultStatsFloat
     building_type: str
-    H_Rm: ResultStatsFloat
-    A_Rm: ResultStatsFloat
-    room_type: str
-    window_area: ResultStatsFloat
     window_class: ResultStatsInteger
     terrain_class: ResultStatsInteger
     shielding_class: ResultStatsInteger
@@ -239,6 +236,11 @@ class InputsResultModelCO2(InputsResultModelGeneral):
     airing_duration_room: ResultStatsFloat = Field(None)
     terrain_class: ResultStatsInteger
     shielding_class: ResultStatsInteger
+
+    H_Rm: ResultStatsFloat
+    A_Rm: ResultStatsFloat
+    room_type: str
+    window_area_room: ResultStatsFloat
 
     NrAdu: ResultStatsInteger = Field(None)
     ActAdu: ResultStatsFloat = Field(None)
@@ -254,6 +256,7 @@ class InputsResultModelH2O(InputsResultModelGeneral):
     H2Osource_area: ResultStatsFloat = Field(None)
     H2Osource_pers: ResultStatsFloat = Field(None)
     H2Osource_area_abs: ResultStatsFloat = Field(None)
+    window_area_unit: ResultStatsFloat
     H_unit: ResultStatsFloat = Field(None)
     area_home: ResultStatsFloat = Field(None)
     pers_home: ResultStatsFloat = Field(None)
@@ -287,7 +290,7 @@ class CalculationResultH2O(BaseModel):
 def validate_dependentRequired(query: CalculationParameter, humcalc):
     needed = {"building_n50": ["window_class", "Ti_avg"]}
     if humcalc:
-        needed["building_n50"] += ["thermalbridges", "Ti_min", "Ti_abs", "H_unit"]
+        needed["building_n50"] += ["window_area_unit", "thermalbridges", "Ti_min", "Ti_abs", "H_unit"]
 
     missing = []
 
@@ -393,7 +396,6 @@ class ParameterResult(BaseModel):
 class ParameterResultsGeneral(BaseModel):
     location: ParameterResult
     building_type: ParameterResult
-    room_type: ParameterResult
     building_n50: ParameterResult
     terrain_class: ParameterResult
     shielding_class: ParameterResult
@@ -401,6 +403,7 @@ class ParameterResultsGeneral(BaseModel):
 
 
 class ParameterResultsCO2(ParameterResultsGeneral):
+    room_type: ParameterResult
     airing_type_room: ParameterResult
     ActAdu: ParameterResult
     ActKid: ParameterResult

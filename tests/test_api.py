@@ -116,6 +116,7 @@ class ApiCalculation(MyTestCase):
                     "building_type": "Mehrfamilienhaus",
                     "building_n50": "1.5",
                     "window_class": "2: eher undicht",
+                    "window_area_unit": "25",
                     "thermalbridges": "0.7",
                     "Ti_avg": "21",
                     "Ti_min": "18",
@@ -135,6 +136,7 @@ class ApiDependentRequired(MyTestCase):
                 "building_type": "Mehrfamilienhaus",
                 "building_n50": "1.5",
                 "window_class": "2: eher undicht",
+                "window_area_unit": "25",
                 "thermalbridges": "0.7",
                 "Ti_avg": "21",
                 "Ti_min": "18",
@@ -158,6 +160,7 @@ class ApiDependentRequired(MyTestCase):
                 "building_type": "Mehrfamilienhaus",
                 "building_n50": "1.5",
                 "window_class": "2: eher undicht",
+                "window_area_unit": "25",
                 "thermalbridges": "0.7",
                 "Ti_avg": "21",
             }, ["H_unit","Ti_min", "Ti_abs"]],[{
@@ -165,6 +168,7 @@ class ApiDependentRequired(MyTestCase):
                 "building_type": "Mehrfamilienhaus",
                 "building_n50": "1.5",
                 "window_class": "2: eher undicht",
+                "window_area_unit": "25",
                 "Ti_min": "18",
                 "Ti_abs": "17",
             }, ["H_unit","thermalbridges","Ti_avg"]],[{
@@ -172,6 +176,7 @@ class ApiDependentRequired(MyTestCase):
                 "building_type": "Mehrfamilienhaus",
                 "building_n50": "1.5",
                 "window_class": "2: eher undicht",
+                "window_area_unit": "25",
                 "thermalbridges": "0.7",
             }, ["H_unit","Ti_avg","Ti_min","Ti_abs"]]
         ]:

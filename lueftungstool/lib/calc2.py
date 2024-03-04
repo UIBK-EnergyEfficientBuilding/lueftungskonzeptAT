@@ -15,26 +15,53 @@ def prep_calc_co2(
         args,
         result,
         inputs,
-        n50_room,
+        n50,
+        Fn50,
+        air_permeability,
         T_a,
         v_10m,
         fs,
         fw,
-        t_max,
-        volume_room,
         Ti_avg,
-        CO2_Grenzwert,
         quantiles,
         size
     ):
     #add defaults to args for co2
-    for arg in ["airing_type_room"]:
+    for arg in ["room_type", "airing_type_room"]:
         if arg not in args or args[arg] is None:
             args[arg] = params_mapping[arg]["default"]
 
     #add defaults to input results
-    for field in ["airing_type_room"]:
+    for field in ["room_type", "airing_type_room"]:
         inputs[field] = args.get(field)
+
+    room_type = args['room_type']
+
+    H_Rm, A_Rm, t_max, CO2_Grenzwert = params_lookups.Raum(
+        room_type = room_type,
+        inputs = inputs,
+        quantiles = quantiles,
+        H_Rm = args.get('H_Rm'),
+        A_Rm = args.get('A_Rm'),
+        size = size
+    )
+    volume_room = H_Rm*A_Rm
+
+    window_area_room = params_lookups.CO2only_roon(
+        room_type,
+        inputs,
+        window_area_room=args.get("window_area_room"),
+        A_Rm=A_Rm,
+        size=size
+    )
+
+    n50_room = ltool.n50room(
+        n50 = n50,
+        Fn50 = Fn50,
+        air_permeability = air_permeability,
+        window_area = window_area_room,
+        volume = volume_room
+    )
 
     ACH_airing_room, airing_duration_room = params_lookups.airing_room(
         airing_type_room = args['airing_type_room'],
@@ -86,7 +113,9 @@ def prep_calc_h2o(
         building_type,
         thermalbridges_label,
         building_n50,
-        n50_room,
+        n50,
+        Fn50,
+        air_permeability,
         Ti_avg,
         T_a,
         T_a_damped,
@@ -120,6 +149,24 @@ def prep_calc_h2o(
         size = size
     )
 
+    volume_home = H_unit*area_home
+
+    window_area_unit = params_lookups.H2Oonly_building(
+        building_n50 = building_n50,
+        inputs = inputs,
+        window_area_unit=args.get("window_area_unit"),
+        A_Rm=area_home,
+        size=size
+    )
+
+    n50_unit = ltool.n50room(
+        n50 = n50,
+        Fn50 = Fn50,
+        air_permeability = air_permeability,
+        window_area = window_area_unit,
+        volume = volume_home
+    )
+
     H2Osource_area_abs, H2Osource_area, H2Osource_pers = params_lookups.H2O_sources(
         H2Osource_category = args.get("H2Osource_category"),
         inputs = inputs,
@@ -149,7 +196,7 @@ def prep_calc_h2o(
 
     result["ResH2O"] = ltool.humidity_calculation(
         Vol_Unit = H_unit * area_home,
-        n50_Unit = n50_room,
+        n50_Unit = n50_unit,
         fRSI = fRSI,
         H2Oemi_abs = H2Oemi_abs,
         H2Oemi_pre = H2Oemi_pre,
@@ -172,13 +219,8 @@ def prep_general(args, size):
     building_type = args["building_type"]
     building_n50 = args["building_n50"]
 
-    #add defaults to args general
-    for arg in ["room_type"]:
-        if arg not in args or args[arg] is None:
-            args[arg] = params_mapping[arg]["default"]
-
     #add defaults to input results general
-    for field in ["location", "building_type", "room_type"]:
+    for field in ["location", "building_type"]:
         inputs[field] = args.get(field)
 
     thermalbridges_label = params_lookups.get_thermalbridges_label(
@@ -189,16 +231,6 @@ def prep_general(args, size):
         inputs=inputs,
         Ti_avg=args.get("Ti_avg"),
         size=size
-    )
-
-    H_Rm, A_Rm, window_area, t_max, CO2_Grenzwert = params_lookups.Raum(
-        room_type = args['room_type'],
-        inputs = inputs,
-        quantiles = quantiles,
-        H_Rm = args.get('H_Rm'),
-        A_Rm = args.get('A_Rm'),
-        window_area = args.get('window_area'),
-        size = size
     )
 
     T_a, T_a_damped, v_10m, rH_a = params_lookups.weather(location = args['location'], size=size)
@@ -226,25 +258,16 @@ def prep_general(args, size):
 
     Fn50 = params_lookups.n50factor(size)
 
-    n50_room = ltool.n50room(
-        n50 = n50,
-        Fn50 = Fn50,
-        air_permeability = air_permeability,
-        window_area = window_area,
-        A_Rm = A_Rm,
-        H_Rm = H_Rm,
-    )
-
     R, X = params_lookups.Undichtheiten(size)
     fs = ltool.stack_effect_factor(Ti_avg,R,X,H_stack)
     fw = ltool.wind_factor(C,alfa,gama,H_wind,R)
 
-    return inputs, building_n50, n50_room, T_a, T_a_damped, v_10m, fs, fw, t_max, H_Rm, A_Rm, Ti_avg, CO2_Grenzwert, building_type, thermalbridges_label, rH_a, quantiles
+    return inputs, building_n50, n50, Fn50, air_permeability, T_a, T_a_damped, v_10m, fs, fw, Ti_avg, building_type, thermalbridges_label, rH_a, quantiles
 
 
 def calc_co2(args,size):
 
-    inputs, building_n50, n50_room, T_a, T_a_damped, v_10m, fs, fw, t_max, H_Rm, A_Rm, Ti_avg, CO2_Grenzwert, building_type, thermalbridges_label, rH_a, quantiles = prep_general(args, size)
+    inputs, building_n50, n50, Fn50, air_permeability, T_a, T_a_damped, v_10m, fs, fw, Ti_avg, building_type, thermalbridges_label, rH_a, quantiles = prep_general(args, size)
 
     result = {
         "inputs": inputs,
@@ -254,15 +277,14 @@ def calc_co2(args,size):
         args=args,
         result=result,
         inputs=inputs,
-        n50_room=n50_room,
+        n50=n50,
+        Fn50=Fn50,
+        air_permeability=air_permeability,
         T_a=T_a,
         v_10m=v_10m,
         fs=fs,
         fw=fw,
-        t_max=t_max,
-        volume_room=H_Rm*A_Rm,
         Ti_avg=Ti_avg,
-        CO2_Grenzwert=CO2_Grenzwert,
         quantiles=quantiles,
         size=size
     )
@@ -271,7 +293,7 @@ def calc_co2(args,size):
 
 def calc_h2o(args,size):
 
-    inputs, building_n50, n50_room, T_a, T_a_damped, v_10m, fs, fw, t_max, H_Rm, A_Rm, Ti_avg, CO2_Grenzwert, building_type, thermalbridges_label, rH_a, quantiles = prep_general(args, size)
+    inputs, building_n50, n50, Fn50, air_permeability, T_a, T_a_damped, v_10m, fs, fw, Ti_avg, building_type, thermalbridges_label, rH_a, quantiles = prep_general(args, size)
 
     result = {
         "inputs": inputs,
@@ -284,7 +306,9 @@ def calc_h2o(args,size):
         building_type=building_type,
         thermalbridges_label=thermalbridges_label,
         building_n50=building_n50,
-        n50_room=n50_room,
+        n50=n50,
+        Fn50=Fn50,
+        air_permeability=air_permeability,
         Ti_avg=Ti_avg,
         T_a=T_a,
         T_a_damped = T_a_damped,
@@ -300,7 +324,7 @@ def calc_h2o(args,size):
 
 def calc(args,size):
 
-    inputs, building_n50, n50_room, T_a, T_a_damped, v_10m, fs, fw, t_max, H_Rm, A_Rm, Ti_avg, CO2_Grenzwert, building_type, thermalbridges_label, rH_a, quantiles = prep_general(args, size)
+    inputs, building_n50, n50, Fn50, air_permeability, T_a, T_a_damped, v_10m, fs, fw, Ti_avg, building_type, thermalbridges_label, rH_a, quantiles = prep_general(args, size)
 
     result = {
         "inputs": inputs,
@@ -310,15 +334,14 @@ def calc(args,size):
         args=args,
         result=result,
         inputs=inputs,
-        n50_room=n50_room,
+        n50=n50,
+        Fn50=Fn50,
+        air_permeability=air_permeability,
         T_a=T_a,
         v_10m=v_10m,
         fs=fs,
         fw=fw,
-        t_max=t_max,
-        volume_room=H_Rm*A_Rm,
         Ti_avg=Ti_avg,
-        CO2_Grenzwert=CO2_Grenzwert,
         quantiles=quantiles,
         size=size
     )
@@ -332,7 +355,9 @@ def calc(args,size):
             building_type=building_type,
             thermalbridges_label=thermalbridges_label,
             building_n50=building_n50,
-            n50_room=n50_room,
+            n50=n50,
+            Fn50=Fn50,
+            air_permeability=air_permeability,
             Ti_avg=Ti_avg,
             T_a=T_a,
             T_a_damped=T_a_damped,

@@ -174,22 +174,37 @@ def Undichtheiten(size):
 
     return R,X
 
-def Raum(room_type, inputs, quantiles, H_Rm = None, A_Rm = None, window_area = None, size = 1000):
+def Raum(room_type, inputs, quantiles, H_Rm = None, A_Rm = None, size = 1000):
     A_Rm = fixed_or_beta_scaled(room_type, params.raumart2A_Rm, A_Rm, size)
     H_Rm = fixed_or_beta_scaled(room_type, params.raumart2H_Rm, H_Rm, size)
 
-    if window_area is None:
-        WinRat_Rm = beta_scaled(*params.raumart2WinRat_Rm[room_type], size)
-        window_area = WinRat_Rm*A_Rm
-
     inputs["H_Rm"] = helper.result_stats(H_Rm)
     inputs["A_Rm"] = helper.result_stats(A_Rm)
-    inputs["window_area"] = helper.result_stats(window_area)
 
     t_max = params.room_type2t_max[room_type]
     CO2_Grenzwert = params.room_type2CO2_Grenzwert[room_type]
 
-    return H_Rm, A_Rm, window_area, t_max, CO2_Grenzwert
+    return H_Rm, A_Rm, t_max, CO2_Grenzwert
+
+def CO2only_roon(room_type, inputs, window_area_room = None, A_Rm = None, size = 1000):
+    if window_area_room is None:
+        WinRat_Rm = beta_scaled(*params.raumart2WinRat_Rm[room_type], size)
+        window_area_room = WinRat_Rm*A_Rm
+
+    inputs["window_area_room"] = helper.result_stats(window_area_room)
+
+    return window_area_room
+
+
+def H2Oonly_building(building_n50, inputs, window_area_unit = None, A_Rm = None, size = 1000):
+    if window_area_unit is None:
+        WinRat_Rm = beta_scaled(*params.WinRat_unit[building_n50], size)
+        window_area_unit = WinRat_Rm*A_Rm
+
+    inputs["window_area_unit"] = helper.result_stats(window_area_unit)
+
+    return window_area_unit
+
 
 def activity_parameters(ActAdu, ActKid):
 

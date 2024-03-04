@@ -450,10 +450,6 @@ params_mapping_general = {
         "values": location_list,
         "default": "Wien",
     },
-    "room_type": {
-        "values": room_type_list,
-        "default": "Schlafzimmer",
-    },
     "building_n50": {
         "values": n50_map_list,
         "default": "Standard Neubau",
@@ -474,6 +470,10 @@ params_mapping_co2 = params_mapping_general | {
     "building_type": {
         "values": buiding_type_list,
         "default": "Mehrfamilienhaus",
+    },
+    "room_type": {
+        "values": room_type_list,
+        "default": "Schlafzimmer",
     },
     "airing_type_room": {
         "values": airing_type_list,
