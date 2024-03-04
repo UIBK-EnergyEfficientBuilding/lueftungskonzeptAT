@@ -257,7 +257,7 @@ class InputsResultModelH2O(InputsResultModelGeneral):
     H2Osource_area: ResultStatsFloat = Field(None)
     H2Osource_pers: ResultStatsFloat = Field(None)
     H2Osource_area_abs: ResultStatsFloat = Field(None)
-    window_area_unit: ResultStatsFloat
+    window_area_unit: ResultStatsFloat = Field(None)
     H_unit: ResultStatsFloat = Field(None)
     area_home: ResultStatsFloat = Field(None)
     pers_home: ResultStatsFloat = Field(None)
