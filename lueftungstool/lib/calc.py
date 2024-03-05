@@ -408,9 +408,20 @@ def co2_calculation(
     # calculate time between airing (numerically)
     t_instC_idealC0=t_until_th_numSol(c_threshold,c_instC_idealC0,t_i)
     # calculate evolution of concentration accounting for airing events (for all cases)
-    c_instC_idealC0_air=c_airing_cycle(c_instC_idealC0,ACH,t_instC_idealC0,c_stat,c_amb,ACH_airing,t_airing,c_stat_air,t_i,t_obs,"instC","idealC")
-    # select (5) quantiles for airing evolution
-    c_instC_idealC0_air_qua=c_instC_idealC0_air[c_instC_idealC0_qidx,:]
+    c_instC_idealC0_air_qua=c_airing_cycle(
+        c_instC_idealC0[c_instC_idealC0_qidx,:],
+        ACH[c_instC_idealC0_qidx,:],
+        t_instC_idealC0[c_instC_idealC0_qidx,:],
+        c_stat[c_instC_idealC0_qidx,:],
+        c_amb,
+        ACH_airing[c_instC_idealC0_qidx,:],
+        t_airing[c_instC_idealC0_qidx,:],
+        c_stat_air[c_instC_idealC0_qidx,:],
+        t_i,
+        t_obs,
+        "instC",
+        "idealC"
+    )
     # prepare histogramm and other plot data
     res_instC_idealC0=prep_result(t_instC_idealC0,t_i,c_instC_idealC0_qua,c_instC_idealC0_air_qua,t_obs)
 
@@ -419,8 +430,20 @@ def co2_calculation(
     c_avgC_idealC0_qua, c_avgC_idealC0_qidx = helper.quantile_pos(c_avgC_idealC0, quantiles)
     t_avgC_idealC0=t_until_th_numSol(c_threshold,c_avgC_idealC0,t_i)
 
-    c_avgC_idealC0_air=c_airing_cycle(c_instC_idealC0,ACH,t_avgC_idealC0,c_stat,c_amb,ACH_airing,t_airing,c_stat_air,t_i,t_obs,"avgC","idealC")
-    c_avgC_idealC0_air_qua=c_avgC_idealC0_air[c_avgC_idealC0_qidx,:]
+    c_avgC_idealC0_air_qua=c_airing_cycle(
+        c_instC_idealC0[c_avgC_idealC0_qidx,:],
+        ACH[c_avgC_idealC0_qidx,:],
+        t_avgC_idealC0[c_avgC_idealC0_qidx,:],
+        c_stat[c_avgC_idealC0_qidx,:],
+        c_amb,
+        ACH_airing[c_avgC_idealC0_qidx,:],
+        t_airing[c_avgC_idealC0_qidx,:],
+        c_stat_air[c_avgC_idealC0_qidx,:],
+        t_i,
+        t_obs,
+        "avgC",
+        "idealC"
+    )
     res_avgC_idealC0=prep_result(t_avgC_idealC0,t_i,c_avgC_idealC0_qua,c_avgC_idealC0_air_qua,t_obs)
 
     ## instant concentration and real airing 3333333333333333333333333333
@@ -430,8 +453,20 @@ def co2_calculation(
     t_instC_realC0=t_until_th_numSol(c_threshold,c_instC_realC0,t_i)
     t_instC_realC0_a=t_until_th_anaSol(c_threshold,c0_instC,c_stat,ACH,t_obs)
 
-    c_instC_realC0_air=c_airing_cycle(c_instC_realC0,ACH,t_instC_realC0,c_stat,c_amb,ACH_airing,t_airing,c_stat_air,t_i,t_obs,"instC","realC")
-    c_instC_realC0_air_qua=c_instC_realC0_air[c_instC_realC0_qidx,:]
+    c_instC_realC0_air_qua=c_airing_cycle(
+        c_instC_realC0[c_instC_realC0_qidx,:],
+        ACH[c_instC_realC0_qidx,:],
+        t_instC_realC0[c_instC_realC0_qidx,:],
+        c_stat[c_instC_realC0_qidx,:],
+        c_amb,
+        ACH_airing[c_instC_realC0_qidx,:],
+        t_airing[c_instC_realC0_qidx,:],
+        c_stat_air[c_instC_realC0_qidx,:],
+        t_i,
+        t_obs,
+        "instC",
+        "realC"
+    )
     res_instC_realC0=prep_result(t_instC_realC0,t_i,c_instC_realC0_qua,c_instC_realC0_air_qua,t_obs)
 
     ## average concentration and real airing 4444444444444444444444444444
@@ -457,8 +492,20 @@ def co2_calculation(
         print(f"Maximum number of iterations ({ii}) reached without convergence.")      #xxx message for frontend?
 
     c_avgC_realC0_qua, c_avgC_realC0_qidx = helper.quantile_pos(c_avgC_realC0, quantiles)
-    c_avgC_realC0_air=c_airing_cycle(c_instC_realC0,ACH,t_avgC_realC0,c_stat,c_amb,ACH_airing,t_airing,c_stat_air,t_i,t_obs,"avgC","realC")
-    c_avgC_realC0_air_qua=c_avgC_realC0_air[c_avgC_realC0_qidx,:]
+    c_avgC_realC0_air_qua=c_airing_cycle(
+        c_instC_realC0[c_avgC_realC0_qidx,:],
+        ACH[c_avgC_realC0_qidx,:],
+        t_avgC_realC0[c_avgC_realC0_qidx,:],
+        c_stat[c_avgC_realC0_qidx,:],
+        c_amb,
+        ACH_airing[c_avgC_realC0_qidx,:],
+        t_airing[c_avgC_realC0_qidx,:],
+        c_stat_air[c_avgC_realC0_qidx,:],
+        t_i,
+        t_obs,
+        "avgC",
+        "realC"
+    )
     res_avgC_realC0=prep_result(t_avgC_realC0,t_i,c_avgC_realC0_qua,c_avgC_realC0_air_qua,t_obs)
     
     ## final evaluation**************************
