@@ -120,13 +120,14 @@ if __name__ == "__main__":
         plt.savefig(f"ResCO2_frequency_{i}.png")
 
         plt.figure()
+
+        x = result["ResCO2"]["plot"][i]["timeseries"]["x"].T
         for j,linestyle in zip(range(0,len(quantiles)),[":","--","-","--",":"]):
-            x = result["ResCO2"]["plot"][i]["timeseries"]["x"].T
             y1 = result["ResCO2"]["plot"][i]["timeseries"]["y"][j,:].T
-            y2 = result["ResCO2"]["plot"][i]["airing"]["y"][j,:].T
             plt.plot(x, y1, linestyle=linestyle, color="gray")
-            plt.plot(x, y2, linestyle=linestyle, color="green")
             #plt.plot(result["ResCO2"]["plot"][i]["timeseries"]["x"].T, result["ResCO2"]["plot"][i]["timeseries"]["y2"][j,:].T, linestyle=linestyle, color="green")
+        y2 = result["ResCO2"]["plot"][i]["airing"]["y"][0,:].T
+        plt.plot(x, y2, linestyle="-", color="green")
         
         # x = result["ResCO2"]["plot"][i]["timeseries"]["x"].T
         # y = result["ResCO2"]["plot"][i]["timeseries"]["y2"][3,:].T

@@ -404,7 +404,8 @@ def co2_calculation(
     # calculate evolution of concentration
     c_instC_idealC0 = c_inst(c_amb,c_stat,ACH,t_i)
     # select (5) quantiles of the time evolution curves
-    c_instC_idealC0_qua, c_instC_idealC0_qidx = helper.quantile_pos(c_instC_idealC0, quantiles)
+    c_instC_idealC0_qua, _ = helper.quantile_pos(c_instC_idealC0, quantiles)
+    _, c_instC_idealC0_qidx = helper.quantile_pos(c_instC_idealC0, [0.5])
     # calculate time between airing (numerically)
     t_instC_idealC0=t_until_th_numSol(c_threshold,c_instC_idealC0,t_i)
     # calculate evolution of concentration accounting for airing events (for all cases)
@@ -427,7 +428,8 @@ def co2_calculation(
 
     ## average concentration and ideal airing 222222222222222222222222222
     c_avgC_idealC0 = c_avg(c_amb,c_stat,ACH,t_i)
-    c_avgC_idealC0_qua, c_avgC_idealC0_qidx = helper.quantile_pos(c_avgC_idealC0, quantiles)
+    c_avgC_idealC0_qua, _ = helper.quantile_pos(c_avgC_idealC0, quantiles)
+    _, c_avgC_idealC0_qidx = helper.quantile_pos(c_avgC_idealC0, [0.5])
     t_avgC_idealC0=t_until_th_numSol(c_threshold,c_avgC_idealC0,t_i)
 
     c_avgC_idealC0_air_qua=c_airing_cycle(
@@ -449,7 +451,8 @@ def co2_calculation(
     ## instant concentration and real airing 3333333333333333333333333333
     c0_instC = airing(ACH_airing,t_airing,CO2_emi,volume,c_amb,c_threshold,size)
     c_instC_realC0 = c_inst(c0_instC,c_stat,ACH,t_i)
-    c_instC_realC0_qua, c_instC_realC0_qidx = helper.quantile_pos(c_instC_realC0, quantiles)
+    c_instC_realC0_qua, _ = helper.quantile_pos(c_instC_realC0, quantiles)
+    _, c_instC_realC0_qidx = helper.quantile_pos(c_instC_realC0, [0.5])
     t_instC_realC0=t_until_th_numSol(c_threshold,c_instC_realC0,t_i)
     t_instC_realC0_a=t_until_th_anaSol(c_threshold,c0_instC,c_stat,ACH,t_obs)
 
@@ -491,7 +494,8 @@ def co2_calculation(
     else:
         print(f"Maximum number of iterations ({ii}) reached without convergence.")      #xxx message for frontend?
 
-    c_avgC_realC0_qua, c_avgC_realC0_qidx = helper.quantile_pos(c_avgC_realC0, quantiles)
+    c_avgC_realC0_qua, _ = helper.quantile_pos(c_avgC_realC0, quantiles)
+    _, c_avgC_realC0_qidx = helper.quantile_pos(c_avgC_realC0, [0.5])
     c_avgC_realC0_air_qua=c_airing_cycle(
         c_instC_realC0[c_avgC_realC0_qidx,:],
         ACH[c_avgC_realC0_qidx,:],
