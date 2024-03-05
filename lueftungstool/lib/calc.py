@@ -5,52 +5,6 @@ from scipy.interpolate import interp1d
 
 import lueftungstool.lib.helper as helper
 
-def t_c_cummean(C0,C_stat,LWR,t_i):
-    c_t=(C0-C_stat)/LWR/t_i*(1-np.exp(-LWR*t_i))+C_stat
-    return c_t
-
-def t_gw_calc(C0,C_stat,LWR,t_max,n_max,CO2_Grenzwert,quantiles,size):
-    n_i = np.array([np.arange(1, n_max+1)]*size).T
-    t_i = t_max*n_i/n_max
-    c_t=t_c_cummean(C0,C_stat,LWR,t_i)
-    a = c_t.shape[0] - np.argmin(c_t[::-1]>CO2_Grenzwert,axis=0)
-    return a*t_max/n_max, np.quantile(c_t,quantiles,axis=1).T
-
-def t_c_inst(C0,C_stat,LWR,t):
-    return (C0-C_stat)*np.exp(-LWR*t)+C_stat
-
-def t_c_inst_ode(t, c, c_a, Vdot1, Vdot2, V, ts, t1, t2, CO2_Emi):
-    Vdot = Vdot1
-
-    t0 = t-ts
-    if t0>0:
-        tt = t0 % (t1 + t2)
-        if tt>0:
-            Vdot = Vdot2
-        if tt-t1/t2 > 0:
-            Vdot = Vdot1
-
-    dcdt = ((c_a-c)/1e6*Vdot + CO2_Emi/1000)/V*1e6
-    return dcdt
-
-def t_c_inst_ode2(t, c, c_a, Vdot1, Vdot2, V, state, CO2_Emi, c_Grenzwert, epsilon_c):
-    if c[0] > c_Grenzwert:
-        state["lueften"] = True
-
-    Vdot = Vdot1
-    if state["lueften"]:
-        Vdot = Vdot2
-
-    dcdt = ((c_a-c)/1e6*Vdot + CO2_Emi/1000)/V*1e6
-
-    if state["lueften"] and abs(dcdt) < epsilon_c:
-        state["lueften"] = False
-
-    return dcdt
-
-
-def C0_calc_clip(C0,C_stat,LWR,t):
-    return np.max([t_c_inst(C0,C_stat,LWR,t),C_stat],axis=0)
 
 def n50room(n50,Fn50,air_permeability,window_area,volume):
     n50_window = air_permeability*(50/100)**(2/3)*window_area/volume
@@ -73,14 +27,6 @@ def co2_emission(NrAdu, ActAdu, NrKids, ActKid, AgeKid):
         + CO2_Emi_rate_Erw*ActAdu*NrAdu
 
     return CO2_Emi
-
-def Lueften(LWR_lueften,t_lueften,CO2_Emi,volume,CO2_aussen,CO2_Grenzwert,CO2_Grenzwert2,size):
-    c_stat_lueft = (LWR_lueften*volume*CO2_aussen/1e6+CO2_Emi/1000)/(LWR_lueften*volume)*1e6
-
-    C0__GWfix = C0_calc_clip(CO2_Grenzwert2,c_stat_lueft,LWR_lueften,t_lueften)
-    C0 = C0_calc_clip(CO2_Grenzwert,c_stat_lueft,LWR_lueften,t_lueften)
-
-    return C0, C0__GWfix
 
 def Infiltration(Ti_avg,T_a,fs,fw,n50,Vol,v_10m):
     # xxx temp find better position for def
@@ -143,21 +89,6 @@ def t_until_th_numSol(c_threshold,c_t,t_i):
     
     return t_until_th #, n_t_until_th 	# xxx todo: calculate also for cases where c_th isn't reached within t_obs
 
-def calc_result(t_gw,t,c_gw,t_max):
-    n_bins = 50
-    bins=np.arange(0,n_bins)*t_max/n_bins
-    hist,_ = np.histogram(t_gw, bins)
-
-    return {
-        "frequency": {
-            "x":bins[:-1]*60,
-            "y":[hist]
-        },
-        "timeseries":{
-            "x":t,
-            "y":c_gw.T
-        }
-    }
 
 def prep_result(t_until_th,t_i,c_i,c_air,t_obs):
     n_bins = 50     ##xxx tbd define centrally
