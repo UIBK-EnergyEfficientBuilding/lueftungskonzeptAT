@@ -194,7 +194,7 @@ def prep_calc_h2o(
         size=size,
     )
 
-    Vdot_add = args.get("Vdot_add")
+    Vdot_add = args.get("Vdot_add", 0)
     inputs["Vdot_add"] = Vdot_add
 
     result["ResH2O"] = ltool.humidity_calculation(
