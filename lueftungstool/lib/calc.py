@@ -95,18 +95,24 @@ def prep_result(t_until_th,t_i,c_i,c_air,t_obs):
     bins=np.arange(0,n_bins)*t_obs/n_bins
     hist,_ = np.histogram(t_until_th, bins)
 
+    n_max=192
+    t = np.linspace(0,t_obs,n_max+1)
+
+    lin_c = interp1d(t_i[0], c_i, bounds_error=False) #minimal extrapolation dt=1/1920 -> bounds_error
+    lin_c_air = interp1d(t_i[0], c_air, bounds_error=False)
+
     return {
         "frequency": {
             "x":bins[:-1]*60,
             "y":[hist]
         },
         "timeseries":{
-            "x":t_i[0],
-            "y":c_i,
+            "x":t,
+            "y":lin_c(t),
         },
         "airing":{
-            "x":t_i[0],
-            "y":c_air
+            "x":t,
+            "y":lin_c_air(t),
         }
     }
 
