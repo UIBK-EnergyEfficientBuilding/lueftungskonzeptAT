@@ -243,7 +243,7 @@ def humidity_calculation(Vol_Unit, n50_Unit, fRSI, H2Oemi_abs, H2Oemi_pre, Ti_av
     Perc_accept=0.99
 
     #calculation of air flows
-    Vdot_Inf = Infiltration(Ti_avg,T_a,fs,fw,n50_Unit,Vol_Unit,v_10m)
+    Vdot_Inf,_ = Infiltration(Ti_avg,T_a,fs,fw,n50_Unit,Vol_Unit,v_10m)
     Vdot_Win = ACH_airing_home*airing_duration_home/60/24*Vol_Unit
     Vdot_Tot=Vdot_Inf+Vdot_Win+Vdot_add
     result["Vdot_Inf"] = helper.result_stats(Vdot_Inf)
