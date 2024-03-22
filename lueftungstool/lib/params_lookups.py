@@ -44,6 +44,7 @@ def map_values(a, d):
 
 weather_data = None
 if os.path.exists("weather_data.json"):
+    print("found weather_data.json")
     with open("weather_data.json", "r") as inp:
         weather_data = json.load(inp)
         for k1 in weather_data:
