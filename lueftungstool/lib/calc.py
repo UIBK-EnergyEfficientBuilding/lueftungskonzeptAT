@@ -303,17 +303,15 @@ def humidity_calculation(Vol_Unit, n50_Unit, fRSI, H2Oemi_abs, H2Oemi_pre, Ti_av
     return result
 
 def co2_calculation(
-        n50, T_a, v_10m, fs, fw, t_obs, volume, ACH_airing, t_airing, Ti_avg, CO2_emi, c_threshold, quantiles, size = 1000
+        n50, T_a, v_10m, fs, fw, t_obs, volume, ACH_airing, t_airing, Ti_avg, CO2_emi, c_threshold, Vdot_add, quantiles, size = 1000
     ):
     
-    # allow for user entry
-    Vdot_const = 0  # xxx interface to be implemented
     #define ambient CO2 conc xxx check for better location
     c_amb = 450
 
     # determine infiltration air flow
     Vdot, ELA = Infiltration(Ti_avg,T_a,fs,fw,n50,volume,v_10m)
-    Vdot += Vdot_const
+    Vdot += Vdot_add
     Vdot = Vdot.reshape(-1,1)
     volume= volume.reshape(-1,1)
     ACH = Vdot/volume

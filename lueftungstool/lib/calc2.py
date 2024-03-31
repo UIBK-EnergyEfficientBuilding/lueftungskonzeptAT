@@ -24,6 +24,7 @@ def prep_calc_co2(
         fw,
         Ti_avg,
         quantiles,
+        Vdot_add,
         size
     ):
     #add defaults to args for co2
@@ -102,6 +103,7 @@ def prep_calc_co2(
         Ti_avg = Ti_avg,
         CO2_emi = CO2_Emi,
         c_threshold = CO2_Grenzwert,
+        Vdot_add=Vdot_add,
         quantiles = quantiles,
         size = size
     )
@@ -123,6 +125,7 @@ def prep_calc_h2o(
         rH_a,
         fs,
         fw,
+        Vdot_add,
         size
     ):
     #add defaults to args for h2o
@@ -194,8 +197,6 @@ def prep_calc_h2o(
         size=size,
     )
 
-    Vdot_add = args.get("Vdot_add", 0)
-    inputs["Vdot_add"] = Vdot_add
 
     result["ResH2O"] = ltool.humidity_calculation(
         Vol_Unit = H_unit * area_home,
@@ -266,12 +267,15 @@ def prep_general(args, size):
     fs = ltool.stack_effect_factor(Ti_avg,R,X,H_stack)
     fw = ltool.wind_factor(C,alfa,gama,H_wind,R)
 
-    return inputs, building_n50, n50, Fn50, air_permeability, T_a, T_a_damped, v_10m, fs, fw, Ti_avg, building_type, thermalbridges_label, rH_a, quantiles
+    Vdot_add = args.get("Vdot_add", 0)
+    inputs["Vdot_add"] = Vdot_add
+
+    return inputs, building_n50, n50, Fn50, air_permeability, T_a, T_a_damped, v_10m, fs, fw, Ti_avg, building_type, thermalbridges_label, rH_a, Vdot_add, quantiles
 
 
 def calc_co2(args,size):
 
-    inputs, building_n50, n50, Fn50, air_permeability, T_a, T_a_damped, v_10m, fs, fw, Ti_avg, building_type, thermalbridges_label, rH_a, quantiles = prep_general(args, size)
+    inputs, building_n50, n50, Fn50, air_permeability, T_a, T_a_damped, v_10m, fs, fw, Ti_avg, building_type, thermalbridges_label, rH_a, Vdot_add, quantiles = prep_general(args, size)
 
     result = {
         "inputs": inputs,
@@ -289,6 +293,7 @@ def calc_co2(args,size):
         fs=fs,
         fw=fw,
         Ti_avg=Ti_avg,
+        Vdot_add=Vdot_add,
         quantiles=quantiles,
         size=size
     )
@@ -297,7 +302,7 @@ def calc_co2(args,size):
 
 def calc_h2o(args,size):
 
-    inputs, building_n50, n50, Fn50, air_permeability, T_a, T_a_damped, v_10m, fs, fw, Ti_avg, building_type, thermalbridges_label, rH_a, quantiles = prep_general(args, size)
+    inputs, building_n50, n50, Fn50, air_permeability, T_a, T_a_damped, v_10m, fs, fw, Ti_avg, building_type, thermalbridges_label, rH_a, Vdot_add, quantiles = prep_general(args, size)
 
     result = {
         "inputs": inputs,
@@ -320,6 +325,7 @@ def calc_h2o(args,size):
         rH_a=rH_a,
         fs=fs,
         fw=fw,
+        Vdot_add=Vdot_add,
         size=size
     )
 
@@ -328,7 +334,7 @@ def calc_h2o(args,size):
 
 def calc(args,size):
 
-    inputs, building_n50, n50, Fn50, air_permeability, T_a, T_a_damped, v_10m, fs, fw, Ti_avg, building_type, thermalbridges_label, rH_a, quantiles = prep_general(args, size)
+    inputs, building_n50, n50, Fn50, air_permeability, T_a, T_a_damped, v_10m, fs, fw, Ti_avg, building_type, thermalbridges_label, rH_a, Vdot_add, quantiles = prep_general(args, size)
 
     result = {
         "inputs": inputs,
@@ -346,6 +352,7 @@ def calc(args,size):
         fs=fs,
         fw=fw,
         Ti_avg=Ti_avg,
+        Vdot_add=Vdot_add,
         quantiles=quantiles,
         size=size
     )
@@ -369,6 +376,7 @@ def calc(args,size):
             rH_a=rH_a,
             fs=fs,
             fw=fw,
+            Vdot_add=Vdot_add,
             size=size
         )
 
