@@ -1,7 +1,7 @@
 
 
 import lueftungstool.lib.calc2 as calc2
-from lueftungstool.lib.params import params_mapping, params_mapping_co2, params_mapping_h2o
+from lueftungstool.lib.params import params_mapping, params_mapping_co2, params_mapping_h2o, version as params_version
 import lueftungstool.lib.helper as helper
 
 from typing import Literal
@@ -417,6 +417,9 @@ class ParameterResults(ParameterResultsCO2, ParameterResultsH2O):
     pass
 
 
+class VersionResult(BaseModel):
+    version: str = Field(params_version)
+
 @namespace.get('/calculate/params',
                responses={
                    HTTPStatus.OK: ParameterResults,
@@ -428,6 +431,16 @@ def params():
     response.mimetype = "application/json"
     return response
 
+@namespace.get('/calculate/version',
+               responses={
+                   HTTPStatus.OK: VersionResult,
+               })
+def version():
+    message = VersionResult()
+
+    response = make_response(message.model_dump_json(), HTTPStatus.OK)
+    response.mimetype = "application/json"
+    return response
 
 @namespace.get('/calculate/CO2/params',
                responses={
