@@ -477,7 +477,7 @@ params_mapping_co2 = params_mapping_general | {
     },
     "airing_type_room": {
         "values": airing_type_list,
-        "default": "Querlüftung",
+        "default": "Einseitige Fensterfront",
     },
     "ActAdu": {
         "values": activity_level_list,
