@@ -15,6 +15,7 @@ def prep_calc_co2(
         args,
         result,
         inputs,
+        results,
         n50,
         Fn50,
         air_permeability,
@@ -89,29 +90,32 @@ def prep_calc_co2(
 
     CO2_Emi = ltool.co2_emission(NrAdu, ActAdu, NrKids, ActKid, AgeKid)
 
-
-    result["ResCO2"] = ltool.co2_calculation(
-        n50 = n50_room,
-        T_a = T_a,
-        v_10m = v_10m,
-        fs = fs,
-        fw = fw,
-        t_obs = t_max,
-        volume = volume_room,
-        ACH_airing = ACH_airing_room,
-        t_airing = airing_duration_room/60,
-        Ti_avg = Ti_avg,
-        CO2_emi = CO2_Emi,
-        c_threshold = CO2_Grenzwert,
-        Vdot_add=Vdot_add,
-        quantiles = quantiles,
-        size = size
-    )
+    if results:
+        result["ResCO2"] = ltool.co2_calculation(
+            n50 = n50_room,
+            T_a = T_a,
+            v_10m = v_10m,
+            fs = fs,
+            fw = fw,
+            t_obs = t_max,
+            volume = volume_room,
+            ACH_airing = ACH_airing_room,
+            t_airing = airing_duration_room/60,
+            Ti_avg = Ti_avg,
+            CO2_emi = CO2_Emi,
+            c_threshold = CO2_Grenzwert,
+            Vdot_add=Vdot_add,
+            quantiles = quantiles,
+            size = size
+        )
+    else:
+        result["ResCO2"] = None
 
 def prep_calc_h2o(
         args,
         result,
         inputs,
+        results,
         building_type,
         thermalbridges_label,
         building_n50,
@@ -197,35 +201,38 @@ def prep_calc_h2o(
         size=size,
     )
 
-
-    result["ResH2O"] = ltool.humidity_calculation(
-        Vol_Unit = H_unit * area_home,
-        n50_Unit = n50_unit,
-        fRSI = fRSI,
-        H2Oemi_abs = H2Oemi_abs,
-        H2Oemi_pre = H2Oemi_pre,
-        Ti_avg = Ti_avg,
-        Ti_abs = Ti_abs,
-        Ti_min = Ti_min,
-        T_a = T_a,
-        T_a_damped = T_a_damped,
-        v_10m = v_10m,
-        rH_a = rH_a,
-        fs = fs,
-        fw = fw,
-        ACH_airing_home = ACH_airing_home,
-        airing_duration_home = airing_duration_home,
-        Vdot_add = Vdot_add,
-    )
+    if results:
+        result["ResH2O"] = ltool.humidity_calculation(
+            Vol_Unit = H_unit * area_home,
+            n50_Unit = n50_unit,
+            fRSI = fRSI,
+            H2Oemi_abs = H2Oemi_abs,
+            H2Oemi_pre = H2Oemi_pre,
+            Ti_avg = Ti_avg,
+            Ti_abs = Ti_abs,
+            Ti_min = Ti_min,
+            T_a = T_a,
+            T_a_damped = T_a_damped,
+            v_10m = v_10m,
+            rH_a = rH_a,
+            fs = fs,
+            fw = fw,
+            ACH_airing_home = ACH_airing_home,
+            airing_duration_home = airing_duration_home,
+            Vdot_add = Vdot_add,
+        )
+    else:
+        result["ResH2O"] = None
 
 def prep_general(args, size):
     quantiles = [0.05, 0.25, 0.5, 0.75, 0.95]
     inputs = {}
     building_type = args["building_type"]
     building_n50 = args["building_n50"]
+    results = args.get("results", True)
 
     #add defaults to input results general
-    for field in ["location", "building_type"]:
+    for field in ["location", "building_type", "results"]:
         inputs[field] = args.get(field)
 
     thermalbridges_label = params_lookups.get_thermalbridges_label(
@@ -270,12 +277,12 @@ def prep_general(args, size):
     Vdot_add = args.get("Vdot_add", 0)
     inputs["Vdot_add"] = Vdot_add
 
-    return inputs, building_n50, n50, Fn50, air_permeability, T_a, T_a_damped, v_10m, fs, fw, Ti_avg, building_type, thermalbridges_label, rH_a, Vdot_add, quantiles
+    return inputs, results, building_n50, n50, Fn50, air_permeability, T_a, T_a_damped, v_10m, fs, fw, Ti_avg, building_type, thermalbridges_label, rH_a, Vdot_add, quantiles
 
 
 def calc_co2(args,size):
 
-    inputs, building_n50, n50, Fn50, air_permeability, T_a, T_a_damped, v_10m, fs, fw, Ti_avg, building_type, thermalbridges_label, rH_a, Vdot_add, quantiles = prep_general(args, size)
+    inputs, results, building_n50, n50, Fn50, air_permeability, T_a, T_a_damped, v_10m, fs, fw, Ti_avg, building_type, thermalbridges_label, rH_a, Vdot_add, quantiles = prep_general(args, size)
 
     result = {
         "inputs": inputs,
@@ -285,6 +292,7 @@ def calc_co2(args,size):
         args=args,
         result=result,
         inputs=inputs,
+        results=results,
         n50=n50,
         Fn50=Fn50,
         air_permeability=air_permeability,
@@ -302,7 +310,7 @@ def calc_co2(args,size):
 
 def calc_h2o(args,size):
 
-    inputs, building_n50, n50, Fn50, air_permeability, T_a, T_a_damped, v_10m, fs, fw, Ti_avg, building_type, thermalbridges_label, rH_a, Vdot_add, quantiles = prep_general(args, size)
+    inputs, results, building_n50, n50, Fn50, air_permeability, T_a, T_a_damped, v_10m, fs, fw, Ti_avg, building_type, thermalbridges_label, rH_a, Vdot_add, quantiles = prep_general(args, size)
 
     result = {
         "inputs": inputs,
@@ -312,6 +320,7 @@ def calc_h2o(args,size):
         args=args,
         result=result,
         inputs=inputs,
+        results=results,
         building_type=building_type,
         thermalbridges_label=thermalbridges_label,
         building_n50=building_n50,
@@ -334,7 +343,7 @@ def calc_h2o(args,size):
 
 def calc(args,size):
 
-    inputs, building_n50, n50, Fn50, air_permeability, T_a, T_a_damped, v_10m, fs, fw, Ti_avg, building_type, thermalbridges_label, rH_a, Vdot_add, quantiles = prep_general(args, size)
+    inputs, results, building_n50, n50, Fn50, air_permeability, T_a, T_a_damped, v_10m, fs, fw, Ti_avg, building_type, thermalbridges_label, rH_a, Vdot_add, quantiles = prep_general(args, size)
 
     result = {
         "inputs": inputs,
@@ -344,6 +353,7 @@ def calc(args,size):
         args=args,
         result=result,
         inputs=inputs,
+        results=results,
         n50=n50,
         Fn50=Fn50,
         air_permeability=air_permeability,
@@ -363,6 +373,7 @@ def calc(args,size):
             args=args,
             result=result,
             inputs=inputs,
+            results=results,
             building_type=building_type,
             thermalbridges_label=thermalbridges_label,
             building_n50=building_n50,

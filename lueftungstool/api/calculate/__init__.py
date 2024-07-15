@@ -18,6 +18,7 @@ namespace = blueprint
 
 
 class CalculationParameterGeneral(BaseModel):
+    results: bool = Field(True, description="Berechnungsergebnisse werden zurückgegeben. Bei False werden nur die Hinterlegen Wertebereiche zurückgegeben")
     location: Literal[*params_mapping["location"]["values"]] = Field(
         enum=params_mapping["location"]["values"],
         example=params_mapping["location"]["default"],
@@ -218,6 +219,7 @@ class ResH2OModel(BaseModel):
 
 
 class InputsResultModelGeneral(BaseModel):
+    results: bool
     location: str
     building_n50: ResultStatsFloat
     building_type: str
@@ -270,18 +272,18 @@ class InputsResultModel(InputsResultModelH2O, InputsResultModelCO2):
 
 
 class CalculationResult(BaseModel):
-    ResCO2: ResCO2Model = Field(None, description='Ergebnis CO2 Bewertung')
-    ResH2O: ResH2OModel = Field(None, description='Ergebnis Schimmelrisiko Bewertung (nur für Wohnbau)')
+    ResCO2: ResCO2Model | None = Field(None, description='Ergebnis CO2 Bewertung')
+    ResH2O: ResH2OModel | None = Field(None, description='Ergebnis Schimmelrisiko Bewertung (nur für Wohnbau)')
     inputs: InputsResultModel = Field(..., description='inputs')
 
 
 class CalculationResultCO2(BaseModel):
-    ResCO2: ResCO2Model = Field(None, description='Ergebnis CO2 Bewertung')
+    ResCO2: ResCO2Model | None = Field(None, description='Ergebnis CO2 Bewertung')
     inputs: InputsResultModelCO2 = Field(..., description='inputs')
 
 
 class CalculationResultH2O(BaseModel):
-    ResH2O: ResH2OModel = Field(None, description='Ergebnis Schimmelrisiko Bewertung (nur für Wohnbau)')
+    ResH2O: ResH2OModel | None = Field(None, description='Ergebnis Schimmelrisiko Bewertung (nur für Wohnbau)')
     inputs: InputsResultModelH2O = Field(..., description='inputs')
 
 
