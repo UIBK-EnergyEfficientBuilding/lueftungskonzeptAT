@@ -20,7 +20,7 @@ def wind_factor(C,alfa,gama,H_wind,R):
     return fw
 
 def co2_emission(NrAdu, ActAdu, NrKids, ActKid, AgeKid):
-    CO2_Emi_rate_Erw = 18
+    CO2_Emi_rate_Erw = 17
     CO2_Emi_rate_Kid = 10
 
     CO2_Emi = (CO2_Emi_rate_Kid+(AgeKid-6)*(CO2_Emi_rate_Erw-CO2_Emi_rate_Kid)/12)*ActKid*NrKids \
