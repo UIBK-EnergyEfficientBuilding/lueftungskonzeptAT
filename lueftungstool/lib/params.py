@@ -313,7 +313,7 @@ room_type2t_max = {
     "Schlafzimmer": 8,
     "Kinderzimmer": 8,
     "Wohnzimmer": 2,
-    "Klassen-/Gruppenraum": 0.83333,
+    "Klassen-/Gruppenraum": 50/60,
     "Lehrerzimmer": 2,
     "Direktion/Büro": 2,
     "Büro klein": 2,
