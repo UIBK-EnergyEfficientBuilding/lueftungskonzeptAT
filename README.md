@@ -20,7 +20,7 @@ conda install -c conda-forge flask-restx
 ```
 FLASK_DEBUG=1 python -m flask --app lueftungstool/__init__.py run
 ```
-or use vscode run and debug, open http://127.0.0.1:5000/api/doc with your browser for the rest api documentation.
+or use vscode run and debug, open http://127.0.0.1:5000/openapi/ with your browser for the rest api documentation.
 
 # Run tests
 

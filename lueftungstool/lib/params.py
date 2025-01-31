@@ -313,7 +313,7 @@ room_type2t_max = {
     "Schlafzimmer": 8,
     "Kinderzimmer": 8,
     "Wohnzimmer": 2,
-    "Klassen-/Gruppenraum": 0.75,
+    "Klassen-/Gruppenraum": 0.83333,
     "Lehrerzimmer": 2,
     "Direktion/Büro": 2,
     "Büro klein": 2,
@@ -507,4 +507,4 @@ params_mapping_h2o = params_mapping_general | {
 params_mapping = params_mapping_h2o | params_mapping_co2
 params_mapping["building_type"] = params_mapping_co2["building_type"]
 
-version = "24.07"
+version = "25.01"

@@ -167,9 +167,6 @@ class ResultStatsInteger(BaseModel):
 class ResCO2Model(BaseModel):
     airing_acceptable: bool = Field(..., description="Fensterlüftung praktikabel/zumutbar")
     t_reasonable: float = Field(..., description="Dies ist kürzer als die zumutbare Zeit zwischen Fensterlüften [min]")
-
-    airing_acceptable: bool = Field(..., description="Fensterlüftung praktikabel/zumutbar")
-    t_reasonable: float = Field(..., description="Dies ist kürzer als die zumutbare Zeit zwischen Fensterlüften [min]")
     t_avgC_realC0: ResultStatsFloat = Field(
         description='Zeit bis CO2-Stundenmittelwert=1000 ppm - realistisches Lüften [min]')
     t_instC_realC0: ResultStatsFloat = Field(
