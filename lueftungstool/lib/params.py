@@ -220,7 +220,7 @@ waermebruecken2fRSI = {
     "NEH (mit geringen Wärmebrücken)": [3, 3, 0.7, 0.9],
     "NEH (minimale Wärmebrücken)": [3, 3, 0.85, 0.95],
 }
-
+# values for beta-function defining distribution of room floor area, with 4 parameters: alpha, beta, min, max
 raumart2A_Rm = {
     "Schlafzimmer": [2.5, 4, 6, 30],
     "Kinderzimmer": [2, 6, 6, 30],
@@ -231,7 +231,9 @@ raumart2A_Rm = {
     "Büro klein": [2, 4, 10, 30],
     "Großraumbüro": [3, 3, 50, 150],
     "Besprechungsraum": [3, 3, 20, 60],
+    "klimaaktiv (Bildung/Büro)": [3, 3, 60, 80],
 }
+# values for beta-function defining distribution of room height, with 4 parameters: alpha, beta, min, max
 raumart2H_Rm = {
     "Schlafzimmer": [3, 3, 2.4, 2.6],
     "Kinderzimmer": [3, 3, 2.4, 2.6],
@@ -242,7 +244,9 @@ raumart2H_Rm = {
     "Büro klein": [2, 6, 2.4, 3],
     "Großraumbüro": [2, 6, 2.4, 3],
     "Besprechungsraum": [2, 6, 2.4, 3],
+    "klimaaktiv (Bildung/Büro)": [3, 3, 3, 3.5],
 }
+# values for beta-function defining distribution of number of adults, with 4 parameters: alpha, beta, min, max
 raumart2Nr_Adu = {
     "Schlafzimmer": [2, 2, 1, 2],
     "Kinderzimmer": [2, 2, 0, 0],
@@ -253,7 +257,9 @@ raumart2Nr_Adu = {
     "Büro klein": [1, 1, 1, 2],
     "Großraumbüro": [1, 1, 8, 12],
     "Besprechungsraum": [1, 1, 4, 10],
+    "klimaaktiv (Bildung/Büro)": [1, 4, 1, 2],
 }
+# values for beta-function defining activity distribution of adults, with 4 parameters: alpha, beta, min, max
 raumart2ActAdu = {
     "Schlafzimmer": [3, 3, 0.6, 1],
     "Kinderzimmer": [3, 3, 0.8, 1.4],
@@ -264,7 +270,9 @@ raumart2ActAdu = {
     "Büro klein": [3, 3, 1, 1.4],
     "Großraumbüro": [3, 3, 1, 1.4],
     "Besprechungsraum": [3, 3, 1, 1.4],
+    "klimaaktiv (Bildung/Büro)": [3, 3, 1, 1.4],
 }
+# values for beta-function defining distribution of number of children, with 4 parameters: alpha, beta, min, max
 raumart2Nr_Kid = {
     "Schlafzimmer": [1, 10, 0, 3],
     "Kinderzimmer": [1, 5, 1, 4],
@@ -275,7 +283,9 @@ raumart2Nr_Kid = {
     "Büro klein": [1, 1, 0, 0],
     "Großraumbüro": [1, 1, 0, 0],
     "Besprechungsraum": [1, 1, 0, 0],
+    "klimaaktiv (Bildung/Büro)": [3, 3, 15, 25],
 }
+# values for beta-function defining activity distribution of children, with 4 parameters: alpha, beta, min, max
 raumart2ActKid = {
     "Schlafzimmer": [3, 3, 0.6, 1],
     "Kinderzimmer": [3, 3, 0.6, 1.4],
@@ -286,7 +296,9 @@ raumart2ActKid = {
     "Büro klein": [3, 3, 1, 1.4],
     "Großraumbüro": [3, 3, 1, 1.4],
     "Besprechungsraum": [1, 1, 1, 1.4],
+    "klimaaktiv (Bildung/Büro)": [3, 3, 1, 1.4],
 }
+# values for beta-function defining age distribution of children, with 4 parameters: alpha, beta, min, max
 raumart2AgeKid = {
     "Schlafzimmer": [1, 3, 0, 4],
     "Kinderzimmer": [1, 1, 3, 18],
@@ -297,7 +309,9 @@ raumart2AgeKid = {
     "Büro klein": [1, 1, 6, 18],
     "Großraumbüro": [1, 1, 6, 18],
     "Besprechungsraum": [1, 1, 6, 18],
+    "klimaaktiv (Bildung/Büro)": [1, 1, 6, 18],
 }
+# values for beta-function defining distribution of window ratio, with 4 parameters: alpha, beta, min, max
 raumart2WinRat_Rm = {
     "Schlafzimmer": [3, 3, 0.1, 0.5],
     "Kinderzimmer": [3, 3, 0.1, 0.5],
@@ -308,7 +322,9 @@ raumart2WinRat_Rm = {
     "Büro klein": [3, 3, 0.1, 0.5],
     "Großraumbüro": [3, 3, 0.1, 0.5],
     "Besprechungsraum": [3, 3, 0.1, 0.5],
+    "klimaaktiv (Bildung/Büro)": [3, 3, 0.1, 0.5],
 }
+# evaluation period in hours
 room_type2t_max = {
     "Schlafzimmer": 8,
     "Kinderzimmer": 8,
@@ -319,6 +335,7 @@ room_type2t_max = {
     "Büro klein": 2,
     "Großraumbüro": 2,
     "Besprechungsraum": 1,
+    "klimaaktiv (Bildung/Büro)": 55/60,
 }
 room_type_list = [
     "Schlafzimmer",
@@ -330,6 +347,7 @@ room_type_list = [
     "Büro klein",
     "Großraumbüro",
     "Besprechungsraum",
+    "klimaaktiv (Bildung/Büro)",
 ]
 
 room_type2CO2_Grenzwert = {
@@ -342,6 +360,7 @@ room_type2CO2_Grenzwert = {
     "Büro klein": 1000,
     "Großraumbüro": 1000,
     "Besprechungsraum": 1000,
+    "klimaaktiv (Bildung/Büro)": 1000,
 }
 
 activity_level = {

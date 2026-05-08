@@ -233,9 +233,10 @@ def occupancy_parameters(room_type, inputs, NrAdu = None, ActAdu = None, NrKids 
 
     return NrAdu, ActAdu, NrKids, ActKid, AgeKid
 
-def airing_room(airing_type_room, inputs, airing_duration_room, size):
-
+def airing_room(room_type, airing_type_room, inputs, airing_duration_room, size):
     ACH_airing_room = beta_scaled(*params.luefungsart2WinACH[airing_type_room],size=size)
+    if room_type == "klimaaktiv (Bildung/Büro)":
+        airing_duration_room = 5 
     airing_duration_room = fixed_or_beta_scaled(airing_type_room, params.luefungsart2WinDur, airing_duration_room, size=size)
     inputs["airing_duration_room"] = helper.result_stats(airing_duration_room)
 

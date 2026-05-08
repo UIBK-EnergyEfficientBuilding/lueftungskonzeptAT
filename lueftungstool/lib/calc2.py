@@ -66,6 +66,7 @@ def prep_calc_co2(
     )
 
     ACH_airing_room, airing_duration_room = params_lookups.airing_room(
+        room_type = room_type,
         airing_type_room = args['airing_type_room'],
         inputs = inputs,
         airing_duration_room = args.get('airing_duration_room'),
