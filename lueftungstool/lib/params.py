@@ -526,4 +526,4 @@ params_mapping_h2o = params_mapping_general | {
 params_mapping = params_mapping_h2o | params_mapping_co2
 params_mapping["building_type"] = params_mapping_co2["building_type"]
 
-version = "25.01"
+version = "26.05"
